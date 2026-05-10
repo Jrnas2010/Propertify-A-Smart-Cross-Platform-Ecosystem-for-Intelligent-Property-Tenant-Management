@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet build *)",
+      "Bash(taskkill /PID 37520 /F)",
+      "Bash(cmd.exe /c \"taskkill /PID 37520 /F\")",
+      "Bash(cmd.exe /c \"taskkill /F /PID 37520 2>&1\")",
+      "Bash(dotnet ef *)",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\User\\\\Desktop\\\\MEC\\\\Spring 2026\\\\Project Impelementation and Design\\\\Coding\\\\Propertify\" -Recurse -Force)",
+      "Bash(Select-Object FullName, PSIsContainer)",
+      "Bash(Sort-Object FullName)",
+      "Bash(Format-Table -AutoSize)"
+    ]
+  }
+}

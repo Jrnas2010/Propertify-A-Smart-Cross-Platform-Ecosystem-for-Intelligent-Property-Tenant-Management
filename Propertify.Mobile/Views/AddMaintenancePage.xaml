@@ -1,0 +1,34 @@
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Propertify.Mobile.Views.AddMaintenancePage"
+             Title="طلب صيانة جديد"
+             FlowDirection="RightToLeft">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="15">
+
+            <Label Text="عنوان البلاغ" FontAttributes="Bold" />
+            <Entry x:Name="TitleEntry"
+                   Placeholder="مثلاً: تسريب مياه في المطبخ"
+                   BackgroundColor="#F1F2F6" />
+
+            <Label Text="وصف المشكلة" FontAttributes="Bold" />
+            <Editor x:Name="DescriptionEditor"
+                    Placeholder="اشرح المشكلة بالتفصيل..."
+                    HeightRequest="120" BackgroundColor="#F1F2F6" />
+
+            <Label Text="صورة العطل" FontAttributes="Bold" />
+            <Frame HeightRequest="200" CornerRadius="15" BorderColor="#DCDDE1" Padding="0">
+                <Grid>
+                    <Image x:Name="CapturedImage" Aspect="AspectFill" />
+                    <Button Text="إلتقاط صورة الكاميرا 📷" Clicked="OnCapturePhotoClicked"
+                            BackgroundColor="#2C3E50" VerticalOptions="Center" HorizontalOptions="Center" />
+                </Grid>
+            </Frame>
+
+            <Button Text="إرسال البلاغ" Clicked="OnSubmitClicked"
+                    BackgroundColor="#27AE60" CornerRadius="25" HeightRequest="55" Margin="0,20,0,0" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
