@@ -1,0 +1,125 @@
+@model IEnumerable<Propertify.Web.Models.Tenant>
+
+@{
+    ViewData["Title"] = "Tenants Management | Propertify";
+}
+
+<div class="container py-4" dir="rtl">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold text-primary mb-0"><i class="fas fa-users-cog ms-2"></i>Tenants Management</h3>
+            <p class="text-muted small mb-0">Search, review, and archive tenant records</p>
+        </div>
+        <a asp-action="Create" class="btn btn-primary rounded-pill px-4 shadow-sm">
+            <i class="fas fa-plus ms-1"></i> Add New Tenant
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 p-3 mb-4 bg-white">
+        <form asp-action="Index" method="get" class="row g-3 align-items-center">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-0"><i class="fas fa-search text-muted"></i></span>
+                    <input type="text" name="searchTerm" value="@ViewBag.SearchTerm" class="form-control bg-light border-0 shadow-none" placeholder="Search by name, national ID, or unit number...">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-check form-switch mt-1">
+                    @* تعديل بسيط لضمان صحة قيمة الـ Checkbox *@
+                    <input class="form-check-input" type="checkbox" name="showArchived" value="true" id="archiveSwitch" @(ViewBag.ShowingArchived == true ? "checked" : "") onchange="this.form.submit()">
+                    <label class="form-check-label fw-bold small ms-2" for="archiveSwitch">Show Archive</label>
+                </div>
+            </div>
+            <div class="col-md-3 text-start">
+                <button type="submit" class="btn btn-dark rounded-pill px-4"> Update The Result </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 text-end">
+                <thead class="bg-light text-muted small">
+                    <tr>
+                        <th class="pr-4 py-3">Full Name (Arabic)</th>
+                        <th>Full Name (English)</th>
+                        <th>Phone Number</th>
+                        <th>Unit</th>
+                        <th>Status</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="pr-4 fw-bold text-dark">@item.FullNameAr</td>
+                                <td class="small text-muted">@item.FullNameEn</td>
+                                <td class="ltr-text">@item.Phone</td>
+                                <td>
+                                    @if (item.Unit != null)
+                                    {
+                                        <span class="badge bg-light text-primary border px-3">وحدة @item.Unit.UnitNumber</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">Not Specified</span>
+                                    }
+                                </td>
+                                <td>
+                                    @* معالجة قيمة IsArchived بأمان لمنع خطأ Null *@
+                                    @if (item.IsArchived)
+                                    {
+                                        <span class="badge bg-secondary-subtle text-secondary rounded-pill px-3">Archived</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success-subtle text-success rounded-pill px-3">Active</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group shadow-sm rounded-pill overflow-hidden">
+                                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-white border-end" title="Show Details">
+                                            <i class="fas fa-eye text-primary"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-white border-end" title="Edit">
+                                            <i class="fas fa-edit text-warning"></i>
+                                        </a>
+                                        @if (!item.IsArchived)
+                                        {
+                                            <form asp-action="Archive" asp-route-id="@item.Id" method="post" class="d-inline" onsubmit="return confirm('Are you sure you want to archive this tenant?')">
+                                                <button type="submit" class="btn btn-sm btn-white" title="Archive">
+                                                    <i class="fas fa-archive text-danger"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                <i class="fas fa-user-slash d-block mb-2 fa-2x"></i>
+                                No tenant records match the search criteria.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    .btn-white { background: #fff; border: none; }
+    .btn-white:hover { background: #f8f9fa; }
+    .ltr-text { direction: ltr; display: inline-block; }
+    .table-responsive { min-height: 350px; }
+    /* تحسين شكل السويتش */
+    .form-check-input:checked { background-color: #0d6efd; border-color: #0d6efd; }
+</style>

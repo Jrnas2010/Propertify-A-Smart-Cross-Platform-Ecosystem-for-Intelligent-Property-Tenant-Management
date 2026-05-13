@@ -1,0 +1,42 @@
+<div class="col-lg-5 col-md-12 bg-white d-flex align-items-center justify-content-center p-5">
+    <div class="w-100" style="max-width: 450px;">
+        <h3 class="fw-bold text-dark text-center mb-4">Join Propertify</h3>
+        
+        <form asp-action="Register" method="post">
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold small">First Name</label>
+                    <input type="text" name="FirstName" class="form-control bg-light border-0 rounded-3" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold small">Last Name</label>
+                    <input type="text" name="LastName" class="form-control bg-light border-0 rounded-3" required>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-bold small">I am registering as:</label>
+                <div class="d-flex gap-3">
+                    <input type="radio" class="btn-check" name="UserRole" id="roleOwner" value="Owner" checked>
+                    <label class="btn btn-outline-primary w-100 rounded-pill" for="roleOwner">Property Owner</label>
+
+                    <input type="radio" class="btn-check" name="UserRole" id="roleTenant" value="Tenant">
+                    <label class="btn btn-outline-primary w-100 rounded-pill" for="roleTenant">Tenant</label>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-bold small">Email</label>
+                <input type="email" name="Email" class="form-control bg-light border-0 rounded-3" required>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-bold small">Password</label>
+                <input type="password" name="Password" class="form-control bg-light border-0 rounded-3" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 rounded-pill py-3 fw-bold shadow-sm mb-3">Create Account</button>
+            <p class="text-center small text-muted">Already have an account? <a asp-action="Login" class="fw-bold text-decoration-none">Sign In</a></p>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,92 @@
+@model IEnumerable<Propertify.Web.Models.Tenant>
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold text-primary">إدارة حسابات تطبيق الهاتف</h3>
+        <p class="text-muted small">تفعيل الدخول للمستأجرين لمتابعة العقود والدفعات</p>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="bg-light">
+                <tr>
+                    <th class="ps-4">المستأجر</th>
+                    <th>حالة الحساب</th>
+                    <th>الصلاحيات الممنوحة</th>
+                    <th class="text-center">إجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var tenant in Model)
+                {
+                    <tr>
+                        <td class="ps-4">
+                            <span class="fw-bold">@tenant.FirstNameAr @tenant.LastNameAr</span>
+                            <div class="extra-small text-muted">ID: @tenant.IdNumber</div>
+                        </td>
+                        <td>
+                            <span class="badge bg-success-subtle text-success rounded-pill px-3">نشط على التطبيق</span>
+                        </td>
+                        <td>
+                            <div class="small">
+                                <i class="fas fa-check-circle text-primary me-1"></i> رؤية العقد <br>
+                                <i class="fas fa-check-circle text-primary me-1"></i> طلب صيانة <br>
+                                <i class="fas fa-check-circle text-primary me-1"></i> كشف الدفعات
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            <button class="btn btn-sm btn-outline-primary rounded-pill" data-bs-toggle="modal" data-bs-target="#accessModal-@tenant.Id">
+                                <i class="fas fa-key ms-1"></i> تعديل الصلاحيات
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@foreach (var tenant in Model)
+{
+    <div class="modal fade" id="accessModal-@tenant.Id" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow rounded-4">
+                <form asp-action="UpdateTenantAccess" method="post">
+                    <input type="hidden" name="tenantId" value="@tenant.Id" />
+                    <div class="modal-header border-0">
+                        <h6 class="fw-bold mb-0">إعدادات الدخول لـ: @tenant.FirstNameAr</h6>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="small fw-bold">اسم المستخدم (البريد الإلكتروني)</label>
+                            <input type="email" name="email" class="form-control" value="@tenant.IdNumber@("@")propertify.om" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="small fw-bold">تعيين كلمة مرور جديدة للتطبيق</label>
+                            <input type="password" name="password" class="form-control" placeholder="******">
+                        </div>
+                        <div class="bg-light p-3 rounded-3">
+                            <p class="small fw-bold text-muted mb-2">الصلاحيات المتاحة للمستأجر:</p>
+                            <div class="form-check form-switch small">
+                                <input class="form-check-input" type="checkbox" checked disabled>
+                                <label class="form-check-label">رؤية بيانات الوحدة والعقد</label>
+                            </div>
+                            <div class="form-check form-switch small">
+                                <input class="form-check-input" type="checkbox" checked>
+                                <label class="form-check-label">تقديم طلبات صيانة</label>
+                            </div>
+                            <div class="form-check form-switch small">
+                                <input class="form-check-input" type="checkbox" checked>
+                                <label class="form-check-label">رؤية سجل الدفعات المالية</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="submit" class="btn btn-primary w-100 rounded-pill">تحديث بيانات الدخول</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}

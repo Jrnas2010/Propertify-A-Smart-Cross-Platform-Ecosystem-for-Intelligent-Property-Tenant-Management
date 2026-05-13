@@ -1,0 +1,371 @@
+@model Propertify.Web.Models.Property
+
+@{
+    ViewData["Title"] = "Edit Property - " + Model.Name;
+}
+
+<div class="container-fluid px-4 py-4">
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show rounded-3 border-0 shadow-sm mb-4">
+            <i class="fas fa-exclamation-circle me-2"></i> @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Page Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div>
+            <h4 class="fw-bold text-dark mb-1">
+                <i class="fas fa-building text-primary me-2"></i> Edit Property —
+                <span class="text-primary">@Model.Name</span>
+            </h4>
+            <p class="text-muted small mb-0">Update your property information, units and meters</p>
+        </div>
+        <a asp-action="Index" class="btn btn-outline-secondary rounded-pill px-4">
+            <i class="fas fa-arrow-left me-2"></i> Back to Properties
+        </a>
+    </div>
+
+    <form asp-action="Edit" method="post" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="ImagePath" />
+        <input type="hidden" asp-for="ImageUrl" />
+
+        <!-- ── Section 1: Main Property Info ── -->
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-header bg-white border-bottom rounded-top-4 py-3 px-4">
+                <h6 class="fw-bold text-primary mb-0">
+                    <i class="fas fa-info-circle me-2"></i> Main Property Information
+                </h6>
+            </div>
+            <div class="card-body p-4">
+                <div class="row g-4">
+
+                    <!-- Property Name -->
+                    <div class="col-12 col-md-4">
+                        <label class="form-label fw-semibold small">Property Name <span class="text-danger">*</span></label>
+                        <input asp-for="Name" class="form-control rounded-3" placeholder="e.g. Sultan Complex" required />
+                        <span asp-validation-for="Name" class="text-danger small"></span>
+                    </div>
+
+                    <!-- Property Type -->
+                    <div class="col-12 col-md-4">
+                        <label class="form-label fw-semibold small">Property Type <span class="text-danger">*</span></label>
+                        <select asp-for="Type" class="form-select rounded-3">
+                            <option value="Residential">Residential</option>
+                            <option value="Commercial">Commercial</option>
+                            <option value="Residential & Commercial">Residential &amp; Commercial</option>
+                        </select>
+                    </div>
+
+                    <!-- Total Units -->
+                    <div class="col-12 col-md-4">
+                        <label class="form-label fw-semibold small">Total Units</label>
+                        <input asp-for="TotalUnits" type="number" min="0" class="form-control rounded-3" />
+                    </div>
+
+                    <!-- Location -->
+                    <div class="col-12 col-md-8">
+                        <label class="form-label fw-semibold small">Location <span class="text-danger">*</span></label>
+                        <input asp-for="Location" class="form-control rounded-3" placeholder="e.g. Al-Seeb, Muscat Governorate, Oman" />
+                        <span asp-validation-for="Location" class="text-danger small"></span>
+                    </div>
+
+                    <!-- Image Upload + Preview -->
+                    <div class="col-12 col-md-4">
+                        <label class="form-label fw-semibold small">Property Image</label>
+                        <div class="d-flex align-items-center gap-3 flex-wrap">
+                            <img id="editPreview"
+                                 src="@(Model.ImageUrl ?? Model.ImagePath ?? "/images/default-building.png")"
+                                 class="rounded-3 border shadow-sm flex-shrink-0"
+                                 style="width:90px; height:70px; object-fit:cover;"
+                                 alt="Property preview" />
+                            <div class="flex-grow-1">
+                                <input type="file" name="ImageFile" class="form-control form-control-sm rounded-3"
+                                       accept="image/jpeg,image/png,image/webp"
+                                       onchange="previewImage(this, 'editPreview')" />
+                                <div class="form-text">JPEG / PNG / WebP · Max 10 MB</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Section 2: Units ── -->
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-header bg-white border-bottom rounded-top-4 py-3 px-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="fw-bold text-primary mb-0">
+                        <i class="fas fa-door-open me-2"></i> Units
+                        <span class="badge bg-primary-subtle text-primary rounded-pill ms-1" id="unitCountBadge">@Model.Units.Count</span>
+                    </h6>
+                    <button type="button" class="btn btn-sm btn-success rounded-pill px-3 shadow-sm" onclick="addUnit()">
+                        <i class="fas fa-plus me-1"></i> Add New Unit
+                    </button>
+                </div>
+            </div>
+
+            <div class="card-body p-4">
+                <div id="unitTypesContainer">
+                    @for (int i = 0; i < Model.Units.Count; i++)
+                    {
+                        var u = Model.Units.ElementAt(i);
+                        <div class="unit-card card border rounded-4 p-3 mb-3 shadow-sm">
+                            <input type="hidden" name="Units[@i].Id" value="@u.Id" />
+                            <input type="hidden" name="Units[@i].PropertyId" value="@u.PropertyId" />
+
+                            <!-- Unit header -->
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="fw-bold text-primary">
+                                    <i class="fas fa-door-closed me-1"></i> Unit @(i + 1)
+                                    @if (!string.IsNullOrEmpty(u.UnitNumber))
+                                    {
+                                        <span class="text-muted fw-normal small ms-1">— #@u.UnitNumber</span>
+                                    }
+                                </span>
+                                <span class="badge @(u.IsOccupied ? "bg-success" : "bg-secondary") rounded-pill">
+                                    @(u.IsOccupied ? "Occupied" : "Vacant")
+                                </span>
+                            </div>
+
+                            <div class="row g-3">
+                                <!-- Row 1: identity fields -->
+                                <div class="col-6 col-md-2">
+                                    <label class="form-label small fw-semibold">Unit No.</label>
+                                    <input type="text" name="Units[@i].UnitNumber" value="@u.UnitNumber"
+                                           class="form-control form-control-sm rounded-3" placeholder="e.g. 101" />
+                                </div>
+                                <div class="col-6 col-md-2">
+                                    <label class="form-label small fw-semibold">Floor</label>
+                                    <input type="number" name="Units[@i].FloorNumber" value="@u.FloorNumber" min="0"
+                                           class="form-control form-control-sm rounded-3" />
+                                </div>
+                                <div class="col-6 col-md-2">
+                                    <label class="form-label small fw-semibold">Area (m²)</label>
+                                    <input type="number" name="Units[@i].Area" value="@u.Area" min="0" step="0.5"
+                                           class="form-control form-control-sm rounded-3" />
+                                </div>
+                                <div class="col-6 col-md-2">
+                                    <label class="form-label small fw-semibold">Rent (OMR)</label>
+                                    <input type="number" name="Units[@i].RentAmount" value="@u.RentAmount" min="0" step="0.5"
+                                           class="form-control form-control-sm rounded-3" />
+                                </div>
+                                <div class="col-6 col-md-2">
+                                    <label class="form-label small fw-semibold">Status</label>
+                                    <select name="Units[@i].Status" class="form-select form-select-sm rounded-3">
+                                        <option value="Vacant"      selected="@(u.Status == "Vacant"      ? "selected" : null)">Vacant</option>
+                                        <option value="Occupied"    selected="@(u.Status == "Occupied"    ? "selected" : null)">Occupied</option>
+                                        <option value="Maintenance" selected="@(u.Status == "Maintenance" ? "selected" : null)">Maintenance</option>
+                                    </select>
+                                </div>
+                                <div class="col-6 col-md-2">
+                                    <label class="form-label small fw-semibold">Bedrooms</label>
+                                    <input type="number" name="Units[@i].Bedrooms" value="@u.Bedrooms" min="0"
+                                           class="form-control form-control-sm rounded-3" />
+                                </div>
+
+                                <!-- Row 2: rooms -->
+                                <div class="col-6 col-md-2">
+                                    <label class="form-label small fw-semibold">Bathrooms</label>
+                                    <input type="number" name="Units[@i].Bathrooms" value="@u.Bathrooms" min="0"
+                                           class="form-control form-control-sm rounded-3" />
+                                </div>
+                                <div class="col-6 col-md-2">
+                                    <label class="form-label small fw-semibold">Kitchens</label>
+                                    <input type="number" name="Units[@i].Kitchens" value="@u.Kitchens" min="0"
+                                           class="form-control form-control-sm rounded-3" />
+                                </div>
+                                <div class="col-6 col-md-2">
+                                    <label class="form-label small fw-semibold">Living Rooms</label>
+                                    <input type="number" name="Units[@i].LivingRooms" value="@u.LivingRooms" min="0"
+                                           class="form-control form-control-sm rounded-3" />
+                                </div>
+                                <div class="col-6 col-md-2">
+                                    <label class="form-label small fw-semibold">Majlis</label>
+                                    <input type="number" name="Units[@i].Majlis" value="@u.Majlis" min="0"
+                                           class="form-control form-control-sm rounded-3" />
+                                </div>
+
+                                <!-- Row 3: meters -->
+                                <div class="col-12 col-md-4">
+                                    <label class="form-label small fw-semibold text-warning">
+                                        <i class="fas fa-bolt me-1"></i> Electricity Meter
+                                    </label>
+                                    <input type="text" name="Units[@i].ElectricityMeter" value="@u.ElectricityMeter"
+                                           class="form-control form-control-sm border-warning-subtle rounded-3" placeholder="Meter number" />
+                                </div>
+                                <div class="col-12 col-md-4">
+                                    <label class="form-label small fw-semibold text-info">
+                                        <i class="fas fa-tint me-1"></i> Water Meter
+                                    </label>
+                                    <input type="text" name="Units[@i].WaterMeter" value="@u.WaterMeter"
+                                           class="form-control form-control-sm border-info-subtle rounded-3" placeholder="Meter number" />
+                                </div>
+
+                                <!-- Row 4: files -->
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label small fw-semibold text-success">
+                                        <i class="fas fa-images me-1"></i> Unit Images
+                                    </label>
+                                    <input type="file" name="Units[@i].UnitImageFiles"
+                                           class="form-control form-control-sm rounded-3"
+                                           accept="image/jpeg,image/png,image/webp" multiple />
+                                    @if (!string.IsNullOrEmpty(u.UnitImages))
+                                    {
+                                        <div class="form-text text-success">
+                                            <i class="fas fa-check-circle me-1"></i>
+                                            @(u.UnitImages.Split(',').Length) image(s) already uploaded
+                                        </div>
+                                    }
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label small fw-semibold text-danger">
+                                        <i class="fas fa-video me-1"></i> Unit Video
+                                    </label>
+                                    <input type="file" name="Units[@i].VideoFile"
+                                           class="form-control form-control-sm rounded-3"
+                                           accept="video/mp4,video/webm,video/quicktime" />
+                                    @if (!string.IsNullOrEmpty(u.VideoPath))
+                                    {
+                                        <div class="form-text text-success">
+                                            <i class="fas fa-check-circle me-1"></i> Video already uploaded
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                @if (!Model.Units.Any())
+                {
+                    <div class="text-center text-muted py-5" id="emptyUnitsMsg">
+                        <i class="fas fa-door-open fa-3x mb-3 opacity-25"></i>
+                        <p>No units yet. Click <strong>Add New Unit</strong> to get started.</p>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Save Bar -->
+        <div class="d-flex justify-content-end gap-3 mb-5">
+            <a asp-action="Index" class="btn btn-outline-secondary rounded-pill px-4">
+                Cancel
+            </a>
+            <button type="submit" class="btn btn-primary rounded-pill px-5 shadow-sm">
+                <i class="fas fa-save me-2"></i> Save Changes
+            </button>
+        </div>
+
+    </form>
+</div>
+
+@section Scripts {
+<script>
+    let unitIndex = @Model.Units.Count;
+
+    function previewImage(input, previewId) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = e => document.getElementById(previewId).src = e.target.result;
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function addUnit() {
+        document.getElementById('emptyUnitsMsg')?.remove();
+
+        const container = document.getElementById('unitTypesContainer');
+        const i = unitIndex;
+        const html = `
+        <div class="unit-card card border border-success rounded-4 p-3 mb-3 shadow-sm position-relative">
+            <button type="button" class="btn-close position-absolute top-0 end-0 m-3"
+                    onclick="removeUnit(this)" title="Remove unit"></button>
+            <div class="fw-bold text-success mb-3">
+                <i class="fas fa-plus-circle me-1"></i> New Unit
+            </div>
+            <div class="row g-3">
+                <div class="col-6 col-md-2">
+                    <label class="form-label small fw-semibold">Unit No.</label>
+                    <input type="text" name="Units[${i}].UnitNumber" class="form-control form-control-sm rounded-3" placeholder="e.g. 101" required />
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label small fw-semibold">Floor</label>
+                    <input type="number" name="Units[${i}].FloorNumber" class="form-control form-control-sm rounded-3" value="1" min="0" />
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label small fw-semibold">Area (m²)</label>
+                    <input type="number" name="Units[${i}].Area" class="form-control form-control-sm rounded-3" min="0" step="0.5" />
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label small fw-semibold">Rent (OMR)</label>
+                    <input type="number" name="Units[${i}].RentAmount" class="form-control form-control-sm rounded-3" min="0" step="0.5" />
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label small fw-semibold">Status</label>
+                    <select name="Units[${i}].Status" class="form-select form-select-sm rounded-3">
+                        <option value="Vacant" selected>Vacant</option>
+                        <option value="Occupied">Occupied</option>
+                        <option value="Maintenance">Maintenance</option>
+                    </select>
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label small fw-semibold">Bedrooms</label>
+                    <input type="number" name="Units[${i}].Bedrooms" class="form-control form-control-sm rounded-3" value="1" min="0" />
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label small fw-semibold">Bathrooms</label>
+                    <input type="number" name="Units[${i}].Bathrooms" class="form-control form-control-sm rounded-3" value="1" min="0" />
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label small fw-semibold">Kitchens</label>
+                    <input type="number" name="Units[${i}].Kitchens" class="form-control form-control-sm rounded-3" value="1" min="0" />
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label small fw-semibold">Living Rooms</label>
+                    <input type="number" name="Units[${i}].LivingRooms" class="form-control form-control-sm rounded-3" value="1" min="0" />
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label small fw-semibold">Majlis</label>
+                    <input type="number" name="Units[${i}].Majlis" class="form-control form-control-sm rounded-3" value="0" min="0" />
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label small fw-semibold text-warning"><i class="fas fa-bolt me-1"></i> Electricity Meter</label>
+                    <input type="text" name="Units[${i}].ElectricityMeter" class="form-control form-control-sm border-warning-subtle rounded-3" placeholder="Meter number" />
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label small fw-semibold text-info"><i class="fas fa-tint me-1"></i> Water Meter</label>
+                    <input type="text" name="Units[${i}].WaterMeter" class="form-control form-control-sm border-info-subtle rounded-3" placeholder="Meter number" />
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label small fw-semibold text-success"><i class="fas fa-images me-1"></i> Unit Images</label>
+                    <input type="file" name="Units[${i}].UnitImageFiles" class="form-control form-control-sm rounded-3" accept="image/jpeg,image/png,image/webp" multiple />
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label small fw-semibold text-danger"><i class="fas fa-video me-1"></i> Unit Video</label>
+                    <input type="file" name="Units[${i}].VideoFile" class="form-control form-control-sm rounded-3" accept="video/mp4,video/webm,video/quicktime" />
+                </div>
+            </div>
+        </div>`;
+
+        container.insertAdjacentHTML('beforeend', html);
+        unitIndex++;
+        updateUnitBadge();
+    }
+
+    function removeUnit(btn) {
+        btn.closest('.unit-card').remove();
+        updateUnitBadge();
+    }
+
+    function updateUnitBadge() {
+        document.getElementById('unitCountBadge').textContent =
+            document.querySelectorAll('.unit-card').length;
+    }
+</script>
+}

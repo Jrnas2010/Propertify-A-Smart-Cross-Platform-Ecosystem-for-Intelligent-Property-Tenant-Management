@@ -1,0 +1,60 @@
+@{
+    Layout = "_PublicLayout";
+    var unit = Model;
+}
+
+<div class="container py-5">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item active">Unit Details</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-7 mb-4">
+            <div class="rounded-4 overflow-hidden shadow-sm mb-3">
+                <img src="@unit.ImageUrl" class="img-fluid w-100" style="max-height: 500px; object-fit: cover;" alt="Main Image">
+            </div>
+            <div class="row g-2">
+                @foreach(var img in unit.AdditionalImages) {
+                    <div class="col-3">
+                        <img src="@img" class="img-fluid rounded-3 shadow-sm clickable-img" alt="Sub Image">
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm rounded-4 p-4 sticky-top" style="top: 100px;">
+                <h2 class="fw-bold mb-2">@unit.UnitNumber</h2>
+                <h5 class="text-muted mb-4">@unit.Property?.Name</h5>
+                
+                <div class="d-flex gap-4 mb-4">
+                    <div class="text-center">
+                        <i class="fas fa-bed text-primary mb-1"></i>
+                        <p class="small mb-0">@unit.Bedrooms Bedrooms</p>
+                    </div>
+                    <div class="text-center border-start ps-4">
+                        <i class="fas fa-bath text-primary mb-1"></i>
+                        <p class="small mb-0">@unit.Bathrooms Bathrooms</p>
+                    </div>
+                    <div class="text-center border-start ps-4">
+                        <i class="fas fa-expand text-primary mb-1"></i>
+                        <p class="small mb-0">@unit.Area Sq M</p>
+                    </div>
+                </div>
+
+                <div class="bg-light p-3 rounded-3 mb-4">
+                    <h4 class="fw-bold text-primary mb-0">Contact for Price <small class="text-muted fw-normal fs-6">OMR / Month</small></h4>
+                </div>
+
+                <p class="text-muted mb-4">@unit.Type - @unit.Property?.Location</p>
+
+                <a href="/Home/Inquiry?unit=@unit.UnitNumber" class="btn btn-primary btn-lg rounded-pill w-100 fw-bold py-3">
+                    Book This Unit Now
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

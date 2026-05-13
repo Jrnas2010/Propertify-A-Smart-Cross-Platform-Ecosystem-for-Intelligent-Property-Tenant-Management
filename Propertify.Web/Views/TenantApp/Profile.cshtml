@@ -1,0 +1,89 @@
+@{
+    Layout = "_PublicLayout";
+    ViewData["Title"] = "الملف الشخصي والمدفوعات";
+}
+
+<div class="container py-4" style="max-width: 500px;">
+    <div class="d-flex align-items-center mb-4">
+        <a asp-action="Index" class="btn btn-light rounded-circle me-3"><i class="fas fa-arrow-right"></i></a>
+        <h4 class="fw-bold mb-0">حسابي ومعاملاتي</h4>
+    </div>
+
+    <ul class="nav nav-pills nav-fill mb-4 bg-white shadow-sm rounded-pill p-1" id="pills-tab" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active rounded-pill" id="pills-info-tab" data-bs-toggle="pill" data-bs-target="#pills-info" type="button">بياناتي</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link rounded-pill" id="pills-pay-tab" data-bs-toggle="pill" data-bs-target="#pills-pay" type="button">الدفعات</button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="pills-tabContent">
+        <div class="tab-pane fade show active" id="pills-info" role="tabpanel">
+            <div class="card border-0 shadow-sm p-4" style="border-radius: 20px;">
+                <form>
+                    <div class="text-center mb-4">
+                        <div class="position-relative d-inline-block">
+                            <img src="https://ui-avatars.com/api/?name=Salim&background=2c3e50&color=fff" class="rounded-circle border border-4 border-white shadow-sm" width="100">
+                            <span class="position-absolute bottom-0 end-0 bg-primary text-white rounded-circle p-2 border border-2 border-white">
+                                <i class="fas fa-camera fa-xs"></i>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">الاسم الكامل</label>
+                        <input type="text" class="form-control bg-light border-0" value="سالم بن محمد الهنائي" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">رقم الهاتف</label>
+                        <input type="tel" class="form-control bg-light border-0" value="+968 91234567">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">البريد الإلكتروني</label>
+                        <input type="email" class="form-control bg-light border-0" value="salim@example.com">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100 py-2 rounded-pill mt-3">تحديث البيانات</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="pills-pay" role="tabpanel">
+            <div class="card border-0 shadow-sm p-4 mb-3" style="border-radius: 20px;">
+                <h6 class="fw-bold mb-3"><i class="fas fa-upload ms-2 text-primary"></i>رفع إثبات دفع جديد</h6>
+                <form>
+                    <div class="mb-3">
+                        <select class="form-select bg-light border-0">
+                            <option>إيجار شهر أبريل 2026</option>
+                            <option>إيجار شهر مارس 2026</option>
+                        </select>
+                    </div>
+                    <div class="upload-area border-dashed p-4 text-center bg-light rounded-3 mb-3 position-relative">
+                        <i class="fas fa-receipt fa-2x text-muted mb-2"></i>
+                        <p class="small text-muted mb-0">ارفق صورة التحويل البنكي</p>
+                        <input type="file" class="position-absolute top-0 start-0 w-100 h-100 opacity-0" accept="image/*">
+                    </div>
+                    <button class="btn btn-success w-100 py-2 rounded-pill">إرسال الإثبات للمالك</button>
+                </form>
+            </div>
+
+            <h6 class="fw-bold mb-3 mt-4">آخر الدفعات</h6>
+            <div class="list-group shadow-sm rounded-4 border-0">
+                <div class="list-group-item d-flex justify-content-between align-items-center p-3 border-0">
+                    <div>
+                        <span class="d-block fw-bold small">مارس 2026</span>
+                        <small class="text-muted">تم التأكيد من المالك</small>
+                    </div>
+                    <span class="badge bg-success-subtle text-success rounded-pill px-3">250 ر.ع</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .nav-pills .nav-link { color: #2c3e50; font-weight: bold; }
+    .nav-pills .nav-link.active { background-color: #2c3e50; color: #fff; }
+    .border-dashed { border: 2px dashed #ddd !important; }
+</style>

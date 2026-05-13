@@ -1,0 +1,55 @@
+@model IEnumerable<Propertify.Web.Models.UtilityBill>
+@{
+    ViewData["Title"] = "قائمة فواتير المرافق";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">فواتير المرافق</h2>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>#</th>
+                        <th>نوع الخدمة</th>
+                        <th>الوحدة</th>
+                        <th>المستأجر</th>
+                        <th>القراءة السابقة</th>
+                        <th>القراءة الحالية</th>
+                        <th>المبلغ الإجمالي</th>
+                        <th>تاريخ الإصدار</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-4">لا توجد فواتير مسجلة بعد.</td>
+                        </tr>
+                    }
+                    @foreach (var bill in Model)
+                    {
+                        <tr>
+                            <td>@bill.BillId</td>
+                            <td>@bill.ServiceType</td>
+                            <td>@(bill.Unit?.UnitNumber ?? "-")</td>
+                            <td>@(bill.Tenant?.FullNameAr ?? "-")</td>
+                            <td>@bill.PreviousReading</td>
+                            <td>@bill.CurrentReading</td>
+                            <td class="fw-bold text-success">@bill.TotalAmount.ToString("N3") ر.ع</td>
+                            <td>@bill.IssueDate.ToString("dd/MM/yyyy")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

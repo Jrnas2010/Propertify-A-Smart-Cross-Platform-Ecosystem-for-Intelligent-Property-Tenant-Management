@@ -1,0 +1,129 @@
+@{
+    ViewData["Title"] = "الإعدادات والصلاحيات";
+}
+
+<div class="container-fluid">
+    <div class="mb-4">
+        <h3 class="fw-bold text-primary">إعدادات النظام</h3>
+        <p class="text-muted small">إدارة صلاحيات مستخدمي التطبيق والتحكم في إعدادات الحساب</p>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm p-3 h-100">
+                <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                    <button class="nav-link active text-start mb-2" id="permissions-tab" data-bs-toggle="pill" data-bs-target="#permissions" type="button">
+                        <i class="fas fa-user-shield ms-2"></i> صلاحيات المستأجرين
+                    </button>
+                    <button class="nav-link text-start mb-2" id="general-tab" data-bs-toggle="pill" data-bs-target="#general" type="button">
+                        <i class="fas fa-cog ms-2"></i> إعدادات عامة
+                    </button>
+                    <button class="nav-link text-start text-danger" id="security-tab" data-bs-toggle="pill" data-bs-target="#security" type="button">
+                        <i class="fas fa-lock ms-2"></i> الأمان وكلمة المرور
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-9">
+            <div class="tab-content" id="v-pills-tabContent">
+                
+                <div class="tab-pane fade show active" id="permissions" role="tabpanel">
+                    <div class="card border-0 shadow-sm p-4">
+                        <h5 class="fw-bold mb-4 border-bottom pb-2">التحكم في مستخدمي تطبيق الهاتف</h5>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>المستأجر</th>
+                                        <th>العقار</th>
+                                        <th class="text-center">تعديل الملف الشخصي</th>
+                                        <th class="text-center">إرسال طلب صيانة</th>
+                                        <th class="text-center">رفع الدفعات</th>
+                                        <th>الإجراء</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <span class="fw-bold d-block">سالم الهنائي</span>
+                                            <small class="text-muted">ID: 10293</small>
+                                        </td>
+                                        <td>بناية المها</td>
+                                        <td class="text-center">
+                                            <div class="form-check form-switch d-inline-block">
+                                                <input class="form-check-input" type="checkbox" checked>
+                                            </div>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="form-check form-switch d-inline-block">
+                                                <input class="form-check-input" type="checkbox" checked>
+                                            </div>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="form-check form-switch d-inline-block">
+                                                <input class="form-check-input" type="checkbox" checked>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary">حفظ</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <span class="fw-bold d-block">محمد البلوشي</span>
+                                            <small class="text-muted">ID: 10294</small>
+                                        </td>
+                                        <td>برج النور</td>
+                                        <td class="text-center">
+                                            <div class="form-check form-switch d-inline-block">
+                                                <input class="form-check-input" type="checkbox">
+                                            </div>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="form-check form-switch d-inline-block">
+                                                <input class="form-check-input" type="checkbox" checked>
+                                            </div>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="form-check form-switch d-inline-block">
+                                                <input class="form-check-input" type="checkbox">
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary">حفظ</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="general" role="tabpanel">
+                    <div class="card border-0 shadow-sm p-4 text-center">
+                        <i class="fas fa-tools fa-3x text-light mb-3"></i>
+                        <p class="text-muted">إعدادات اللغة، الثيم، وتنبيهات النظام ستكون هنا.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .nav-pills .nav-link {
+        color: var(--primary-color);
+        border-radius: 8px;
+    }
+    .nav-pills .nav-link.active {
+        background-color: var(--primary-color);
+    }
+    .form-switch .form-check-input {
+        width: 3em;
+        height: 1.5em;
+        cursor: pointer;
+    }
+</style>

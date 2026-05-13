@@ -1,0 +1,49 @@
+@model DashboardViewModel
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card shadow border-0 bg-primary text-white p-3">
+                <h5>الدخل المتوقع (AI)</h5>
+                <h3>@Model.PredictedNextMonthRevenue OMR</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <a asp-action="ExportTenants" class="btn btn-success w-100 mb-2">تصدير المستأجرين (Excel)</a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <canvas id="occupancyChart"></canvas>
+        </div>
+        <div id="map" style="height: 400px;" class="col-md-6 rounded shadow"></div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <script>
+        // 1. رسم السلايس شارت
+        const ctx = document.getElementById('occupancyChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Occupied', 'Vacant'],
+                datasets: [{
+                    data: [@Model.OccupiedUnits, @Model.VacantUnits],
+                    backgroundColor: ['#2ecc71', '#e74c3c']
+                }]
+            }
+        });
+
+        // 2. ميزة الخريطة (ولاية السيب)
+        var map = L.map('map').setView([23.67, 58.18], 12); // إحداثيات السيب
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        // إضافة دبوس افتراضي لبناية
+        L.marker([23.68, 58.19]).addTo(map).bindPopup("Al-Seeb Breeze - 5 Units Vacant");
+    </script>
+}

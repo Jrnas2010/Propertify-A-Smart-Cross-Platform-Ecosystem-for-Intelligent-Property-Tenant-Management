@@ -1,0 +1,9 @@
+CREATE INDEX IX_Units_PropertyId         ON Units(PropertyId);
+CREATE INDEX IX_Tenants_UnitId           ON Tenants(UnitId);
+CREATE INDEX IX_UtilityBills_UnitId      ON UtilityBills(UnitId);
+CREATE INDEX IX_UtilityBills_TenantId    ON UtilityBills(TenantId);
+CREATE INDEX IX_MaintenanceRequests_PropertyId ON MaintenanceRequests(PropertyId);
+CREATE INDEX IX_MaintenanceRequests_UnitId     ON MaintenanceRequests(UnitId);
+CREATE INDEX IX_Contracts_TenantId       ON Contracts(TenantId);
+CREATE INDEX IX_Contracts_UnitId         ON Contracts(UnitId);
+CREATE INDEX IX_Users_TenantId           ON Users(TenantId);

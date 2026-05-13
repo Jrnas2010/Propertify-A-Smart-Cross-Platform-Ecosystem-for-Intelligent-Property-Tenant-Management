@@ -1,0 +1,251 @@
+@model IEnumerable<Propertify.Web.Models.MaintenanceRequest>
+@{
+    ViewData["Title"] = "Maintenance";
+    var properties = ViewBag.Properties as List<Propertify.Web.Models.Property> ?? new();
+    var units = ViewBag.Units as List<Propertify.Web.Models.Unit> ?? new();
+}
+
+<div class="container-fluid py-4 bg-light min-vh-100">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold text-dark mb-1">Maintenance Requests</h4>
+            <p class="text-muted small">Track and manage service requests</p>
+        </div>
+        <button class="btn btn-primary rounded-3 px-4 py-2" style="background-color: #2c3e50; border: none;"
+                data-bs-toggle="modal" data-bs-target="#newRequestModal">
+            <i class="fas fa-wrench me-2"></i> Log Request
+        </button>
+    </div>
+
+    <div class="row">
+        <!-- Left Column: Status Summary Cards -->
+        <div class="col-lg-4">
+            <div class="card border-top border-4 border-warning shadow-sm rounded-4 p-4 mb-4">
+                <div class="d-flex justify-content-between text-muted small mb-2">
+                    <span>Pending</span>
+                    <i class="far fa-clock"></i>
+                </div>
+                <h2 class="fw-bold">@ViewBag.PendingCount</h2>
+            </div>
+
+            <div class="card border-top border-4 border-primary shadow-sm rounded-4 p-4 mb-4">
+                <div class="d-flex justify-content-between text-muted small mb-2">
+                    <span>In Progress</span>
+                    <i class="fas fa-tools"></i>
+                </div>
+                <h2 class="fw-bold">@ViewBag.InProgressCount</h2>
+            </div>
+
+            <div class="card border-top border-4 border-success shadow-sm rounded-4 p-4 mb-4">
+                <div class="d-flex justify-content-between text-muted small mb-2">
+                    <span>Completed</span>
+                    <i class="far fa-check-circle"></i>
+                </div>
+                <h2 class="fw-bold">@ViewBag.CompletedCount</h2>
+            </div>
+        </div>
+
+        <!-- Right Column: Request List -->
+        <div class="col-lg-8">
+            @if (!Model.Any())
+            {
+                <div class="text-center py-5 text-muted">
+                    <i class="fas fa-tools fa-3x mb-3 opacity-25 d-block"></i>
+                    <p>No maintenance requests yet.</p>
+                </div>
+            }
+
+            @foreach (var request in Model)
+            {
+                var timeSpan = DateTime.Now - request.CreatedAt;
+                string timeAgo;
+                if (timeSpan.TotalDays >= 1)
+                    timeAgo = $"{(int)timeSpan.TotalDays}d ago";
+                else if (timeSpan.TotalHours >= 1)
+                    timeAgo = $"{(int)timeSpan.TotalHours}h ago";
+                else
+                    timeAgo = $"{(int)timeSpan.TotalMinutes}m ago";
+
+                string statusBadgeClass;
+                if (request.Status == "InProgress")
+                    statusBadgeClass = "bg-primary-subtle text-primary";
+                else if (request.Status == "Completed")
+                    statusBadgeClass = "bg-success-subtle text-success";
+                else
+                    statusBadgeClass = "bg-warning-subtle text-warning";
+
+                string statusDisplay = request.Status == "InProgress" ? "In Progress" : request.Status;
+
+                <div class="card border-0 shadow-sm rounded-4 p-4 mb-3">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <h6 class="fw-bold mb-1">@request.Title</h6>
+                            <p class="text-muted small mb-2">
+                                @(request.Unit?.UnitNumber ?? $"Unit #{request.UnitId}")
+                                &bull;
+                                @(request.PropertyName ?? request.Property?.Name ?? $"Property #{request.PropertyId}")
+                            </p>
+                        </div>
+                        <span class="badge @statusBadgeClass rounded-pill px-3">@statusDisplay</span>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(request.Description))
+                    {
+                        <div class="bg-light p-3 rounded-3 text-muted small mb-3 fst-italic">
+                            "@request.Description"
+                        </div>
+                    }
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted small">
+                            <i class="far fa-clock me-1"></i> @timeAgo
+                            @if (request.Cost > 0)
+                            {
+                                <span class="ms-3 fw-bold text-dark">
+                                    <i class="fas fa-tag me-1"></i> @request.Cost.ToString("N3") OMR
+                                </span>
+                            }
+                        </span>
+                        <!-- Update button passes all data via data-* attributes to a single shared modal -->
+                        <button class="btn btn-sm btn-outline-secondary rounded-pill px-3"
+                                data-bs-toggle="modal" data-bs-target="#updateModal"
+                                data-id="@request.Id"
+                                data-status="@request.Status"
+                                data-cost="@request.Cost"
+                                data-title="@request.Title"
+                                data-image="@request.ImagePath">
+                            <i class="fas fa-edit me-1"></i> Update
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Shared Update Status Modal (single instance, populated by JS) -->
+<div class="modal fade" id="updateModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <form asp-action="UpdateStatus" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" id="updateId" />
+                <div class="modal-header">
+                    <h6 class="modal-title fw-bold" id="updateTitle">Update Request</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Status</label>
+                        <select name="status" id="updateStatus" class="form-select rounded-3">
+                            <option value="Pending">Pending</option>
+                            <option value="InProgress">In Progress</option>
+                            <option value="Completed">Completed</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Cost (OMR)</label>
+                        <input type="number" name="cost" id="updateCost" step="0.001"
+                               class="form-control rounded-3" min="0" />
+                    </div>
+                    <div id="updateImageContainer" class="mb-3 d-none">
+                        <label class="form-label small fw-bold">Attached Image</label>
+                        <img id="updateImage" src="" class="img-fluid rounded-3 border" style="max-height: 200px;" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Log Request Modal -->
+<div class="modal fade" id="newRequestModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow">
+            <form asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-header" style="background-color: #2c3e50;">
+                    <h6 class="modal-title fw-bold text-white">
+                        <i class="fas fa-wrench me-2"></i> Log Maintenance Request
+                    </h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Title</label>
+                            <input type="text" name="Title" class="form-control rounded-3"
+                                   placeholder="e.g. Water Leak in Kitchen" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Property</label>
+                            <select name="PropertyId" id="propertySelect" class="form-select rounded-3"
+                                    onchange="filterUnits(this.value)" required>
+                                <option value="">Select Property...</option>
+                                @foreach (var p in properties)
+                                {
+                                    <option value="@p.Id">@p.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Unit</label>
+                            <select name="UnitId" id="unitSelect" class="form-select rounded-3" required>
+                                <option value="">Select Unit...</option>
+                                @foreach (var u in units)
+                                {
+                                    <option value="@u.Id" data-property="@u.PropertyId">@u.UnitNumber</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">Description</label>
+                            <textarea name="Description" class="form-control rounded-3" rows="3"
+                                      placeholder="Describe the issue..."></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Populate the shared update modal from the clicked button's data-* attributes
+        document.getElementById('updateModal').addEventListener('show.bs.modal', function (event) {
+            const btn = event.relatedTarget;
+            document.getElementById('updateId').value       = btn.dataset.id;
+            document.getElementById('updateStatus').value   = btn.dataset.status;
+            document.getElementById('updateCost').value     = btn.dataset.cost;
+            document.getElementById('updateTitle').textContent = 'Update: ' + btn.dataset.title;
+
+            const img = btn.dataset.image;
+            const imgContainer = document.getElementById('updateImageContainer');
+            if (img) {
+                document.getElementById('updateImage').src = img;
+                imgContainer.classList.remove('d-none');
+            } else {
+                imgContainer.classList.add('d-none');
+            }
+        });
+
+        // Filter units dropdown based on selected property
+        function filterUnits(propertyId) {
+            const unitSelect = document.getElementById('unitSelect');
+            unitSelect.querySelectorAll('option[data-property]').forEach(opt => {
+                opt.hidden = propertyId !== '' && opt.dataset.property !== propertyId;
+            });
+            unitSelect.value = '';
+        }
+    </script>
+}

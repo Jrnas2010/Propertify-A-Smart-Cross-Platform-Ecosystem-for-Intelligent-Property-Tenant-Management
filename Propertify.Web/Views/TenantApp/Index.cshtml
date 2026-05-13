@@ -1,0 +1,128 @@
+@model Propertify.Web.ViewModels.TenantDashboardViewModel
+
+@{
+    ViewData["Title"] = "Tenant Portal | لوحة التحكم";
+}
+
+<div class="container py-4" dir="rtl">
+    <div class="row mb-4 animate__animated animate__fadeIn">
+        <div class="col-md-8">
+            <h2 class="fw-bold text-primary">مرحباً، @Model.TenantName 👋</h2>
+            <p class="text-muted">أهلاً بك في منزلك بـ <strong>@Model.UnitNumber</strong>. هنا يمكنك متابعة فواتيرك وطلباتك.</p>
+        </div>
+        <div class="col-md-4 text-start">
+            <div class="badge bg-success-subtle text-success p-3 rounded-4 shadow-sm">
+                <i class="fas fa-check-circle ms-1"></i> العقد ساري حتى: @Model.ContractExpiryDate.ToShortDateString()
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 text-center hover-lift">
+                <div class="icon-shape bg-primary-subtle text-primary rounded-circle mx-auto mb-3" style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-wallet fa-lg"></i>
+                </div>
+                <h6 class="text-muted small fw-bold">إيجار الشهر الحالي</h6>
+                <h3 class="fw-bold text-dark">@Model.MonthlyRent <small class="fs-6">ر.ع</small></h3>
+                <span class="badge @(Model.IsRentPaid ? "bg-success-subtle text-success" : "bg-danger-subtle text-danger") rounded-pill">
+                    @(Model.IsRentPaid ? "تم الدفع" : "بانتظار الدفع")
+                </span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 text-center hover-lift">
+                <div class="icon-shape bg-warning-subtle text-warning rounded-circle mx-auto mb-3" style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-bolt fa-lg"></i>
+                </div>
+                <h6 class="text-muted small fw-bold">فاتورة الكهرباء</h6>
+                <h3 class="fw-bold text-dark">@Model.LastElectricityBill <small class="fs-6">ر.ع</small></h3>
+                <small class="text-muted">آخر قراءة: @Model.ElectricityReading</small>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 text-center hover-lift">
+                <div class="icon-shape bg-info-subtle text-info rounded-circle mx-auto mb-3" style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-tint fa-lg"></i>
+                </div>
+                <h6 class="text-muted small fw-bold">فاتورة المياه</h6>
+                <h3 class="fw-bold text-dark">@Model.LastWaterBill <small class="fs-6">ر.ع</small></h3>
+                <small class="text-muted">آخر قراءة: @Model.WaterReading</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 text-end">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-header bg-white border-0 p-4 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0 text-dark">سجل الفواتير والمدفوعات</h5>
+                    <button class="btn btn-sm btn-outline-primary rounded-pill px-3">تحميل الكل PDF</button>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light text-muted small">
+                                <tr>
+                                    <th class="pr-4 py-3">التاريخ</th>
+                                    <th>نوع الخدمة</th>
+                                    <th>المبلغ</th>
+                                    <th>الحالة</th>
+                                    <th class="text-center">إيصال</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var bill in Model.RecentBills)
+                                {
+                                    <tr>
+                                        <td class="pr-4 small">@bill.Date.ToShortDateString()</td>
+                                        <td>
+                                            @if(bill.Type == "Electricity") { <i class="fas fa-bolt text-warning ms-2"></i><span>كهرباء</span> }
+                                            else if(bill.Type == "Water") { <i class="fas fa-tint text-info ms-2"></i><span>مياه</span> }
+                                            else { <i class="fas fa-home text-primary ms-2"></i><span>إيجار</span> }
+                                        </td>
+                                        <td class="fw-bold">@bill.Amount ر.ع</td>
+                                        <td>
+                                            <span class="badge @(bill.IsPaid ? "bg-success" : "bg-warning") rounded-pill">
+                                                @(bill.IsPaid ? "مدفوع" : "غير مدفوع")
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            <button class="btn btn-sm btn-light rounded-circle"><i class="fas fa-download text-muted"></i></button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 mb-4 bg-primary text-white p-4">
+                <h5 class="fw-bold mb-3">هل لديك مشكلة؟</h5>
+                <p class="small mb-4 opacity-75">يمكنك تقديم طلب صيانة وتصوير العطل مباشرة ليتم إصلاحه من قبل فريقنا.</p>
+                <a asp-action="Create" asp-controller="Maintenance" class="btn btn-white w-100 rounded-pill fw-bold py-2 shadow-sm">
+                    <i class="fas fa-tools ms-2 text-primary"></i> طلب صيانة جديد
+                </a>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <h6 class="fw-bold mb-3"><i class="fas fa-bullhorn ms-2 text-danger"></i>إعلانات المبنى</h6>
+                <div class="alert alert-warning border-0 small rounded-3 mb-0">
+                    <i class="fas fa-exclamation-triangle ms-2"></i>
+                    سيتم إجراء صيانة لخزان المياه يوم الأحد القادم من الساعة 8 صباحاً.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    body { background-color: #f4f7f6; font-family: 'Tajawal', sans-serif; }
+    .hover-lift { transition: all 0.3s ease; }
+    .hover-lift:hover { transform: translateY(-7px); box-shadow: 0 10px 20px rgba(0,0,0,0.05) !important; }
+    .btn-white { background-color: white; color: #0d6efd; border: none; }
+    .btn-white:hover { background-color: #f8f9fa; color: #0a58ca; }
+</style>

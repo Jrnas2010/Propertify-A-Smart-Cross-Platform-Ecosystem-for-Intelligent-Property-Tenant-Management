@@ -1,0 +1,153 @@
+/* 1. Global Variables & Modern UI Palette */
+:root {
+    --sidebar-bg: #1e293b;         /* Dark Navy - Professional */
+    --body-bg: #f8fafc;            /* Soft Light Blue/Grey */
+    --primary-blue: #3b82f6;       /* Vibrant Blue */
+    --card-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    --text-dark: #1e293b;
+    --text-muted: #64748b;
+    --sidebar-width: 250px;
+}
+
+/* 2. Base Body Styles */
+body {
+    background-color: var(--body-bg);
+    color: var(--text-dark);
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    overflow-x: hidden;
+}
+
+/* 3. Static Sidebar Styling */
+#sidebar-wrapper {
+    min-height: 100vh;
+    width: var(--sidebar-width);
+    background-color: var(--sidebar-bg) !important;
+    position: fixed;
+    top: 0;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    border: none !important;
+}
+
+#sidebar-wrapper .sidebar-heading {
+    padding: 2.5rem 1.5rem;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 0.5px;
+    font-size: 1.25rem;
+}
+
+#sidebar-wrapper .nav-link {
+    color: #94a3b8 !important;
+    margin: 4px 12px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s;
+}
+
+#sidebar-wrapper .nav-link i {
+    width: 24px;
+    font-size: 1.1rem;
+}
+
+#sidebar-wrapper .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: #ffffff !important;
+}
+
+#sidebar-wrapper .nav-link.active {
+    background-color: var(--primary-blue);
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+/* 4. Page Content Wrapper Static */
+#page-content-wrapper {
+    width: 100%;
+    background-color: var(--body-bg);
+    transition: all 0.3s;
+    min-height: 100vh;
+}
+
+/* 5. Modern Cards (Match the images) */
+.card {
+    border: none !important;
+    border-radius: 16px !important; /* Large rounded corners */
+    box-shadow: var(--card-shadow) !important;
+    padding: 1rem;
+    background-color: #ffffff;
+    transition: transform 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+/* 6. Professional Tables */
+.table {
+    border-collapse: separate;
+    border-spacing: 0 8px;
+    width: 100%;
+}
+
+.table thead th {
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    font-weight: 600;
+    padding: 1rem;
+}
+
+.table tbody tr {
+    background-color: #ffffff;
+    box-shadow: var(--card-shadow);
+}
+
+.table tbody td {
+    border: none;
+    padding: 1.25rem 1rem;
+    vertical-align: middle;
+}
+
+/* 7. Navbar Styles */
+.navbar-custom {
+    background-color: rgba(255, 255, 255, 0.9) !important;
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid #e2e8f0;
+    height: 70px;
+}
+
+/* 8. Buttons */
+.btn-primary {
+    background-color: var(--primary-blue);
+    border: none;
+    border-radius: 10px;
+    padding: 10px 20px;
+    font-weight: 600;
+}
+
+.bg-purple-gradient {
+    background: linear-gradient(45deg, #6a11cb 0%, #2575fc 100%);
+}
+
+.property-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.property-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.1) !important;
+}
+
+.clickable-img {
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.clickable-img:hover {
+    opacity: 0.8;
+}

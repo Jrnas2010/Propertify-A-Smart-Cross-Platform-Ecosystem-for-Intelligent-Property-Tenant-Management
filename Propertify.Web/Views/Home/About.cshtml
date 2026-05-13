@@ -1,0 +1,67 @@
+@{
+    Layout = "_PublicLayout"; // استخدام التخطيط العام
+}
+
+
+
+<div class="container my-5">
+    <div class="text-center p-5 mb-4 bg-primary text-white rounded-5 shadow-lg animate__animated animate__fadeIn">
+        <h1 class="display-4 fw-bold">About Propertify</h1>
+        <p class="lead">Simplifying property management in Oman, one unit at a time.</p>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-md-6">
+            <div class="card h-100 border-0 shadow-sm rounded-4 p-4 hover-lift">
+                <div class="icon-box bg-success-subtle text-success mb-3 rounded-circle p-3 d-inline-block">
+                    <i class="fas fa-eye fa-2x"></i>
+                </div>
+                <h3>Our Vision</h3>
+                <p class="text-muted">A future where every lease and utility bill in Oman is managed with a single click, ensuring 100% transparency and zero paperwork.</p>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card h-100 border-0 shadow-sm rounded-4 p-4 hover-lift">
+                <div class="icon-box bg-info-subtle text-info mb-3 rounded-circle p-3 d-inline-block">
+                    <i class="fas fa-bullseye fa-2x"></i>
+                </div>
+                <h3>Our Target</h3>
+                <p class="text-muted">Empowering Omani landlords to manage high-density residential and commercial assets with enterprise-grade technology.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-7">
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <h4 class="mb-4">Send us a Message</h4>
+                <form id="contactForm">
+                    <div class="mb-3">
+                        <label class="form-label">Name</label>
+                        <input type="text" class="form-control rounded-pill" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control rounded-pill" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Message</label>
+                        <textarea class="form-control rounded-4" rows="4" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary rounded-pill w-100 py-2">Submit Inquiry</button>
+                </form>
+            </div>
+        </div>
+        <div class="col-md-5">
+            <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
+                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3652.887258045624!2d58.171!3d23.572!" 
+                        width="100%" height="100%" style="border:0; min-height: 400px;" allowfullscreen="" loading="lazy"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hover-lift { transition: transform 0.3s ease; }
+    .hover-lift:hover { transform: translateY(-10px); }
+</style>

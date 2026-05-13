@@ -1,0 +1,105 @@
+@model Propertify.Web.Models.Unit
+
+<div class="container py-5" dir="rtl">
+    <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+        <div class="card-header bg-primary text-white p-4 text-center">
+            <h3 class="fw-bold mb-0"> Add Multiple Units </h3>
+        </div>
+
+        <form asp-action="CreateMultiple" method="post">
+            <input type="hidden" name="baseUnit.PropertyId" value="@ViewBag.PropertyId" />
+
+            <div class="card-body p-4 bg-light">
+                <div class="card border-0 shadow-sm p-4 mb-4 rounded-4">
+                    <h5 class="text-primary fw-bold mb-3 border-bottom pb-2">1. General Specifications (Apply to All)</h5>
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="small fw-bold">Floor Number</label>
+                            <input type="number" id="floorNumber" name="baseUnit.FloorNumber" class="form-control rounded-3 shadow-none" placeholder="e.g., 2">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="small fw-bold">Area (m²)</label>
+                            <input type="number" name="baseUnit.Area" class="form-control rounded-3 shadow-none">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="small fw-bold">Rent (KWD)</label>
+                            <input type="number" name="baseUnit.RentAmount" class="form-control rounded-3 shadow-none">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="small fw-bold text-danger">Number of Units to Create</label>
+                            <input type="number" id="unitCount" name="UnitCount" class="form-control border-danger fw-bold shadow-none" value="1" min="1">
+                        </div>
+                        
+                        <div class="col-12 mt-3">
+                            <div class="d-flex flex-wrap gap-3 bg-white p-3 rounded-4 border justify-content-center">
+                                <div class="text-center">
+                                    <label class="d-block small text-muted"><i class="fas fa-bed ms-1"></i>Room</label>
+                                    <input type="number" name="baseUnit.Bedrooms" class="form-control form-control-sm text-center mx-auto" style="width: 60px;">
+                                </div>
+                                <div class="text-center border-start ps-3">
+                                    <label class="d-block small text-muted"><i class="fas fa-bath ms-1"></i> Bathroom</label>
+                                    <input type="number" name="baseUnit.Bathrooms" class="form-control form-control-sm text-center mx-auto" style="width: 60px;">
+                                </div>
+                                <div class="text-center border-start ps-3">
+                                    <label class="d-block small text-muted"><i class="fas fa-couch ms-1"></i> Living Room</label>
+                                    <input type="number" name="baseUnit.LivingRooms" class="form-control form-control-sm text-center mx-auto" style="width: 60px;">
+                                </div>
+                                <div class="text-center border-start ps-3">
+                                    <label class="d-block small text-muted"><i class="fas fa-users ms-1"></i> Majlis</label>
+                                    <input type="number" name="baseUnit.Majlis" class="form-control form-control-sm text-center mx-auto" style="width: 60px;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm p-4 rounded-4">
+                    <h5 class="text-primary fw-bold mb-3 border-bottom pb-2">2. Unit Numbers and Meters</h5>
+                    <div id="unitsDetailsContainer">
+                        </div>
+                </div>
+            </div>
+
+            <div class="card-footer bg-white p-4 text-center">
+                <button type="submit" class="btn btn-primary rounded-pill px-5 py-2 shadow-lg fw-bold"> Save All Units Details </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const unitCountInput = document.getElementById('unitCount');
+        const floorNumberInput = document.getElementById('floorNumber');
+        const container = document.getElementById('unitsDetailsContainer');
+
+        function updateFields() {
+            const count = parseInt(unitCountInput.value) || 0;
+            const floor = parseInt(floorNumberInput.value) || 0;
+            container.innerHTML = '';
+
+            for (let i = 0; i < count; i++) {
+                let suggestedNo = floor > 0 ? (floor * 100 + (i + 1)) : (i + 1);
+                const row = `
+                    <div class="row g-2 mb-3 align-items-center animate__animated animate__fadeInUp">
+                        <div class="col-md-1 fw-bold text-center">#${i + 1}</div>
+                        <div class="col-md-3">
+                            <input type="text" name="Units[${i}].UnitNumber" value="${suggestedNo}" class="form-control form-control-sm" placeholder="رقم الوحدة" required>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" name="Units[${i}].ElectricityMeter" class="form-control form-control-sm border-warning-subtle" placeholder="رقم عداد الكهرباء">
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" name="Units[${i}].WaterMeter" class="form-control form-control-sm border-info-subtle" placeholder="رقم عداد المياه">
+                        </div>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', row);
+            }
+        }
+
+        unitCountInput.addEventListener('input', updateFields);
+        floorNumberInput.addEventListener('input', updateFields);
+        window.onload = updateFields;
+    </script>
+}

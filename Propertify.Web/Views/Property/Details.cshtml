@@ -1,0 +1,147 @@
+@model Propertify.Web.Models.Property
+
+@{
+    ViewData["Title"] = "Property Details - " + Model.Name;
+}
+
+<div class="container py-4" dir="rtl">
+    <div class="mb-4 text-start">
+        <a asp-action="Index" class="btn btn-white border shadow-sm rounded-pill px-4 hover-lift">
+            <i class="fas fa-chevron-right ms-2"></i> Back to property list
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-lg rounded-4 overflow-hidden mb-5">
+        <div class="row g-0">
+            <div class="col-md-5">
+                @{
+                    var detailsImageSrc = Model.ImageUrl ?? Model.ImagePath ?? "/images/default-building.png";
+                }
+                <img src="@detailsImageSrc"
+                     class="img-fluid h-100 w-100 animate__animated animate__fadeIn" style="object-fit: cover; min-height: 350px;" alt="@Model.Name">
+            </div>
+            <div class="col-md-7 p-4 p-lg-5 d-flex flex-column justify-content-center bg-white text-end">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h1 class="fw-bold text-primary display-6">@Model.Name</h1>
+                    <span class="badge bg-primary-subtle text-primary px-4 py-2 rounded-pill fs-6">@Model.Type</span>
+                </div>
+                <p class="text-muted fs-5 mb-4">
+                    <i class="fas fa-map-marker-alt text-danger ms-2"></i> @Model.Location
+                </p>
+                
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="p-3 border-0 rounded-4 bg-light text-center shadow-sm">
+                            <i class="fas fa-th-large text-primary mb-2 fa-lg"></i>
+                            <small class="text-muted d-block mb-1">Total Units</small>
+                            <span class="fw-bold fs-4">@Model.TotalUnits</span>
+                        </div>
+                    </div>
+                    <div class="col-md-8 d-flex align-items-center">
+                        <div class="alert alert-info border-0 rounded-4 w-100 mb-0 shadow-sm">
+                            <i class="fas fa-info-circle me-2"></i> 
+                            This property belongs to the <strong>@Model.Location</strong> area, and has an active electronic billing system.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h3 class="fw-bold mb-4 text-dark border-bottom pb-3"><i class="fas fa-door-open text-primary ms-2"></i>Residential Unit Details</h3>
+    
+    <div class="row g-4 text-end">
+        @foreach (var unit in Model.Units)
+        {
+            <div class="col-12">
+                <div class="card border-0 shadow-sm rounded-4 p-4 hover-shadow">
+                    <div class="row g-4">
+                        <div class="col-lg-4 border-start order-lg-3">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="fw-bold text-primary mb-0">Unit No.: @unit.UnitNumber</h5>
+                                @{
+                                    var statusClass = unit.IsOccupied ? "bg-danger-subtle text-danger" : "bg-success-subtle text-success";
+                                    var statusText = unit.IsOccupied ? "Occupied" : "Available";
+                                }
+                                <span class="badge @statusClass p-2 px-3 rounded-pill">@statusText</span>
+                            </div>
+                            
+                            <div class="mb-3 d-flex gap-2">
+                                <span class="badge bg-secondary-subtle text-dark p-2 rounded-3">Area: @unit.Area m²</span>
+                            </div>
+                            
+                            <div class="row g-2 mb-4 border-top pt-3">
+                                <div class="col-6 small text-muted"><i class="fas fa-bed ms-1 text-primary"></i> Bedrooms: @unit.Bedrooms</div>
+                                <div class="col-6 small text-muted"><i class="fas fa-bath ms-1 text-primary"></i> Bathrooms: @unit.Bathrooms</div>
+                                <div class="col-6 small text-muted"><i class="fas fa-couch ms-1 text-primary"></i> Living Rooms: @unit.LivingRooms</div>
+                                <div class="col-6 small text-muted"><i class="fas fa-utensils ms-1 text-primary"></i> Kitchens: @unit.Kitchens</div>
+                            </div>
+
+                            <div class="bg-primary-subtle p-3 rounded-4 small border border-primary-subtle shadow-sm">
+                                <h6 class="fw-bold mb-2 small"><i class="fas fa-file-invoice-dollar ms-1"></i> Registered Meter Numbers</h6>
+                                <div class="mb-2"><i class="fas fa-bolt text-warning ms-2"></i> Electricity Meter: <strong>@unit.ElectricityMeter</strong></div>
+                                <div><i class="fas fa-tint text-info ms-2"></i> Water Meter: <strong>@unit.WaterMeter</strong></div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-4 order-lg-2">
+                            <h6 class="fw-bold mb-3 small"><i class="fas fa-images ms-2"></i>Preview Images</h6>
+                            @if (!string.IsNullOrEmpty(unit.UnitImages)) // We assume image paths are stored separated by commas
+                            {
+                                var images = unit.UnitImages.Split(',');
+                                <div id="carousel-@unit.Id" class="carousel slide shadow-sm rounded-4 overflow-hidden" data-bs-ride="carousel">
+                                    <div class="carousel-inner" style="height: 220px;">
+                                        @for (int i = 0; i < images.Length; i++)
+                                        {
+                                            <div class="carousel-item @(i == 0 ? "active" : "") h-100">
+                                                <img src="@images[i]" class="d-block w-100 h-100" style="object-fit: cover;">
+                                            </div>
+                                        }
+                                    </div>
+                                    <button class="carousel-control-prev" type="button" data-bs-target="#carousel-@unit.Id" data-bs-slide="prev">
+                                        <span class="carousel-control-prev-icon shadow-sm"></span>
+                                    </button>
+                                    <button class="carousel-control-next" type="button" data-bs-target="#carousel-@unit.Id" data-bs-slide="next">
+                                        <span class="carousel-control-next-icon shadow-sm"></span>
+                                    </button>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="bg-light rounded-4 d-flex align-items-center justify-content-center border" style="height: 220px;">
+                                    <span class="text-muted small italic"><i class="fas fa-image mb-2 d-block fa-2x"></i> No images available</span>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="col-lg-4 order-lg-1">
+                            <h6 class="fw-bold mb-3 small"><i class="fas fa-video ms-2"></i>Introductory Video</h6>
+                            @if (!string.IsNullOrEmpty(unit.VideoPath))
+                            {
+                                <div class="rounded-4 overflow-hidden shadow-sm" style="height: 220px;">
+                                    <video width="100%" height="100%" controls class="bg-black">
+                                        <source src="@unit.VideoPath" type="video/mp4">
+                                        Your browser does not support video playback.
+                                    </video>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="bg-light rounded-4 d-flex align-items-center justify-content-center border" style="height: 220px;">
+                                    <span class="text-muted small italic"><i class="fas fa-video-slash mb-2 d-block fa-2x"></i> No video available</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .hover-lift { transition: all 0.3s ease; }
+    .hover-lift:hover { transform: translateY(-3px); box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important; }
+    .hover-shadow:hover { box-shadow: 0 10px 25px rgba(0,0,0,0.08) !important; }
+    .carousel-control-prev-icon, .carousel-control-next-icon { width: 2rem; height: 2rem; background-color: rgba(0,0,0,0.3); border-radius: 50%; padding: 15px; }
+</style>

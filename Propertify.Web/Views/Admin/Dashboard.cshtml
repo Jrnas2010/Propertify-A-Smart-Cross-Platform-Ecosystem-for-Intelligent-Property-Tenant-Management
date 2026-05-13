@@ -1,0 +1,65 @@
+<div class="container-fluid py-4">
+    <h3 class="fw-bold mb-4">لوحة التحكم الذكية - Propertify AI</h3>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm p-3 bg-white">
+                <p class="text-muted small mb-1">الدخل الشهري الحالي</p>
+                <h2 class="fw-bold text-dark">@ViewBag.CurrentRevenue OMR</h2>
+                <div class="progress" style="height: 5px;">
+                    <div class="progress-bar bg-success" style="width: 100%"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm p-3 bg-primary text-white">
+                <p class="small mb-1 text-white-50">الدخل المتوقع (الشهر القادم)</p>
+                <h2 class="fw-bold">@ViewBag.PredictedRevenue OMR</h2>
+                <p class="mb-0 small"><i class="fas fa-chart-line me-1"></i> بناءً على تحليل العقود الحالية</p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm p-3 bg-danger text-white">
+                <p class="small mb-1 text-white-50">وحدات ستخلو قريباً (مخاطرة)</p>
+                <h2 class="fw-bold">@ViewBag.RiskyUnitsCount وحدات</h2>
+                <p class="mb-0 small">تحتاج لبدء التسويق في ولاية السيب فوراً</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm p-4 h-100">
+                <h6 class="fw-bold mb-4">تحليل حالة الوحدات</h6>
+                <canvas id="occupancyPieChart"></canvas>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm p-0 overflow-hidden h-100">
+                <div id="dashboardMap" style="height: 400px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ctx = document.getElementById('occupancyPieChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['مؤجرة', 'شاغرة'],
+                datasets: [{
+                    data: [@ViewBag.OccupiedCount, @ViewBag.VacantCount],
+                    backgroundColor: ['#27ae60', '#e74c3c'],
+                    borderWidth: 0
+                }]
+            },
+            options: { cutout: '70%' }
+        });
+    </script>
+}

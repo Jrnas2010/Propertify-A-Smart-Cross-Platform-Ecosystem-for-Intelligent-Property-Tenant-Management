@@ -1,0 +1,92 @@
+@model Propertify.Web.Models.Tenant
+
+<div class="container py-4" dir="rtl">
+    <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+        <div class="card-header bg-primary text-white p-4">
+            <h4 class="mb-0 fw-bold"><i class="fas fa-user-plus ms-2"></i> Add New Tenant </h4>
+        </div>
+
+        <form asp-action="Create" method="post" enctype="multipart/form-data">
+            <div class="card-body p-4 bg-light">
+                
+                <div class="card border-0 shadow-sm p-4 mb-4 rounded-4">
+                    <h6 class="fw-bold text-primary mb-3 border-bottom pb-2">Full Name in Arabic (As per ID)</h6>
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label small fw-bold">First Name</label>
+                            <input asp-for="FirstNameAr" class="form-control rounded-3" placeholder="مثلاً: محمد" required />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-bold">Second Name</label>
+                            <input asp-for="SecondNameAr" class="form-control rounded-3" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-bold">Third Name</label>
+                            <input asp-for="ThirdNameAr" class="form-control rounded-3" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-bold">Family Name</label>
+                            <input asp-for="LastNameAr" class="form-control rounded-3" placeholder="البوسعيدي" required />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm p-4 mb-4 rounded-4 text-start" dir="ltr">
+                    <h6 class="fw-bold text-primary mb-3 border-bottom pb-2">Full Name in English (As per ID)</h6>
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label small fw-bold">First Name</label>
+                            <input asp-for="FirstNameEn" class="form-control rounded-3" required />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-bold">Second Name</label>
+                            <input asp-for="SecondNameEn" class="form-control rounded-3" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-bold">Third Name</label>
+                            <input asp-for="ThirdNameEn" class="form-control rounded-3" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-bold">Family Name</label>
+                            <input asp-for="LastNameEn" class="form-control rounded-3" required />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm p-4 rounded-4">
+                    <h6 class="fw-bold text-primary mb-3 border-bottom pb-2">Identity and Contact Information</h6>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">National ID</label>
+                            <input asp-for="IdNumber" class="form-control rounded-3" placeholder="12345678" required />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">Phone Number</label>
+                            <input asp-for="Phone" class="form-control rounded-3" placeholder="9xxxxxxx" required />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">Residential Unit</label>
+                            <select asp-for="UnitId" class="form-select rounded-3 shadow-none" asp-items="ViewBag.UnitId">
+                                <option value="">-- Select Unit --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-danger">Lease End Date</label>
+                            <input asp-for="LeaseEndDate" type="date" class="form-control rounded-3" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Attach ID Image (PDF or Image)</label>
+                            <input type="file" name="IdCardImage" class="form-control rounded-3" accept="image/*,application/pdf" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-footer bg-white p-4 text-start">
+                <button type="submit" class="btn btn-primary rounded-pill px-5 py-2 fw-bold shadow">
+                    <i class="fas fa-save ms-2"></i> Save Tenant Information
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

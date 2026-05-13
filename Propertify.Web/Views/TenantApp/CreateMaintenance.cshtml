@@ -1,0 +1,80 @@
+@{
+    Layout = "_PublicLayout"; // هيدر بسيط جداً
+    ViewData["Title"] = "طلب صيانة جديد";
+}
+
+<div class="container py-4" style="max-width: 500px;">
+    <div class="mb-4">
+        <a asp-action="Index" class="text-decoration-none text-dark fw-bold">
+            <i class="fas fa-chevron-right ms-2"></i> العودة للرئيسية
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm p-4" style="border-radius: 20px;">
+        <h4 class="fw-bold mb-4 text-primary">بلاغ صيانة جديد</h4>
+        
+        <form asp-action="SubmitRequest" method="post" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label class="form-label fw-bold small">نوع المشكلة</label>
+                <div class="row g-2">
+                    <div class="col-4">
+                        <input type="radio" class="btn-check" name="type" id="plumbing" value="سباكة" required>
+                        <label class="btn btn-outline-primary w-100 py-3 rounded-3" for="plumbing">
+                            <i class="fas fa-faucet d-block mb-1"></i> سباكة
+                        </label>
+                    </div>
+                    <div class="col-4">
+                        <input type="radio" class="btn-check" name="type" id="electric" value="كهرباء">
+                        <label class="btn btn-outline-primary w-100 py-3 rounded-3" for="electric">
+                            <i class="fas fa-bolt d-block mb-1"></i> كهرباء
+                        }
+                        </label>
+                    </div>
+                    <div class="col-4">
+                        <input type="radio" class="btn-check" name="type" id="ac" value="تكييف">
+                        <label class="btn btn-outline-primary w-100 py-3 rounded-3" for="ac">
+                            <i class="fas fa-snowflake d-block mb-1"></i> تكييف
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-bold small">وصف المشكلة</label>
+                <textarea name="details" class="form-control bg-light border-0" rows="4" placeholder="اشرح لنا ما الذي حدث..." required></textarea>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-bold small">إرفاق صور (اختياري)</label>
+                <div class="upload-box border-dashed rounded-3 p-4 text-center bg-light position-relative">
+                    <i class="fas fa-camera fa-2x text-muted mb-2"></i>
+                    <p class="small text-muted mb-0">اضغط لالتقاط صورة أو الرفع</p>
+                    <input type="file" name="photos" class="position-absolute top-0 start-0 opacity-0 w-100 h-100" accept="image/*" multiple>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-bold small">درجة الأهمية</label>
+                <select name="priority" class="form-select border-0 bg-light">
+                    <option value="Normal">عادي</option>
+                    <option value="Urgent">عاجل</option>
+                    <option value="Emergency">طارئ جداً</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 py-3 fw-bold rounded-pill shadow-sm">
+                إرسال الطلب للمالك
+            </button>
+        </form>
+    </div>
+</div>
+
+<style>
+    .border-dashed { border: 2px dashed #dee2e6 !important; }
+    .btn-check:checked + .btn-outline-primary {
+        background-color: #2c3e50 !important;
+        border-color: #2c3e50 !important;
+        color: white;
+    }
+    .form-control:focus { box-shadow: none; border: 1px solid #2c3e50; }
+</style>

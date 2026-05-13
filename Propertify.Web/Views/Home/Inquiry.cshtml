@@ -1,0 +1,60 @@
+@{
+    Layout = "_PublicLayout";
+    var unit = Model;
+}
+
+
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-lg rounded-4 p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <h2 class="fw-bold text-primary">Book Your Unit</h2>
+                    <p class="text-muted">Fill out the form below and we will contact you shortly.</p>
+                </div>
+
+                <form id="inquiryForm">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Full Name</label>
+                        <input type="text" name="VisitorName" class="form-control rounded-3 p-3" placeholder="Enter your full name" required>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Phone Number</label>
+                            <input type="tel" name="Phone" class="form-control rounded-3 p-3" placeholder="+968 XXXX XXXX" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Email Address</label>
+                            <input type="email" name="Email" class="form-control rounded-3 p-3" placeholder="name@example.com" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Request Type</label>
+                        <select name="RequestType" class="form-select rounded-3 p-3">
+                            <option value="Booking">Booking (حجز)</option>
+                            <option value="Viewing">Viewing (معاينة)</option>
+                            <option value="Inquiry">General Inquiry (استفسار عام)</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Unit Number (Optional)</label>
+                        <input type="text" name="UnitNumber" class="form-control rounded-3 p-3" placeholder="e.g., A-102">
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Notes / Special Requests</label>
+                        <textarea name="Notes" class="form-control rounded-3 p-3" rows="3" placeholder="Tell us more..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 rounded-pill py-3 fw-bold shadow-sm">
+                        Submit Request <i class="fas fa-paper-plane ms-2"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

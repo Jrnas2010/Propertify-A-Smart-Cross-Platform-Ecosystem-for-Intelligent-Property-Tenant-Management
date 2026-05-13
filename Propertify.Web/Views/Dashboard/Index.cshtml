@@ -1,0 +1,351 @@
+@using Propertify.Web.Models
+@{
+    ViewData["Title"] = "Dashboard";
+    var expiringContracts = ViewBag.ExpiringContracts as List<Contract> ?? new List<Contract>();
+    var pendingMaintenance = ViewBag.PendingMaintenance as List<MaintenanceRequest> ?? new List<MaintenanceRequest>();
+}
+
+<div class="container-fluid py-4 bg-light min-vh-100">
+    <!-- Header Row -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="fw-bold text-dark">Dashboard</h4>
+        <div class="d-flex align-items-center">
+            <span class="me-2 text-muted small">@User.Identity?.Name</span>
+            <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">A</div>
+        </div>
+    </div>
+
+    <!-- KPI Cards Row -->
+    <div class="row mb-4">
+        <!-- Total Buildings -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm rounded-4 p-3 h-100">
+                <div class="d-flex justify-content-between mb-3">
+                    <span class="text-muted small">Total Buildings</span>
+                    <div class="bg-primary-subtle p-2 rounded-3 text-primary"><i class="fas fa-building"></i></div>
+                </div>
+                <div class="d-flex align-items-end justify-content-between">
+                    <h2 class="fw-bold mb-0">@ViewBag.TotalBuildings</h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Income -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm rounded-4 p-3 h-100">
+                <div class="d-flex justify-content-between mb-3">
+                    <span class="text-muted small">Total Income</span>
+                    <div class="bg-success-subtle p-2 rounded-3 text-success"><i class="fas fa-dollar-sign"></i></div>
+                </div>
+                <div class="d-flex align-items-end justify-content-between">
+                    <h2 class="fw-bold mb-0">@(((decimal)ViewBag.TotalIncome).ToString("N3")) <small class="fs-6">OMR</small></h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Expenses -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm rounded-4 p-3 h-100">
+                <div class="d-flex justify-content-between mb-3">
+                    <span class="text-muted small">Total Expenses</span>
+                    <div class="bg-danger-subtle p-2 rounded-3 text-danger"><i class="fas fa-credit-card"></i></div>
+                </div>
+                <div class="d-flex align-items-end justify-content-between">
+                    <h2 class="fw-bold mb-0">@(((decimal)ViewBag.TotalExpenses).ToString("N3")) <small class="fs-6">OMR</small></h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vacant Units -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm rounded-4 p-3 h-100">
+                <div class="d-flex justify-content-between mb-3">
+                    <span class="text-muted small">Vacant Units</span>
+                    <div class="bg-warning-subtle p-2 rounded-3 text-warning"><i class="fas fa-home"></i></div>
+                </div>
+                <div class="d-flex align-items-end justify-content-between">
+                    <h2 class="fw-bold mb-0">@ViewBag.VacantUnits</h2>
+                    <span class="badge bg-info-subtle text-info rounded-pill">@ViewBag.NewInquiriesCount new inquiries</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row mb-4">
+        <!-- Monthly Revenue Chart -->
+        <div class="col-lg-8 mb-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+                <h6 class="fw-bold mb-4">Financial Overview (Income vs Expenses)</h6>
+                <div style="height: 300px;">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Occupancy Overview Chart -->
+        <div class="col-lg-4 mb-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+                <h6 class="fw-bold mb-4">Occupancy Overview</h6>
+                <div style="height: 250px;">
+                    <canvas id="occupancyChart"></canvas>
+                </div>
+                <div class="mt-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span><i class="fas fa-circle text-success me-2 small"></i> Occupied</span>
+                        <span class="fw-bold">@ViewBag.OccupiedPct%</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span><i class="fas fa-circle text-warning me-2 small"></i> Vacant</span>
+                        <span class="fw-bold">@ViewBag.VacantPct%</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-circle text-danger me-2 small"></i> Maintenance</span>
+                        <span class="fw-bold">@ViewBag.MaintenancePct%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tables Row -->
+    <div class="row mb-4">
+        <!-- Expiring Contracts -->
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h6 class="fw-bold mb-0">Expiring Contracts (Next 3 Months)</h6>
+                    <div id="contractTools"></div>
+                </div>
+                <div class="table-responsive">
+                    <table id="contractsTable" class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Tenant</th>
+                                <th>Unit</th>
+                                <th>Expiry Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var contract in expiringContracts)
+                            {
+                                <tr>
+                                    <td>@(contract.Tenant != null ? $"{contract.Tenant.FirstNameAr} {contract.Tenant.LastNameAr}" : "N/A")</td>
+                                    <td>@(contract.Unit?.UnitNumber ?? contract.UnitId.ToString())</td>
+                                    <td>
+                                        <span class="badge bg-warning-subtle text-warning">
+                                            @contract.EndDate.ToString("yyyy-MM-dd")
+                                        </span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Maintenance -->
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h6 class="fw-bold mb-0">Pending Maintenance Requests</h6>
+                    <div id="maintenanceTools"></div>
+                </div>
+                <div class="table-responsive">
+                    <table id="maintenanceTable" class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Unit</th>
+                                <th>Issue</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var request in pendingMaintenance)
+                            {
+                                <tr>
+                                    <td>Unit @request.UnitId</td>
+                                    <td>@request.Description</td>
+                                    <td><span class="badge bg-danger-subtle text-danger">@request.Status</span></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Property Revenue Chart -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <h6 class="fw-bold mb-4">Financial Analysis Per Property (OMR)</h6>
+                <div style="height: 300px;">
+                    <canvas id="propertyRevenueChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Latest Visitor Inquiries -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <h6 class="fw-bold mb-4">Latest Visitor Inquiries</h6>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr class="text-muted small">
+                                <th>Date</th>
+                                <th>Visitor</th>
+                                <th>Contact</th>
+                                <th>Unit / Type</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var inq in ViewBag.LatestInquiries)
+                            {
+                                <tr>
+                                    <td class="small">@inq.SubmittedAt.ToString("g")</td>
+                                    <td class="fw-bold">@inq.VisitorName</td>
+                                    <td>@inq.Phone <br><small class="text-muted">@inq.Email</small></td>
+                                    <td>
+                                        <span class="badge bg-info-subtle text-info">@inq.RequestType</span>
+                                        <small class="d-block text-muted">@inq.UnitNumber</small>
+                                    </td>
+                                    <td>
+                                        <a href="https://wa.me/@(inq.Phone)" target="_blank"
+                                           class="btn btn-sm btn-success rounded-pill px-3">
+                                            <i class="fab fa-whatsapp"></i> Contact
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // Monthly Revenue / Expenses Bar Chart
+        const ctxRevenue = document.getElementById('revenueChart').getContext('2d');
+        new Chart(ctxRevenue, {
+            type: 'bar',
+            data: {
+                labels: @Html.Raw(Json.Serialize(ViewBag.ChartLabels)),
+                datasets: [{
+                    label: 'Income',
+                    data: @Html.Raw(Json.Serialize(ViewBag.RevenueData)),
+                    backgroundColor: '#2c3e50',
+                    borderRadius: 5
+                }, {
+                    label: 'Expenses',
+                    data: @Html.Raw(Json.Serialize(ViewBag.ExpenseData)),
+                    backgroundColor: '#e2e8f0',
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { drawBorder: false, borderDash: [5, 5] },
+                        ticks: { callback: v => v.toLocaleString() + ' OMR' }
+                    },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        // Occupancy Doughnut Chart — dynamic data from server
+        const ctxOccupancy = document.getElementById('occupancyChart').getContext('2d');
+        new Chart(ctxOccupancy, {
+            type: 'doughnut',
+            data: {
+                datasets: [{
+                    data: @Html.Raw(Json.Serialize(ViewBag.OccupancyChartData)),
+                    backgroundColor: ['#198754', '#ffc107', '#dc3545'],
+                    borderWidth: 0,
+                    cutout: '75%'
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+
+        // Property Revenue Bar Chart (horizontal)
+        const ctxProp = document.getElementById('propertyRevenueChart').getContext('2d');
+        new Chart(ctxProp, {
+            type: 'bar',
+            data: {
+                labels: @Html.Raw(Json.Serialize(ViewBag.PropertyNames)),
+                datasets: [{
+                    label: 'Total Revenue',
+                    data: @Html.Raw(Json.Serialize(ViewBag.PropertyRevenues)),
+                    backgroundColor: '#3498db',
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        ticks: { callback: v => v + ' OMR' }
+                    }
+                }
+            }
+        });
+    </script>
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap5.min.css">
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.bootstrap5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            var contractTable = $('#contractsTable').DataTable({
+                dom: 'Bfrtip',
+                buttons: [
+                    { extend: 'excel', className: 'btn btn-sm btn-outline-success rounded-pill mx-1', text: '<i class="fas fa-file-excel"></i> Excel' },
+                    { extend: 'pdf',   className: 'btn btn-sm btn-outline-danger rounded-pill mx-1',  text: '<i class="fas fa-file-pdf"></i> PDF' }
+                ],
+                paging: false, info: false, searching: false,
+                language: { emptyTable: 'No contracts expiring soon.' }
+            });
+            contractTable.buttons().container().appendTo('#contractTools');
+
+            var maintenanceTable = $('#maintenanceTable').DataTable({
+                dom: 'Bfrtip',
+                buttons: [
+                    { extend: 'excel', className: 'btn btn-sm btn-outline-success rounded-pill mx-1', text: '<i class="fas fa-file-excel"></i> Excel' },
+                    { extend: 'pdf',   className: 'btn btn-sm btn-outline-danger rounded-pill mx-1',  text: '<i class="fas fa-file-pdf"></i> PDF' }
+                ],
+                paging: false, info: false, searching: false,
+                language: { emptyTable: 'No pending requests.' }
+            });
+            maintenanceTable.buttons().container().appendTo('#maintenanceTools');
+        });
+    </script>
+}
