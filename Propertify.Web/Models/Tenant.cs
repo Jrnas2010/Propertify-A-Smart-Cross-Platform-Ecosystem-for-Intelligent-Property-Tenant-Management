@@ -47,6 +47,13 @@ namespace Propertify.Web.Models
         [MaxLength(20)]
         public string Phone { get; set; } = string.Empty;
 
+        [MaxLength(100)]
+        [EmailAddress]
+        public string? Email { get; set; }
+
+        [MaxLength(50)]
+        public string? Nationality { get; set; }
+
         public DateTime LeaseStartDate { get; set; } = DateTime.Now;
         public DateTime LeaseEndDate { get; set; } = DateTime.Now.AddYears(1);
 

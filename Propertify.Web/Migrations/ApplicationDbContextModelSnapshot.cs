@@ -249,6 +249,10 @@ namespace Propertify.Web.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Email")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<string>("FirstNameAr")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -286,6 +290,10 @@ namespace Propertify.Web.Migrations
 
                     b.Property<DateTime>("LeaseStartDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("Nationality")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Phone")
                         .IsRequired()

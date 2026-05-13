@@ -1,0 +1,121 @@
+@model Propertify.Web.Models.Tenant
+@{
+    ViewData["Title"] = "Edit Tenant";
+}
+
+<div class="container-fluid py-4" dir="rtl" style="max-width: 100%; padding-left: 1rem; padding-right: 1rem;">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h3 class="fw-bold text-primary mb-0"><i class="fas fa-user-edit ms-2"></i>Edit Tenant Information</h3>
+            <p class="text-muted small mb-0">Update details for @Model.FullNameAr</p>
+        </div>
+        <a asp-action="Index" class="btn btn-outline-secondary rounded-pill px-4 shadow-sm">
+            <i class="fas fa-arrow-left ms-1"></i> Back to List
+        </a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <form asp-action="Edit" method="post" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="Id" />
+                    <input type="hidden" asp-for="IsArchived" />
+                    <input type="hidden" asp-for="IdDocumentPath" />
+
+                    <div class="card-body p-4 p-lg-5">
+                        <div class="row g-4">
+                            <!-- Section: Personal Info -->
+                            <div class="col-12 mb-2">
+                                <h5 class="fw-bold text-dark border-bottom pb-2"><i class="fas fa-id-card ms-2 text-primary"></i>Personal Information</h5>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="FirstNameAr" class="form-label fw-bold small">First Name (Arabic)</label>
+                                <input asp-for="FirstNameAr" class="form-control rounded-3 shadow-none border-light-subtle bg-light" required>
+                                <span asp-validation-for="FirstNameAr" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="LastNameAr" class="form-label fw-bold small">Last Name (Arabic)</label>
+                                <input asp-for="LastNameAr" class="form-control rounded-3 shadow-none border-light-subtle bg-light" required>
+                                <span asp-validation-for="LastNameAr" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="FirstNameEn" class="form-label fw-bold small">First Name (English)</label>
+                                <input asp-for="FirstNameEn" class="form-control rounded-3 shadow-none border-light-subtle bg-light ltr-text" required>
+                                <span asp-validation-for="FirstNameEn" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="LastNameEn" class="form-label fw-bold small">Last Name (English)</label>
+                                <input asp-for="LastNameEn" class="form-control rounded-3 shadow-none border-light-subtle bg-light ltr-text" required>
+                                <span asp-validation-for="LastNameEn" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label asp-for="IdNumber" class="form-label fw-bold small">ID / Passport Number</label>
+                                <input asp-for="IdNumber" class="form-control rounded-3 shadow-none border-light-subtle bg-light" required>
+                                <span asp-validation-for="IdNumber" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="Nationality" class="form-label fw-bold small">Nationality</label>
+                                <input asp-for="Nationality" class="form-control rounded-3 shadow-none border-light-subtle bg-light">
+                                <span asp-validation-for="Nationality" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="Phone" class="form-label fw-bold small">Phone Number</label>
+                                <input asp-for="Phone" class="form-control rounded-3 shadow-none border-light-subtle bg-light ltr-text" required>
+                                <span asp-validation-for="Phone" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-12">
+                                <label asp-for="Email" class="form-label fw-bold small">Email (Optional)</label>
+                                <input asp-for="Email" type="email" class="form-control rounded-3 shadow-none border-light-subtle bg-light ltr-text">
+                                <span asp-validation-for="Email" class="text-danger small"></span>
+                            </div>
+
+                            <!-- Section: Lease Info -->
+                            <div class="col-12 mt-5 mb-2">
+                                <h5 class="fw-bold text-dark border-bottom pb-2"><i class="fas fa-key ms-2 text-primary"></i>Lease & Unit Assignment</h5>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="UnitId" class="form-label fw-bold small">Assigned Unit</label>
+                                <select asp-for="UnitId" class="form-select rounded-3 shadow-none border-light-subtle bg-light" asp-items="ViewBag.UnitId"></select>
+                                <span asp-validation-for="UnitId" class="text-danger small"></span>
+                                <div class="form-text small">Showing currently assigned unit + vacant units.</div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small">Update ID Card Document</label>
+                                <input type="file" name="IdCardImage" class="form-control rounded-3 shadow-none border-light-subtle bg-light" accept="image/*">
+                                @if (!string.IsNullOrEmpty(Model.IdDocumentPath))
+                                {
+                                    <div class="form-text small text-success">
+                                        <i class="fas fa-check-circle me-1"></i> A document is already uploaded. Uploading a new one will replace it.
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="mt-5 d-flex gap-3">
+                            <button type="submit" class="btn btn-primary rounded-pill px-5 shadow-sm">
+                                <i class="fas fa-save ms-1"></i> Save Changes
+                            </button>
+                            <a asp-action="Index" class="btn btn-light rounded-pill px-5">Cancel</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .ltr-text { direction: ltr; text-align: left !important; }
+</style>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

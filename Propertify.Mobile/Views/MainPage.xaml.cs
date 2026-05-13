@@ -7,9 +7,8 @@ public partial class MainPage : ContentPage
 		InitializeComponent();
 	}
 
-	private async void OnMaintenanceTapped(object? sender, TappedEventArgs e)
+	private async void OnMaintenanceClicked(object sender, EventArgs e)
 	{
-		// Navigate to maintenance request page
 		await Shell.Current.GoToAsync("maintenance");
 	}
 }

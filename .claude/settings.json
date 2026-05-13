@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\User\\\\Desktop\\\\MEC\\\\Spring 2026\\\\Project Impelementation and Design\\\\Coding\\\\Propertify\\\\propertify.mobile\" -Recurse -Include \"*.xaml\",\"*.xaml.cs\")"
+    ]
+  }
+}

@@ -4,7 +4,7 @@
     "frameworks": [
       {
         "name": "Microsoft.NETCore.App",
-        "version": "10.0.6"
+        "version": "10.0.8"
       },
       {
         "name": "Microsoft.Android",

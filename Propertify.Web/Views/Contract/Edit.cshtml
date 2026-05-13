@@ -1,0 +1,100 @@
+@model Propertify.Web.Models.Contract
+@{
+    ViewData["Title"] = "Edit Contract";
+}
+
+<div class="container-fluid py-4" dir="rtl" style="max-width: 100%; padding-left: 1rem; padding-right: 1rem;">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h3 class="fw-bold text-primary mb-0"><i class="fas fa-file-edit ms-2"></i>Edit Lease Contract</h3>
+            <p class="text-muted small mb-0">Update terms for contract #@Model.Id</p>
+        </div>
+        <a asp-action="Index" class="btn btn-outline-secondary rounded-pill px-4 shadow-sm">
+            <i class="fas fa-arrow-left ms-1"></i> Back to List
+        </a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <form asp-action="Edit" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="Id" />
+
+                    <div class="card-body p-4 p-lg-5">
+                        <div class="row g-4">
+                            <!-- Section: Parties -->
+                            <div class="col-12 mb-2">
+                                <h5 class="fw-bold text-dark border-bottom pb-2"><i class="fas fa-handshake ms-2 text-primary"></i>Contract Parties</h5>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="TenantId" class="form-label fw-bold small">Tenant</label>
+                                <select asp-for="TenantId" class="form-select rounded-3 shadow-none border-light-subtle bg-light" 
+                                        asp-items="ViewBag.TenantId"></select>
+                                <span asp-validation-for="TenantId" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="UnitId" class="form-label fw-bold small">Property Unit</label>
+                                <select asp-for="UnitId" class="form-select rounded-3 shadow-none border-light-subtle bg-light" 
+                                        asp-items="ViewBag.UnitId"></select>
+                                <span asp-validation-for="UnitId" class="text-danger small"></span>
+                                <div class="form-text small">Showing currently assigned unit + vacant units.</div>
+                            </div>
+
+                            <!-- Section: Terms -->
+                            <div class="col-12 mt-5 mb-2">
+                                <h5 class="fw-bold text-dark border-bottom pb-2"><i class="fas fa-calendar-alt ms-2 text-primary"></i>Contract Terms & Dates</h5>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="StartDate" class="form-label fw-bold small">Start Date</label>
+                                <input asp-for="StartDate" type="date" class="form-control rounded-3 shadow-none border-light-subtle bg-light" required>
+                                <span asp-validation-for="StartDate" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="EndDate" class="form-label fw-bold small">End Date</label>
+                                <input asp-for="EndDate" type="date" class="form-control rounded-3 shadow-none border-light-subtle bg-light" required>
+                                <span asp-validation-for="EndDate" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label asp-for="RentAmount" class="form-label fw-bold small">Total Rent (OMR)</label>
+                                <input asp-for="RentAmount" type="number" step="0.001" class="form-control rounded-3 shadow-none border-light-subtle bg-light" required>
+                                <span asp-validation-for="RentAmount" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="MonthlyRent" class="form-label fw-bold small">Monthly Rent (OMR)</label>
+                                <input asp-for="MonthlyRent" type="number" step="0.001" class="form-control rounded-3 shadow-none border-light-subtle bg-light" required>
+                                <span asp-validation-for="MonthlyRent" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="Status" class="form-label fw-bold small">Contract Status</label>
+                                <select asp-for="Status" class="form-select rounded-3 shadow-none border-light-subtle bg-light">
+                                    <option value="Active">Active</option>
+                                    <option value="Pending">Pending</option>
+                                    <option value="Terminated">Terminated</option>
+                                    <option value="Expired">Expired</option>
+                                </select>
+                                <span asp-validation-for="Status" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="mt-5 d-flex gap-3">
+                            <button type="submit" class="btn btn-primary rounded-pill px-5 shadow-sm">
+                                <i class="fas fa-save ms-1"></i> Save Changes
+                            </button>
+                            <a asp-action="Index" class="btn btn-light rounded-pill px-5">Cancel</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

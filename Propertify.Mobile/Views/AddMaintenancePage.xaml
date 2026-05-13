@@ -1,32 +1,32 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Propertify.Mobile.Views.AddMaintenancePage"
-             Title="طلب صيانة جديد"
+             Title="New Maintenance Request"
              FlowDirection="RightToLeft">
 
     <ScrollView>
         <VerticalStackLayout Padding="20" Spacing="15">
 
-            <Label Text="عنوان البلاغ" FontAttributes="Bold" />
+            <Label Text="New Maintenance Request" FontAttributes="Bold" />
             <Entry x:Name="TitleEntry"
-                   Placeholder="مثلاً: تسريب مياه في المطبخ"
+                   Placeholder="E.g., Water Leak in Kitchen"
                    BackgroundColor="#F1F2F6" />
 
-            <Label Text="وصف المشكلة" FontAttributes="Bold" />
+            <Label Text="Problem Description" FontAttributes="Bold" />
             <Editor x:Name="DescriptionEditor"
-                    Placeholder="اشرح المشكلة بالتفصيل..."
+                    Placeholder="Describe the problem in detail..."
                     HeightRequest="120" BackgroundColor="#F1F2F6" />
 
-            <Label Text="صورة العطل" FontAttributes="Bold" />
-            <Frame HeightRequest="200" CornerRadius="15" BorderColor="#DCDDE1" Padding="0">
+            <Label Text="Image of the Issue" FontAttributes="Bold" />
+            <Border HeightRequest="200" StrokeShape="RoundRectangle 15,15,15,15" Stroke="#DCDDE1" Padding="0">
                 <Grid>
                     <Image x:Name="CapturedImage" Aspect="AspectFill" />
-                    <Button Text="إلتقاط صورة الكاميرا 📷" Clicked="OnCapturePhotoClicked"
+                    <Button Text="Capture Photo 📷" Clicked="OnCapturePhotoClicked"
                             BackgroundColor="#2C3E50" VerticalOptions="Center" HorizontalOptions="Center" />
                 </Grid>
-            </Frame>
+            </Border>
 
-            <Button Text="إرسال البلاغ" Clicked="OnSubmitClicked"
+            <Button Text="Submit Request" Clicked="OnSubmitClicked"
                     BackgroundColor="#27AE60" CornerRadius="25" HeightRequest="55" Margin="0,20,0,0" />
 
         </VerticalStackLayout>

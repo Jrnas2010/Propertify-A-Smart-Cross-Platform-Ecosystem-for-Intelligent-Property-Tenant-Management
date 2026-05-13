@@ -1,0 +1,125 @@
+@model IEnumerable<Propertify.Web.Models.Unit>
+@{
+    Layout = "_PublicLayout";
+    ViewData["Title"] = "All Available Units | Propertify";
+}
+
+<div class="bg-light py-5">
+    <div class="container py-4" dir="rtl">
+        <!-- Header -->
+        <div class="text-center mb-5">
+            <h6 class="text-primary fw-bold text-uppercase mb-2">Portfolio</h6>
+            <h1 class="display-5 fw-bold mb-3">All Available Units</h1>
+            <p class="text-muted mx-auto" style="max-width: 700px;">Explore our full list of residential and commercial spaces available for lease across the Sultanate.</p>
+        </div>
+
+        <!-- Filter & Search Bar -->
+        <div class="card border-0 shadow-sm rounded-4 p-3 mb-5 bg-white">
+            <div class="row g-3 align-items-center">
+                <div class="col-md-8">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-0"><i class="fas fa-search text-muted"></i></span>
+                        <input type="text" id="unitSearch" class="form-control bg-light border-0 shadow-none" placeholder="Search by property name, unit number, or location...">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <select class="form-select bg-light border-0 shadow-none" id="typeFilter">
+                        <option value="all">All Property Types</option>
+                        <option value="Residential">Residential</option>
+                        <option value="Commercial">Commercial</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Units Grid -->
+        <div class="row g-4" id="unitsGrid">
+            @if (Model != null && Model.Any())
+            {
+                @foreach (var unit in Model)
+                {
+                    <div class="col-lg-4 col-md-6 unit-item" data-search="@(unit.Property?.Name.ToLower() + " " + unit.UnitNumber.ToLower() + " " + unit.Property?.Location.ToLower())" data-type="@unit.Property?.Type">
+                        <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 unit-card-full">
+                            <div class="position-relative">
+                                <img src="@(string.IsNullOrEmpty(unit.UnitImages) ? "/images/default-unit.jpg" : unit.UnitImages.Split(',')[0])" 
+                                     class="card-img-top" style="height: 220px; object-fit: cover;" alt="Unit Image">
+                                <span class="badge bg-primary position-absolute top-0 end-0 m-3 rounded-pill px-3 py-2">Available</span>
+                                <div class="position-absolute bottom-0 start-0 m-3">
+                                    <span class="badge bg-dark text-white rounded-pill px-3 py-2 shadow">@unit.Property?.Type</span>
+                                </div>
+                            </div>
+                            
+                            <div class="card-body p-4">
+                                <h5 class="fw-bold mb-1">Unit @unit.UnitNumber</h5>
+                                <p class="text-primary fw-bold small mb-2">@unit.Property?.Name</p>
+                                <p class="text-muted small mb-3"><i class="fas fa-map-marker-alt ms-1 text-danger"></i> @unit.Property?.Location</p>
+                                
+                                <div class="row g-2 mb-4 border-top pt-3">
+                                    <div class="col-6">
+                                        <small class="text-muted d-block">Bedrooms</small>
+                                        <span class="fw-bold"><i class="fas fa-bed ms-1 small"></i> @unit.Bedrooms</span>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted d-block">Bathrooms</small>
+                                        <span class="fw-bold"><i class="fas fa-bath ms-1 small"></i> @unit.Bathrooms</span>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="text-dark fw-bold fs-5">
+                                        @unit.RentAmount.ToString("N3") <small class="text-muted fw-normal fs-6">OMR</small>
+                                    </div>
+                                    <a asp-action="Details" asp-controller="Home" asp-route-id="@unit.Id" class="btn btn-primary rounded-pill px-4 shadow-sm">View Details</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="col-12 text-center py-5">
+                    <div class="py-5">
+                        <i class="fas fa-home fa-4x text-muted opacity-25 mb-3"></i>
+                        <h4 class="text-muted">No units found matching your criteria.</h4>
+                        <a href="/Home/Index" class="btn btn-outline-primary rounded-pill mt-3">Back to Home</a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .unit-card-full { transition: all 0.3s ease; border: 1px solid rgba(0,0,0,0.05) !important; }
+    .unit-card-full:hover { transform: translateY(-8px); box-shadow: 0 15px 30px rgba(0,0,0,0.1) !important; border-color: transparent !important; }
+    .unit-item { transition: opacity 0.3s ease; }
+</style>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            function filterUnits() {
+                var searchText = $('#unitSearch').val().toLowerCase();
+                var selectedType = $('#typeFilter').val();
+
+                $('.unit-item').each(function() {
+                    var unitSearchData = $(this).data('search');
+                    var unitType = $(this).data('type');
+                    
+                    var matchesSearch = unitSearchData.indexOf(searchText) > -1;
+                    var matchesType = selectedType === 'all' || unitType === selectedType;
+
+                    if (matchesSearch && matchesType) {
+                        $(this).fadeIn(200);
+                    } else {
+                        $(this).fadeOut(100);
+                    }
+                });
+            }
+
+            $('#unitSearch').on('keyup', filterUnits);
+            $('#typeFilter').on('change', filterUnits);
+        });
+    </script>
+}

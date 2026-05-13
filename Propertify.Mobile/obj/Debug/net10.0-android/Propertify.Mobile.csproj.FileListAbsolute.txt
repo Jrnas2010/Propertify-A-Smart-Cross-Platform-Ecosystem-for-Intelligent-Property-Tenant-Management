@@ -1,3 +1,11 @@
+C:\Users\User\Desktop\MEC\Spring 2026\Project Impelementation and Design\Coding\Propertify\Propertify.Mobile\bin\Debug\net10.0-android\Propertify.Mobile.runtimeconfig.json
+C:\Users\User\Desktop\MEC\Spring 2026\Project Impelementation and Design\Coding\Propertify\Propertify.Mobile\bin\Debug\net10.0-android\Propertify.Mobile.dll
+C:\Users\User\Desktop\MEC\Spring 2026\Project Impelementation and Design\Coding\Propertify\Propertify.Mobile\bin\Debug\net10.0-android\Propertify.Mobile.pdb
+C:\Users\User\Desktop\MEC\Spring 2026\Project Impelementation and Design\Coding\Propertify\Propertify.Mobile\bin\Debug\net10.0-android\com.companyname.propertify.mobile.apk
+C:\Users\User\Desktop\MEC\Spring 2026\Project Impelementation and Design\Coding\Propertify\Propertify.Mobile\bin\Debug\net10.0-android\com.companyname.propertify.mobile.aab
+C:\Users\User\Desktop\MEC\Spring 2026\Project Impelementation and Design\Coding\Propertify\Propertify.Mobile\bin\Debug\net10.0-android\com.companyname.propertify.mobile-Signed.aab
+C:\Users\User\Desktop\MEC\Spring 2026\Project Impelementation and Design\Coding\Propertify\Propertify.Mobile\bin\Debug\net10.0-android\com.companyname.propertify.mobile-Signed.apk
+C:\Users\User\Desktop\MEC\Spring 2026\Project Impelementation and Design\Coding\Propertify\Propertify.Mobile\bin\Debug\net10.0-android\com.companyname.propertify.mobile-Signed.apk.idsig
 C:\Users\User\Desktop\MEC\Spring 2026\Project Impelementation and Design\Coding\Propertify\Propertify.Mobile\obj\Debug\net10.0-android\.NETCoreApp,Version=v10.0.AssemblyAttributes.cs
 C:\Users\User\Desktop\MEC\Spring 2026\Project Impelementation and Design\Coding\Propertify\Propertify.Mobile\obj\Debug\net10.0-android\build.props
 C:\Users\User\Desktop\MEC\Spring 2026\Project Impelementation and Design\Coding\Propertify\Propertify.Mobile\obj\Debug\net10.0-android\adb.props
@@ -122,14 +130,7 @@ C:\Users\User\Desktop\MEC\Spring 2026\Project Impelementation and Design\Coding\
 C:\Users\User\Desktop\MEC\Spring 2026\Project Impelementation and Design\Coding\Propertify\Propertify.Mobile\obj\Debug\net10.0-android\Propertify.Mobile.AssemblyInfoInputs.cache
 C:\Users\User\Desktop\MEC\Spring 2026\Project Impelementation and Design\Coding\Propertify\Propertify.Mobile\obj\Debug\net10.0-android\Propertify.Mobile.AssemblyInfo.cs
 C:\Users\User\Desktop\MEC\Spring 2026\Project Impelementation and Design\Coding\Propertify\Propertify.Mobile\obj\Debug\net10.0-android\Propertify.Mobile.csproj.CoreCompileInputs.cache
-C:\Users\User\Desktop\MEC\Spring 2026\Project Impelementation and Design\Coding\Propertify\Propertify.Mobile\bin\Debug\net10.0-android\Propertify.Mobile.runtimeconfig.json
-C:\Users\User\Desktop\MEC\Spring 2026\Project Impelementation and Design\Coding\Propertify\Propertify.Mobile\bin\Debug\net10.0-android\Propertify.Mobile.dll
-C:\Users\User\Desktop\MEC\Spring 2026\Project Impelementation and Design\Coding\Propertify\Propertify.Mobile\bin\Debug\net10.0-android\Propertify.Mobile.pdb
-C:\Users\User\Desktop\MEC\Spring 2026\Project Impelementation and Design\Coding\Propertify\Propertify.Mobile\bin\Debug\net10.0-android\com.companyname.propertify.mobile.apk
-C:\Users\User\Desktop\MEC\Spring 2026\Project Impelementation and Design\Coding\Propertify\Propertify.Mobile\bin\Debug\net10.0-android\com.companyname.propertify.mobile.aab
-C:\Users\User\Desktop\MEC\Spring 2026\Project Impelementation and Design\Coding\Propertify\Propertify.Mobile\bin\Debug\net10.0-android\com.companyname.propertify.mobile-Signed.aab
-C:\Users\User\Desktop\MEC\Spring 2026\Project Impelementation and Design\Coding\Propertify\Propertify.Mobile\bin\Debug\net10.0-android\com.companyname.propertify.mobile-Signed.apk
-C:\Users\User\Desktop\MEC\Spring 2026\Project Impelementation and Design\Coding\Propertify\Propertify.Mobile\bin\Debug\net10.0-android\com.companyname.propertify.mobile-Signed.apk.idsig
+C:\Users\User\Desktop\MEC\Spring 2026\Project Impelementation and Design\Coding\Propertify\Propertify.Mobile\obj\Debug\net10.0-android\Propertify.Mobile.sourcelink.json
 C:\Users\User\Desktop\MEC\Spring 2026\Project Impelementation and Design\Coding\Propertify\Propertify.Mobile\obj\Debug\net10.0-android\XamlC.stamp
 C:\Users\User\Desktop\MEC\Spring 2026\Project Impelementation and Design\Coding\Propertify\Propertify.Mobile\obj\Debug\net10.0-android\Propertify.Mobile.dll
 C:\Users\User\Desktop\MEC\Spring 2026\Project Impelementation and Design\Coding\Propertify\Propertify.Mobile\obj\Debug\net10.0-android\Propertify.Mobile.pdb

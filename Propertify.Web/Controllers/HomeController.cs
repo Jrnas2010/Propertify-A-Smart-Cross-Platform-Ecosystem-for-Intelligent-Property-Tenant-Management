@@ -26,7 +26,18 @@ namespace Propertify.Web.Controllers
                 .ToListAsync();
 
             ViewBag.AvailableUnits = availableUnits;
-            return View();
+            return View(await _context.Properties.ToListAsync());
+        }
+
+        // 1.5. عرض جميع الوحدات الشاغرة
+        public async Task<IActionResult> AllUnits()
+        {
+            var units = await _context.Units
+                .Include(u => u.Property)
+                .Where(u => !u.IsOccupied)
+                .OrderByDescending(u => u.Id)
+                .ToListAsync();
+            return View(units);
         }
 
         public IActionResult About()

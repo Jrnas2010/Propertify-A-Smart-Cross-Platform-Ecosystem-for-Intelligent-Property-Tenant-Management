@@ -5,12 +5,17 @@ using Propertify.Web.Data;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Propertify.Web.Models;
 using Propertify.Web.Helpers;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // --- 1. Service registration ---
 
 builder.Services.AddControllersWithViews()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+    })
     .AddViewLocalization();
 
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");

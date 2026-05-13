@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Propertify.Web.Data;
 using Microsoft.EntityFrameworkCore;
 using Propertify.Web.Models;
@@ -38,8 +39,11 @@ namespace Propertify.Web.Controllers
 
         public async Task<IActionResult> Create()
         {
-            ViewBag.Tenants = await _context.Tenants.ToListAsync();
-            ViewBag.Units = await _context.Units.Where(u => !u.IsOccupied).ToListAsync();
+            var tenants = await _context.Tenants.ToListAsync();
+            var units = await _context.Units.Where(u => !u.IsOccupied).ToListAsync();
+            
+            ViewBag.TenantId = new SelectList(tenants, "Id", "FullNameAr");
+            ViewBag.UnitId = new SelectList(units, "Id", "UnitNumber");
             return View();
         }
 
@@ -62,9 +66,103 @@ namespace Propertify.Web.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewBag.Tenants = await _context.Tenants.ToListAsync();
-            ViewBag.Units = await _context.Units.Where(u => !u.IsOccupied).ToListAsync();
+            ViewBag.TenantId = new SelectList(await _context.Tenants.ToListAsync(), "Id", "FullNameAr", contract.TenantId);
+            ViewBag.UnitId = new SelectList(await _context.Units.Where(u => !u.IsOccupied).ToListAsync(), "Id", "UnitNumber", contract.UnitId);
             return View(contract);
+        }
+
+        public async Task<IActionResult> Details(int id)
+        {
+            var contract = await _context.Contracts
+                .Include(c => c.Tenant)
+                .Include(c => c.Unit)
+                    .ThenInclude(u => u.Property)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (contract == null) return NotFound();
+
+            return View(contract);
+        }
+
+        public async Task<IActionResult> Edit(int id)
+        {
+            var contract = await _context.Contracts.FindAsync(id);
+            if (contract == null) return NotFound();
+
+            var tenants = await _context.Tenants.ToListAsync();
+            var units = await _context.Units.Where(u => !u.IsOccupied || u.Id == contract.UnitId).ToListAsync();
+
+            ViewBag.TenantId = new SelectList(tenants, "Id", "FullNameAr", contract.TenantId);
+            ViewBag.UnitId = new SelectList(units, "Id", "UnitNumber", contract.UnitId);
+            return View(contract);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, Contract contract)
+        {
+            if (id != contract.Id) return NotFound();
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var existingContract = await _context.Contracts.AsNoTracking().FirstOrDefaultAsync(c => c.Id == id);
+                    if (existingContract == null) return NotFound();
+
+                    // Handle Unit Change
+                    if (existingContract.UnitId != contract.UnitId)
+                    {
+                        var oldUnit = await _context.Units.FindAsync(existingContract.UnitId);
+                        if (oldUnit != null)
+                        {
+                            oldUnit.IsOccupied = false;
+                            oldUnit.Status = "Vacant";
+                        }
+
+                        var newUnit = await _context.Units.FindAsync(contract.UnitId);
+                        if (newUnit != null)
+                        {
+                            newUnit.IsOccupied = true;
+                            newUnit.Status = "Occupied";
+                        }
+                    }
+
+                    _context.Update(contract);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!_context.Contracts.Any(e => e.Id == contract.Id)) return NotFound();
+                    else throw;
+                }
+                return RedirectToAction(nameof(Index));
+            }
+
+            ViewBag.TenantId = new SelectList(await _context.Tenants.ToListAsync(), "Id", "FullNameAr", contract.TenantId);
+            ViewBag.UnitId = new SelectList(await _context.Units.Where(u => !u.IsOccupied || u.Id == contract.UnitId).ToListAsync(), "Id", "UnitNumber", contract.UnitId);
+            return View(contract);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var contract = await _context.Contracts.FindAsync(id);
+            if (contract != null)
+            {
+                // Optionally free up the unit when contract is deleted
+                var unit = await _context.Units.FindAsync(contract.UnitId);
+                if (unit != null)
+                {
+                    unit.IsOccupied = false;
+                    unit.Status = "Vacant";
+                }
+
+                _context.Contracts.Remove(contract);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(Index));
         }
     }
 }

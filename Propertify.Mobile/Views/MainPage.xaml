@@ -6,51 +6,24 @@
              Shell.NavBarIsVisible="False">
 
     <ScrollView>
-        <VerticalStackLayout Padding="20" Spacing="25">
-            
-            <HorizontalStackLayout Spacing="15" Margin="0,20,0,0">
-                <Frame CornerRadius="25" HeightRequest="50" WidthRequest="50" Padding="0" IsClippedToBounds="True">
-                    <Image Source="user_placeholder.png" Aspect="AspectFill" />
-                </Frame>
-                <VerticalStackLayout VerticalOptions="Center">
-                    <Label Text="مرحباً بك، حامد" FontSize="20" FontAttributes="Bold" TextColor="#2C3E50" />
-                    <Label Text="مستأجر - وحدة 302" FontSize="14" TextColor="#7F8C8D" />
-                </VerticalStackLayout>
-            </HorizontalStackLayout>
+        <VerticalStackLayout Padding="20" Spacing="20">
+            <Label Text="Welcome, Hamad" FontSize="22" FontAttributes="Bold" TextColor="#2C3E50" />
 
-            <Frame BackgroundColor="#2C3E50" CornerRadius="20" HasShadow="True" BorderColor="Transparent">
-                <VerticalStackLayout Spacing="12">
-                    <Label Text="إيجار شهر أبريل" TextColor="#BDC3C7" FontSize="14" />
-                    <Label Text="250.000 ر.ع" TextColor="White" FontSize="32" FontAttributes="Bold" />
-                    <BoxView Color="White" HeightRequest="1" Opacity="0.2" />
-                    <HorizontalStackLayout HorizontalOptions="Fill">
-                        <Label Text="تاريخ الاستحقاق:" TextColor="White" Opacity="0.8" />
-                        <Label Text="01/05/2026" TextColor="#5DADE2" Margin="10,0,0,0" FontAttributes="Bold" HorizontalOptions="EndAndExpand" />
-                    </HorizontalStackLayout>
+            <Frame BackgroundColor="#2C3E50" CornerRadius="15" HasShadow="True">
+                <VerticalStackLayout>
+                    <Label Text="Rental for April" TextColor="White" Opacity="0.7" />
+                    <Label Text="250.000 OMR" FontSize="32" TextColor="White" FontAttributes="Bold" />
                 </VerticalStackLayout>
             </Frame>
 
-            <Label Text="الخدمات السريعة" FontSize="18" FontAttributes="Bold" TextColor="#2C3E50" />
-            
-            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="15" RowSpacing="15">
-                <Frame Grid.Row="0" Grid.Column="0" CornerRadius="15" Padding="20" HasShadow="False" BorderColor="#E0E0E0">
-                    <Frame.GestureRecognizers>
-                        <TapGestureRecognizer Tapped="OnMaintenanceTapped" />
-                    </Frame.GestureRecognizers>
-                    <VerticalStackLayout Spacing="10" HorizontalOptions="Center">
-                        <Label Text="🔧" FontSize="30" HorizontalOptions="Center" />
-                        <Label Text="بلاغ صيانة" FontAttributes="Bold" />
-                    </VerticalStackLayout>
-                </Frame>
+            <Frame BackgroundColor="#FEF9E7" BorderColor="#F7DC6F">
+                <Label Text="🔔 Alert: Water Tank Maintenance Tomorrow at 10 AM" TextColor="#9A7D0A" />
+            </Frame>
 
-                <Frame Grid.Row="0" Grid.Column="1" CornerRadius="15" Padding="20" HasShadow="False" BorderColor="#E0E0E0">
-                    <VerticalStackLayout Spacing="10" HorizontalOptions="Center">
-                        <Label Text="📄" FontSize="30" HorizontalOptions="Center" />
-                        <Label Text="عقد الإيجار" FontAttributes="Bold" />
-                    </VerticalStackLayout>
-                </Frame>
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="15">
+                <Button Grid.Column="0" Text="🔧 Maintenance" BackgroundColor="White" TextColor="Black" Clicked="OnMaintenanceClicked" />
+                <Button Grid.Column="1" Text="📄 Contract" BackgroundColor="White" TextColor="Black" />
             </Grid>
-
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

@@ -103,6 +103,105 @@ namespace Propertify.Web.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        // 4.5. عرض تفاصيل المستأجر
+        public async Task<IActionResult> Details(int id)
+        {
+            var tenant = await _context.Tenants
+                .Include(t => t.Unit)
+                    .ThenInclude(u => u.Property)
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (tenant == null)
+            {
+                return NotFound();
+            }
+
+            return View(tenant);
+        }
+
+        // 4.6. عرض صفحة تعديل المستأجر
+        public async Task<IActionResult> Edit(int id)
+        {
+            var tenant = await _context.Tenants.FindAsync(id);
+            if (tenant == null)
+            {
+                return NotFound();
+            }
+            var vacantUnits = await _context.Units.Where(u => !u.IsOccupied || u.Id == tenant.UnitId).ToListAsync();
+            ViewBag.UnitId = new SelectList(vacantUnits, "Id", "UnitNumber", tenant.UnitId);
+            return View(tenant);
+        }
+
+        // 4.7. معالجة تعديل المستأجر
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, Tenant tenant, IFormFile? IdCardImage)
+        {
+            if (id != tenant.Id)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var existingTenant = await _context.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Id == id);
+                    if (existingTenant == null) return NotFound();
+
+                    if (IdCardImage != null)
+                    {
+                        tenant.IdDocumentPath = await UploadFile(IdCardImage, "tenants/docs");
+                    }
+                    else
+                    {
+                        tenant.IdDocumentPath = existingTenant.IdDocumentPath;
+                    }
+
+                    // Handling unit changes
+                    if (existingTenant.UnitId != tenant.UnitId)
+                    {
+                        // Free old unit
+                        var oldUnit = await _context.Units.FindAsync(existingTenant.UnitId);
+                        if (oldUnit != null)
+                        {
+                            oldUnit.IsOccupied = false;
+                            oldUnit.Status = "Vacant";
+                        }
+
+                        // Occupy new unit
+                        var newUnit = await _context.Units.FindAsync(tenant.UnitId);
+                        if (newUnit != null)
+                        {
+                            newUnit.IsOccupied = true;
+                            newUnit.Status = "Occupied";
+                        }
+                    }
+
+                    _context.Update(tenant);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!TenantExists(tenant.Id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                return RedirectToAction(nameof(Index));
+            }
+            ViewBag.UnitId = new SelectList(await _context.Units.Where(u => !u.IsOccupied || u.Id == tenant.UnitId).ToListAsync(), "Id", "UnitNumber", tenant.UnitId);
+            return View(tenant);
+        }
+
+        private bool TenantExists(int id)
+        {
+            return _context.Tenants.Any(e => e.Id == id);
+        }
+
         // 5. حذف نهائي للمستأجر
         [HttpPost]
         public async Task<IActionResult> Delete(int id)

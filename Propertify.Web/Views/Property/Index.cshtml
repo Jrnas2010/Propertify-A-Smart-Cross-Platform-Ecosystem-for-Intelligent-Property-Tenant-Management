@@ -5,9 +5,9 @@
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
-<div class="container-fluid py-4 bg-light min-vh-100">
+<div class="container-fluid py-4 bg-light min-vh-100" style="max-width: 100%;">
     <!-- Header Section -->
-    <div class="d-flex justify-content-between align-items-center mb-2">
+    <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-3">
         <div>
             <h4 class="fw-bold text-dark mb-0">Buildings</h4>
             <p class="text-muted small">Manage your property portfolio</p>
@@ -20,7 +20,7 @@
 
     <!-- Search Bar -->
     <div class="row mb-4">
-        <div class="col-md-4">
+        <div class="col-12 col-md-6 col-lg-5">
             <form method="get" asp-action="Index">
                 <div class="input-group bg-white shadow-sm rounded-3">
                     <span class="input-group-text bg-white border-0">
@@ -50,9 +50,9 @@
     }
 
     <!-- Map -->
-    <div class="container mt-4 px-0">
+    <div class="mt-4 w-100">
         <h2 class="mb-4">خريطة عقارات ولاية السيب</h2>
-        <div id="map" style="height: 500px; width: 100%;" class="rounded-4 shadow-sm mb-4"></div>
+        <div id="map" style="height: 500px; width: 100%; overflow: hidden;" class="rounded-4 shadow-sm mb-4"></div>
     </div>
 
     @foreach (var property in Model)
@@ -91,10 +91,10 @@
     }
 
     <!-- Properties Grid -->
-    <div class="row">
+    <div class="row g-4">
         @foreach (var item in Model)
         {
-            <div class="col-xl-4 col-md-6 mb-4">
+            <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12 mb-3">
                 <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
                     <!-- Property Image with Overlay -->
                     <div class="position-relative" style="height: 200px;">
@@ -167,7 +167,7 @@
 
 <!-- Add Property Modal -->
 <div class="modal fade" id="addPropertyModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-centered shadow-lg">
+    <div class="modal-dialog modal-xl modal-dialog-centered shadow-lg" style="max-width: 95vw; max-height: 95vh; overflow-y: auto;">
         <div class="modal-content border-0">
             <form asp-action="Create" asp-controller="Property" method="post" enctype="multipart/form-data">
                 <div class="modal-header bg-primary text-white p-4">
@@ -256,7 +256,7 @@
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
 
-        var properties = @Html.Raw(Json.Serialize(Model));
+        var properties = @Html.Raw(Json.Serialize(Model.Select(p => new { p.Id, p.Name, p.Latitude, p.Longitude })));
 
         properties.forEach(function(prop) {
             if (prop.latitude) {

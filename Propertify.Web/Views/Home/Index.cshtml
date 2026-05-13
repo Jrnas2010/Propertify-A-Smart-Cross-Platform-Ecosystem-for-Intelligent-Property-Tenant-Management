@@ -1,4 +1,4 @@
-﻿@model IEnumerable<Propertify.Web.Models.Property>
+@model IEnumerable<Propertify.Web.Models.Property>
 @{
     Layout = "_PublicLayout";
     ViewData["Title"] = "Home Page | Propertify";
@@ -79,7 +79,7 @@
                 <h6 class="text-primary fw-bold text-uppercase mb-1 small">Featured Units</h6>
                 <h2 class="fw-bold mb-0">Find Your Next Space</h2>
             </div>
-            <a href="/Home/AllUnits" class="btn btn-dark rounded-pill px-4 shadow-sm">View All Units</a>
+            <a asp-action="AllUnits" asp-controller="Home" class="btn btn-dark rounded-pill px-4 shadow-sm">View All Units</a>
         </div>
 
         <div class="row g-4">
@@ -103,7 +103,7 @@
                                     <div class="text-primary-custom fw-bold fs-5">
                                         @unit.RentAmount <small class="text-muted fw-normal fs-6">OMR Monthly</small>
                                     </div>
-                                    <a href="/Home/UnitDetails/@unit.Id" class="btn btn-dark btn-sm rounded-pill px-3">Book Now</a>
+                                    <a asp-action="Details" asp-controller="Home" asp-route-id="@unit.Id" class="btn btn-dark btn-sm rounded-pill px-3">Book Now</a>
                                 </div>
                             </div>
                         </div>
