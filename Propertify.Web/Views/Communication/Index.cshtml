@@ -1,175 +1,240 @@
 @{
-    ViewData["Title"] = "Communication Center - Propertify";
+    ViewData["Title"] = "Messages | Propertify";
+    var sentMessages = ViewBag.SentMessages as List<Propertify.Web.Models.SystemMessage> ?? new();
 }
 
-<div class="container-fluid py-4" style="max-width: 100%; padding-left: 1rem; padding-right: 1rem;">
-    <div class="mb-4">
-        <h3 class="fw-bold text-primary">Communication Center</h3>
-        <p class="text-muted small">Send alerts and notifications directly to tenants' phones</p>
-    </div>
+<div class="container-fluid py-4" style="max-width:100%;">
 
     @if (TempData["Success"] != null)
     {
-        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm rounded-3" role="alert">
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm rounded-3 mb-3" role="alert">
             <i class="fas fa-check-circle me-2"></i> @TempData["Success"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm rounded-3 mb-3" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i> @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     }
 
-    <div class="row g-4 mb-5">
-        <!-- Message Creation Section -->
-        <div class="col-lg-7">
-            <div class="card border-0 shadow-sm p-4 rounded-4">
-                <form asp-action="SendMessage" method="post">
-                    @Html.AntiForgeryToken()
-                    <div class="mb-4">
-                        <label class="form-label fw-bold">Select Recipients</label>
-                        <select class="form-select form-select-lg fs-6 border-light-subtle" name="target">
-                            <option value="all">All Tenants (Across All Properties)</option>
-                            <option value="building1">Tenants in Building A Only</option>
-                            <option value="building2">Tenants in Building B Only</option>
-                        </select>
-                        <div class="form-text">The message will be sent as a notification on the tenant's phone app.</div>
-                    </div>
+    <!-- Page Header -->
+    <div class="mb-4">
+        <h4 class="fw-bold mb-0" style="color:#0f172a;">Messages</h4>
+        <p class="mb-0" style="color:#94a3b8; font-size:0.83rem;">Send broadcasts and track sent notifications</p>
+    </div>
 
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Message Subject</label>
-                        <input type="text" name="subject" id="msgSubject" class="form-control border-light-subtle" placeholder="e.g., Temporary Water Shutdown Alert" required>
-                    </div>
+    <div class="row g-4">
 
-                    <div class="mb-4">
-                        <label class="form-label fw-bold">Message Content</label>
-                        <textarea name="message" id="msgContent" class="form-control border-light-subtle" rows="6" placeholder="Enter message details here..." required></textarea>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary px-5 py-2 rounded-3 shadow-sm">
-                        <i class="fas fa-paper-plane me-2"></i> Send Notification Now
-                    </button>
-                </form>
-            </div>
-        </div>
-
-        <!-- Phone Preview Section -->
+        <!-- LEFT: Compose Message -->
         <div class="col-lg-5">
-            <div class="card border-0 shadow-sm p-4 bg-light h-100 rounded-4 border border-white">
-                <h5 class="fw-bold mb-4 text-center">Live Preview on Phone</h5>
-                <div class="smartphone-mockup mx-auto shadow-lg border border-4 border-dark rounded-5" style="width: 250px; height: 450px; background: #f8f9fa; position: relative; overflow: hidden;">
-                    <div class="p-3">
-                        <!-- Notification Toast -->
-                        <div class="bg-white text-dark rounded-3 p-2 mb-2 shadow-sm border-start border-primary border-4">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="fw-bold text-primary" style="font-size: 10px;"><i class="fas fa-building me-1"></i> Propertify</span>
-                                <span class="text-muted" style="font-size: 8px;">Now</span>
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
+                <!-- Card Header -->
+                <div class="px-4 pt-4 pb-3 border-bottom">
+                    <h6 class="fw-bold mb-0" style="color:#0f172a;">
+                        <i class="fas fa-paper-plane me-2 text-primary"></i>COMPOSE MESSAGE
+                    </h6>
+                    <p class="text-muted small mb-0 mt-1">Send a broadcast to your tenants</p>
+                </div>
+                <div class="p-4">
+                    <form asp-action="SendMessage" method="post" id="composeForm">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="target" id="targetInput" value="all">
+
+                        <!-- SEND TO -->
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold text-muted text-uppercase mb-2"
+                                   style="letter-spacing:.5px;">Send To</label>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <button type="button" class="target-btn btn btn-primary rounded-pill px-3 py-1 small active"
+                                        data-target="all">
+                                    <i class="fas fa-users me-1"></i> ALL
+                                </button>
+                                <button type="button" class="target-btn btn btn-outline-secondary rounded-pill px-3 py-1 small"
+                                        data-target="building">
+                                    <i class="fas fa-building me-1"></i> BUILDING
+                                </button>
+                                <button type="button" class="target-btn btn btn-outline-secondary rounded-pill px-3 py-1 small"
+                                        data-target="tenant">
+                                    <i class="fas fa-user me-1"></i> TENANT
+                                </button>
                             </div>
-                            <div id="previewSubject" style="font-size: 10px; font-weight: 600;" class="mt-1">Message subject...</div>
-                            <div id="previewContent" style="font-size: 9px;" class="text-muted text-truncate mt-1">Message content will appear here...</div>
                         </div>
-                        
-                        <div class="text-center mt-5">
-                            <h2 class="text-dark opacity-25">12:45</h2>
-                            <p class="text-muted small">Monday, May 4</p>
-                            <i class="fas fa-lock fa-2x text-dark opacity-10 mt-5"></i>
+
+                        <!-- TITLE -->
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted text-uppercase mb-1"
+                                   style="letter-spacing:.5px;">Title</label>
+                            <input type="text" name="subject" id="msgSubject"
+                                   class="form-control bg-light border-0 rounded-3 shadow-none"
+                                   placeholder="e.g. Maintenance Notice" required>
                         </div>
-                    </div>
+
+                        <!-- DESCRIPTION -->
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label class="form-label small fw-bold text-muted text-uppercase mb-0"
+                                       style="letter-spacing:.5px;">Description</label>
+                                <a href="#" class="small text-primary text-decoration-none"
+                                   onclick="magicDraft(); return false;">
+                                    <i class="fas fa-magic me-1"></i> MAGIC DRAFT
+                                </a>
+                            </div>
+                            <textarea name="message" id="msgContent"
+                                      class="form-control bg-light border-0 rounded-3 shadow-none"
+                                      rows="5" placeholder="Type your message here..." required></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 fw-bold">
+                            <i class="fas fa-broadcast-tower me-2"></i> SEND BROADCAST
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- NEW SECTION: Broadcast History Table -->
-    <div class="mb-4 pt-2">
-        <h4 class="fw-bold"><i class="fas fa-history me-2 text-primary"></i> Sent Broadcast History</h4>
-        <p class="text-muted small">Track and reuse previous notifications sent to tenants</p>
-    </div>
-
-    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th class="ps-4">Sent Date</th>
-                        <th>Target Group</th>
-                        <th>Subject</th>
-                        <th>Content Preview</th>
-                        <th class="text-end pe-4">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @{
-                        var sentMessages = ViewBag.SentMessages as List<Propertify.Web.Models.SystemMessage> ?? new();
+        <!-- RIGHT: Sent Messages -->
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
+                <!-- Card Header -->
+                <div class="px-4 pt-4 pb-3 border-bottom d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="fw-bold mb-0" style="color:#0f172a;">
+                            <i class="fas fa-inbox me-2 text-primary"></i>SENT MESSAGES
+                        </h6>
+                        <p class="text-muted small mb-0 mt-1">@sentMessages.Count messages sent</p>
+                    </div>
+                    @if (sentMessages.Any())
+                    {
+                        <span class="badge bg-primary-subtle text-primary rounded-pill px-3">
+                            @sentMessages.Count
+                        </span>
                     }
+                </div>
+
+                <div class="p-4 overflow-auto" style="max-height:540px;">
                     @if (!sentMessages.Any())
                     {
-                        <tr>
-                            <td colspan="5" class="text-center text-muted py-4">No messages sent yet.</td>
-                        </tr>
+                        <div class="text-center py-5 text-muted">
+                            <i class="fas fa-paper-plane fa-3x mb-3 opacity-25 d-block"></i>
+                            <p class="mb-0">No messages sent yet.</p>
+                            <small>Use the compose panel to send your first broadcast.</small>
+                        </div>
                     }
                     @foreach (var msg in sentMessages)
                     {
-                        <tr>
-                            <td class="ps-4 small text-muted">@msg.SentAt.ToString("MMM dd, yyyy HH:mm")</td>
-                            <td><span class="badge bg-primary-subtle text-primary rounded-pill">@msg.Target</span></td>
-                            <td class="fw-bold">@msg.Subject</td>
-                            <td class="text-muted small text-truncate" style="max-width: 300px;">@msg.Content</td>
-                            <td class="text-end pe-4">
-                                <button class="btn btn-sm btn-outline-primary rounded-pill px-3"
-                                        onclick="resendMessage('@Html.Raw(System.Text.Json.JsonSerializer.Serialize(msg.Subject))', '@Html.Raw(System.Text.Json.JsonSerializer.Serialize(msg.Content))')">
-                                    <i class="fas fa-redo me-1"></i> Resend
-                                </button>
-                                <form asp-action="DeleteMessage" method="post" class="d-inline"
-                                      onsubmit="return confirm('Delete this message?');">
-                                    @Html.AntiForgeryToken()
-                                    <input type="hidden" name="id" value="@msg.MessageId" />
-                                    <button type="submit" class="btn btn-sm btn-light rounded-circle ms-1">
-                                        <i class="fas fa-trash-alt text-danger"></i>
+                        var targetIcon = msg.Target == "all" ? "fas fa-users" :
+                                         msg.Target == "building" ? "fas fa-building" : "fas fa-user";
+                        var targetLabel = msg.Target switch {
+                            "all"      => "All Tenants",
+                            "building" => "Building",
+                            "tenant"   => "Tenant",
+                            _          => msg.Target
+                        };
+
+                        <div class="msg-card border rounded-4 p-3 mb-3">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="rounded-3 d-flex align-items-center justify-content-center"
+                                         style="width:36px;height:36px;background:#eff6ff;flex-shrink:0;">
+                                        <i class="@targetIcon text-primary" style="font-size:.8rem;"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold small">@(msg.Subject ?? "(No subject)")</div>
+                                        <div class="text-muted" style="font-size:.73rem;">
+                                            <i class="@targetIcon me-1"></i> @targetLabel
+                                        </div>
+                                    </div>
+                                </div>
+                                <span class="badge bg-success-subtle text-success rounded-pill px-2 small flex-shrink-0">
+                                    <i class="fas fa-check me-1"></i> Delivered
+                                </span>
+                            </div>
+
+                            @if (!string.IsNullOrWhiteSpace(msg.Content))
+                            {
+                                <div class="text-muted small fst-italic px-2 py-2 rounded-3 mb-2"
+                                     style="background:#f8fafc; border-left:3px solid #e2e8f0; font-size:.8rem;">
+                                    "@(msg.Content.Length > 120 ? msg.Content[..120] + "…" : msg.Content)"
+                                </div>
+                            }
+
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted" style="font-size:.73rem;">
+                                    <i class="far fa-clock me-1"></i>
+                                    Sent by Owner &bull; @msg.SentAt.ToString("MMM dd, yyyy HH:mm")
+                                </span>
+                                <div class="d-flex gap-1">
+                                    <button class="btn btn-sm btn-outline-primary rounded-pill px-2 py-0"
+                                            style="font-size:.73rem;"
+                                            onclick="resendMessage(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(msg.Subject)), @Html.Raw(System.Text.Json.JsonSerializer.Serialize(msg.Content)), '@msg.Target')">
+                                        <i class="fas fa-redo me-1"></i> Resend
                                     </button>
-                                </form>
-                            </td>
-                        </tr>
+                                    <form asp-action="DeleteMessage" method="post" class="d-inline"
+                                          onsubmit="return confirm('Delete this message?')">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@msg.MessageId">
+                                        <button type="submit" class="btn btn-sm btn-light rounded-circle"
+                                                style="width:28px;height:28px;padding:0;">
+                                            <i class="fas fa-trash-alt text-danger" style="font-size:.7rem;"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
                     }
-                </tbody>
-            </table>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
 <style>
-    .form-control:focus, .form-select:focus {
-        border-color: #3498db;
-        box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.1);
-    }
-    .smartphone-mockup::before {
-        content: "";
-        position: absolute;
-        top: 12px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 60px;
-        height: 6px;
-        background: #333;
-        border-radius: 10px;
-    }
-    .table thead th { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; padding: 15px; }
-    .table tbody td { padding: 15px; }
+    .msg-card { transition: box-shadow .15s; border-color: #f1f5f9 !important; }
+    .msg-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important; }
+    .target-btn.active { background-color: var(--clr-primary, #3b82f6) !important; border-color: var(--clr-primary, #3b82f6) !important; color: #fff !important; }
 </style>
 
 <script>
-    // Live Preview Script
-    document.getElementById('msgSubject').addEventListener('input', function(e) {
-        document.getElementById('previewSubject').innerText = e.target.value || "Message subject...";
-    });
-    
-    document.getElementById('msgContent').addEventListener('input', function(e) {
-        document.getElementById('previewContent').innerText = e.target.value || "Message content will appear here...";
+    // Toggle SEND TO buttons
+    document.querySelectorAll('.target-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            document.querySelectorAll('.target-btn').forEach(b => {
+                b.classList.remove('active', 'btn-primary');
+                b.classList.add('btn-outline-secondary');
+            });
+            this.classList.add('active', 'btn-primary');
+            this.classList.remove('btn-outline-secondary');
+            document.getElementById('targetInput').value = this.dataset.target;
+        });
     });
 
-    function resendMessage(subjectJson, contentJson) {
-        const subject = JSON.parse(subjectJson) ?? '';
-        const content = JSON.parse(contentJson) ?? '';
-        document.getElementById('msgSubject').value = subject;
-        document.getElementById('msgContent').value = content;
-        document.getElementById('previewSubject').textContent = subject || 'Message subject...';
-        document.getElementById('previewContent').textContent = content || 'Message content will appear here...';
+    function resendMessage(subject, content, target) {
+        document.getElementById('msgSubject').value = subject || '';
+        document.getElementById('msgContent').value = content || '';
+        document.getElementById('targetInput').value = target || 'all';
+
+        document.querySelectorAll('.target-btn').forEach(btn => {
+            btn.classList.remove('active', 'btn-primary');
+            btn.classList.add('btn-outline-secondary');
+            if (btn.dataset.target === target) {
+                btn.classList.add('active', 'btn-primary');
+                btn.classList.remove('btn-outline-secondary');
+            }
+        });
         window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function magicDraft() {
+        const subject = document.getElementById('msgSubject').value;
+        const drafts = [
+            'Dear residents, please be informed that scheduled maintenance will be carried out. We apologize for any inconvenience.',
+            'This is a reminder that your monthly rent payment is due. Please ensure timely payment to avoid any penalties.',
+            'We are pleased to inform you that building facilities will be available as scheduled. Thank you for your cooperation.'
+        ];
+        const pick = drafts[Math.floor(Math.random() * drafts.length)];
+        document.getElementById('msgContent').value = pick;
     }
 </script>

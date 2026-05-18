@@ -3,16 +3,14 @@
     ViewData["Title"] = "Buildings";
 }
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
-<div class="container-fluid py-4 bg-light min-vh-100" style="max-width: 100%;">
+<div class="container-fluid py-4" style="max-width: 100%;">
     <!-- Header Section -->
     <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-3">
         <div>
-            <h4 class="fw-bold text-dark mb-0">Buildings</h4>
-            <p class="text-muted small">Manage your property portfolio</p>
+            <h4 class="fw-bold mb-0" style="color:#0f172a;">Buildings</h4>
+            <p class="mb-0" style="color:#94a3b8; font-size:0.83rem;">Manage your property portfolio</p>
         </div>
-        <button class="btn btn-primary rounded-3 px-4 py-2" style="background-color: #2c3e50; border: none;"
+        <button class="btn btn-primary rounded-3 px-4 py-2"
                 data-bs-toggle="modal" data-bs-target="#addPropertyModal">
             <i class="fas fa-plus me-2"></i> Add Building
         </button>
@@ -46,47 +44,6 @@
             <p>No buildings found.
                 <a href="#" data-bs-toggle="modal" data-bs-target="#addPropertyModal">Add your first building.</a>
             </p>
-        </div>
-    }
-
-    <!-- Map -->
-    <div class="mt-4 w-100">
-        <h2 class="mb-4">خريطة عقارات ولاية السيب</h2>
-        <div id="map" style="height: 500px; width: 100%; overflow: hidden;" class="rounded-4 shadow-sm mb-4"></div>
-    </div>
-
-    @foreach (var property in Model)
-    {
-        <div class="modal fade" id="propModal-@property.Id" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-lg modal-dialog-centered">
-                <div class="modal-content border-0 rounded-4 shadow-lg">
-                    <div class="modal-header border-0 pb-0">
-                        <h5 class="modal-title fw-bold">تفاصيل عقار: @property.Name</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="row">
-                            <div class="col-md-5">
-                                <img src="@(string.IsNullOrEmpty(property.ImageUrl) ? "/images/default-building.jpg" : property.ImageUrl)"
-                                     class="img-fluid rounded-3 shadow-sm mb-3">
-                                <p class="text-muted small"><i class="fas fa-map-marker-alt me-2"></i>@property.Location</p>
-                            </div>
-                            <div class="col-md-7">
-                                <h6 class="fw-bold mb-3">الوحدات الشاغرة المتوفرة:</h6>
-                                <div class="list-group">
-                                    @foreach (var unit in property.Units.Where(u => u.Status == "Vacant"))
-                                    {
-                                        <div class="list-group-item d-flex justify-content-between align-items-center border-light">
-                                            <span>وحدة رقم: @unit.UnitNumber (طابق @unit.FloorNumber)</span>
-                                            <a href="/Booking/Request/@unit.Id" class="btn btn-sm btn-success">حجز</a>
-                                        </div>
-                                    }
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     }
 
@@ -249,28 +206,6 @@
 </style>
 
 @section Scripts {
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        var map = L.map('map').setView([23.67, 58.18], 12);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
-
-        var properties = @Html.Raw(Json.Serialize(Model.Select(p => new { p.Id, p.Name, p.Latitude, p.Longitude })));
-
-        properties.forEach(function(prop) {
-            if (prop.latitude) {
-                var marker = L.marker([prop.latitude, prop.longitude]).addTo(map);
-
-                marker.on('click', function() {
-                    var modalEl = document.querySelector('#propModal-' + prop.id);
-                    new bootstrap.Modal(modalEl).show();
-                });
-
-                marker.bindTooltip(prop.name, { permanent: false, direction: 'top' });
-            }
-        });
-    </script>
     <script>
         let unitIndex = 1;
 

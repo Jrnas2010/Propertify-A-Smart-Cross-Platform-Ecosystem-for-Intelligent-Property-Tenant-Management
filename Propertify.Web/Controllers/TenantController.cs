@@ -30,6 +30,7 @@ namespace Propertify.Web.Controllers
 
             var query = _context.Tenants
                 .Include(t => t.Unit)
+                    .ThenInclude(u => u!.Property)
                 .Where(t => t.IsArchived == showArchived)
                 .AsQueryable();
 

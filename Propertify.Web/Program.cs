@@ -5,6 +5,7 @@ using Propertify.Web.Data;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Propertify.Web.Models;
 using Propertify.Web.Helpers;
+using Propertify.Web.Services;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -30,6 +31,8 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddSingleton<SystemSettingService>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -87,7 +90,8 @@ async Task SeedData(IServiceProvider serviceProvider)
             Email = "admin@propertify.com",
             Password = PasswordHelper.Hash("Admin123"),
             Role = "Owner",
-            FullName = "Admin User"
+            FullName = "Admin User",
+            IsSystemAdmin = true
         };
 
         context.Users.Add(owner);

@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Propertify.Mobile.Views.LoginPage"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="#1e3a5f">
+
+    <ScrollView>
+        <Grid RowDefinitions="*,Auto,*" MinimumHeightRequest="700">
+
+            <!-- Logo / brand top -->
+            <VerticalStackLayout Grid.Row="0" VerticalOptions="End"
+                                 HorizontalOptions="Center" Spacing="8" Padding="0,0,0,36">
+                <Border BackgroundColor="rgba(255,255,255,0.12)"
+                        StrokeThickness="0" WidthRequest="72" HeightRequest="72"
+                        HorizontalOptions="Center">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="20"/>
+                    </Border.StrokeShape>
+                    <Label Text="🏢" FontSize="36" HorizontalOptions="Center" VerticalOptions="Center"/>
+                </Border>
+                <Label Text="PROPERTIFY" FontSize="22" FontAttributes="Bold"
+                       TextColor="White" HorizontalOptions="Center" CharacterSpacing="3"/>
+                <Label Text="Tenant Portal" FontSize="13" TextColor="#93c5fd"
+                       HorizontalOptions="Center"/>
+            </VerticalStackLayout>
+
+            <!-- Login card -->
+            <Border Grid.Row="1" BackgroundColor="White" Padding="28,32"
+                    Margin="20,0" StrokeThickness="0">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="24"/>
+                </Border.StrokeShape>
+                <Border.Shadow>
+                    <Shadow Brush="Black" Offset="0,8" Radius="32" Opacity="0.18"/>
+                </Border.Shadow>
+
+                <VerticalStackLayout Spacing="20">
+                    <Label Text="Sign In" FontSize="22" FontAttributes="Bold"
+                           TextColor="#0f172a"/>
+                    <Label Text="Access your unit, contracts and invoices"
+                           FontSize="13" TextColor="#64748b"/>
+
+                    <!-- Error message -->
+                    <Border x:Name="ErrorBorder" BackgroundColor="#fef2f2" Padding="14,10"
+                            IsVisible="{Binding HasError}" StrokeThickness="0">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="10"/>
+                        </Border.StrokeShape>
+                        <Label Text="{Binding ErrorMessage}" TextColor="#dc2626" FontSize="13"/>
+                    </Border>
+
+                    <!-- Email -->
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="Email Address" FontSize="12" FontAttributes="Bold"
+                               TextColor="#475569" CharacterSpacing="0.5"/>
+                        <Border BackgroundColor="#f8fafc" Padding="14,0"
+                                StrokeThickness="1.5" StrokeShape="RoundRectangle 12">
+                            <Border.Stroke>
+                                <SolidColorBrush Color="#e2e8f0"/>
+                            </Border.Stroke>
+                            <Entry Text="{Binding Email}" Placeholder="tenant@example.com"
+                                   PlaceholderColor="#94a3b8" TextColor="#0f172a"
+                                   Keyboard="Email" FontSize="14"
+                                   HeightRequest="48" BackgroundColor="Transparent"/>
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <!-- Password -->
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="Password" FontSize="12" FontAttributes="Bold"
+                               TextColor="#475569" CharacterSpacing="0.5"/>
+                        <Border BackgroundColor="#f8fafc" Padding="14,0"
+                                StrokeThickness="1.5" StrokeShape="RoundRectangle 12">
+                            <Border.Stroke>
+                                <SolidColorBrush Color="#e2e8f0"/>
+                            </Border.Stroke>
+                            <Entry Text="{Binding Password}" Placeholder="••••••••"
+                                   PlaceholderColor="#94a3b8" TextColor="#0f172a"
+                                   IsPassword="True" FontSize="14"
+                                   HeightRequest="48" BackgroundColor="Transparent"/>
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <!-- Login button -->
+                    <Button Text="Sign In" Command="{Binding LoginCommand}"
+                            BackgroundColor="#1e3a5f" TextColor="White"
+                            CornerRadius="14" HeightRequest="52"
+                            FontSize="15" FontAttributes="Bold"
+                            IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}"
+                            Margin="0,4,0,0"/>
+
+                    <!-- Loading -->
+                    <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                       IsVisible="{Binding IsBusy}"
+                                       Color="#3b82f6" HorizontalOptions="Center"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Footer -->
+            <Label Grid.Row="2" Text="© 2026 Propertify · Muscat, Oman"
+                   FontSize="11" TextColor="#475569"
+                   HorizontalOptions="Center" VerticalOptions="Center"/>
+
+        </Grid>
+    </ScrollView>
+</ContentPage>

@@ -1,152 +1,255 @@
-/* 1. Global Variables & Modern UI Palette */
+/* ═══════════════════════════════════════════════
+   Design Tokens — single source of truth
+═══════════════════════════════════════════════ */
 :root {
-    --sidebar-bg: #1e293b;         /* Dark Navy - Professional */
-    --body-bg: #f8fafc;            /* Soft Light Blue/Grey */
-    --primary-blue: #3b82f6;       /* Vibrant Blue */
-    --card-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-    --text-dark: #1e293b;
-    --text-muted: #64748b;
+    --clr-bg:        #f8fafc;
+    --clr-surface:   #ffffff;
+    --clr-border:    #f1f5f9;
+    --clr-text:      #0f172a;
+    --clr-muted:     #94a3b8;
+    --clr-primary:   #3b82f6;
+    --clr-primary-h: #2563eb;
+    --clr-success:   #22c55e;
+    --clr-warning:   #f59e0b;
+    --clr-danger:    #ef4444;
     --sidebar-width: 250px;
+    --radius-card:   16px;
+    --shadow-card:   0 1px 4px rgba(0,0,0,0.08);
+    --font-main:     'Inter', 'Segoe UI', sans-serif;
 }
 
-/* 2. Base Body Styles */
+/* ── Base ────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
 body {
-    background-color: var(--body-bg);
-    color: var(--text-dark);
-    font-family: 'Inter', 'Segoe UI', sans-serif;
+    font-family: var(--font-main);
+    background-color: var(--clr-bg);
+    color: var(--clr-text);
     overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
 }
 
-/* 3. Static Sidebar Styling */
+/* ── Override Bootstrap bg-light ─────────────── */
+.bg-light { background-color: var(--clr-bg) !important; }
+.min-vh-100 { background-color: transparent !important; }
+
+/* ── Typography ──────────────────────────────── */
+h1, h2, h3, h4, h5, h6 { color: var(--clr-text); font-weight: 700; }
+.text-muted { color: var(--clr-muted) !important; }
+.text-primary { color: var(--clr-primary) !important; }
+small, .small { font-size: 0.82rem; }
+
+/* ── Cards ───────────────────────────────────── */
+.card {
+    border: none !important;
+    border-radius: var(--radius-card) !important;
+    box-shadow: var(--shadow-card) !important;
+    background-color: var(--clr-surface);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+}
+
+/* ── Buttons ─────────────────────────────────── */
+.btn {
+    font-family: var(--font-main);
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    transition: all 0.18s ease;
+}
+.btn-primary {
+    background-color: var(--clr-primary) !important;
+    border-color: var(--clr-primary) !important;
+    color: #fff !important;
+}
+.btn-primary:hover, .btn-primary:focus {
+    background-color: var(--clr-primary-h) !important;
+    border-color: var(--clr-primary-h) !important;
+}
+.btn-dark {
+    background-color: var(--clr-text) !important;
+    border-color: var(--clr-text) !important;
+}
+.btn-outline-primary {
+    color: var(--clr-primary) !important;
+    border-color: var(--clr-primary) !important;
+}
+.btn-outline-primary:hover {
+    background-color: var(--clr-primary) !important;
+    color: #fff !important;
+}
+
+/* ── Form Controls ───────────────────────────── */
+.form-control, .form-select {
+    font-family: var(--font-main);
+    font-size: 0.875rem;
+    border-color: #e2e8f0;
+    border-radius: 10px;
+    color: var(--clr-text);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.form-control:focus, .form-select:focus {
+    border-color: var(--clr-primary);
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+    outline: none;
+}
+.form-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--clr-text);
+    margin-bottom: 0.35rem;
+}
+.input-group .form-control { border-radius: 10px !important; }
+
+/* ── Tables ──────────────────────────────────── */
+.table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.875rem;
+}
+.table thead th {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: var(--clr-muted);
+    border: none;
+    border-bottom: 1px solid var(--clr-border);
+    padding: 0.85rem 1rem;
+    white-space: nowrap;
+    background: transparent;
+}
+.table tbody td {
+    padding: 0.9rem 1rem;
+    color: var(--clr-text);
+    vertical-align: middle;
+    border: none;
+    border-bottom: 1px solid var(--clr-border);
+}
+.table tbody tr:last-child td { border-bottom: none; }
+.table-hover tbody tr:hover { background-color: #fafbfc !important; }
+
+/* ── Badges ──────────────────────────────────── */
+.badge {
+    font-family: var(--font-main);
+    font-weight: 600;
+    font-size: 0.7rem;
+    letter-spacing: 0.04em;
+}
+
+/* ── Navbar ──────────────────────────────────── */
+.navbar { background-color: var(--clr-surface) !important; }
+
+/* ── Sidebar ─────────────────────────────────── */
 #sidebar-wrapper {
     min-height: 100vh;
     width: var(--sidebar-width);
-    background-color: var(--sidebar-bg) !important;
+    background-color: #0f172a !important;
     position: fixed;
     top: 0;
     transition: all 0.3s ease;
     z-index: 1000;
-    border: none !important;
 }
-
-#sidebar-wrapper .sidebar-heading {
-    padding: 2.5rem 1.5rem;
-    font-weight: 700;
-    color: #ffffff;
-    letter-spacing: 0.5px;
-    font-size: 1.25rem;
-}
-
 #sidebar-wrapper .nav-link {
-    color: #94a3b8 !important;
-    margin: 4px 12px;
-    padding: 12px 16px;
+    color: rgba(255,255,255,0.5) !important;
+    margin: 3px 10px;
+    padding: 10px 14px;
     border-radius: 10px;
-    font-size: 0.95rem;
+    font-size: 0.875rem;
     display: flex;
     align-items: center;
     transition: all 0.2s;
 }
-
-#sidebar-wrapper .nav-link i {
-    width: 24px;
-    font-size: 1.1rem;
-}
-
+#sidebar-wrapper .nav-link i { width: 22px; font-size: 1rem; }
 #sidebar-wrapper .nav-link:hover {
-    background-color: rgba(255, 255, 255, 0.05);
-    color: #ffffff !important;
+    background-color: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.85) !important;
 }
-
 #sidebar-wrapper .nav-link.active {
-    background-color: var(--primary-blue);
-    color: #ffffff !important;
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    background-color: rgba(59,130,246,0.12);
+    color: #60a5fa !important;
 }
 
-/* 4. Page Content Wrapper Static */
+/* ── Page Content Wrapper ────────────────────── */
 #page-content-wrapper {
-    background-color: var(--body-bg);
-    transition: all 0.3s;
+    background-color: var(--clr-bg);
     min-height: 100vh;
+    transition: margin 0.3s;
 }
 
-/* 5. Modern Cards (Match the images) */
-.card {
-    border: none !important;
-    border-radius: 16px !important; /* Large rounded corners */
-    box-shadow: var(--card-shadow) !important;
-    padding: 1rem;
-    background-color: #ffffff;
-    transition: transform 0.2s ease;
+/* ── Utility classes matching dashboard ──────── */
+.page-heading {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--clr-text);
+    margin-bottom: 0.2rem;
 }
-
-.card:hover {
-    transform: translateY(-2px);
+.page-sub {
+    font-size: 0.82rem;
+    color: var(--clr-muted);
 }
-
-/* 6. Professional Tables */
-.table {
-    border-collapse: separate;
-    border-spacing: 0 8px;
-    width: 100%;
-}
-
-.table thead th {
-    border: none;
-    color: var(--text-muted);
-    font-size: 0.8rem;
+.section-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.09em;
     text-transform: uppercase;
-    font-weight: 600;
-    padding: 1rem;
+    color: var(--clr-muted);
 }
 
-.table tbody tr {
-    background-color: #ffffff;
-    box-shadow: var(--card-shadow);
-}
-
-.table tbody td {
-    border: none;
-    padding: 1.25rem 1rem;
-    vertical-align: middle;
-}
-
-/* 7. Navbar Styles */
-.navbar-custom {
-    background-color: rgba(255, 255, 255, 0.9) !important;
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid #e2e8f0;
-    height: 70px;
-}
-
-/* 8. Buttons */
-.btn-primary {
-    background-color: var(--primary-blue);
-    border: none;
-    border-radius: 10px;
-    padding: 10px 20px;
-    font-weight: 600;
-}
-
-.bg-purple-gradient {
-    background: linear-gradient(45deg, #6a11cb 0%, #2575fc 100%);
-}
-
+/* ── Property card ───────────────────────────── */
 .property-card {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
-
 .property-card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 15px 30px rgba(0,0,0,0.1) !important;
+    transform: translateY(-6px);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.1) !important;
+}
+.object-fit-cover { object-fit: cover; }
+
+/* ── Dropdown menus ──────────────────────────── */
+.dropdown-menu {
+    border: none !important;
+    border-radius: 12px !important;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12) !important;
+    font-size: 0.875rem;
+}
+.dropdown-item { padding: 0.6rem 1rem; color: var(--clr-text); }
+.dropdown-item:hover { background-color: var(--clr-bg); color: var(--clr-primary); }
+
+/* ── Modals ──────────────────────────────────── */
+.modal-content {
+    border: none !important;
+    border-radius: var(--radius-card) !important;
+}
+.modal-header { border-bottom: 1px solid var(--clr-border) !important; }
+.modal-footer { border-top: 1px solid var(--clr-border) !important; }
+
+/* ── Scrollbar (Webkit) ──────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 6px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* ── Responsive ──────────────────────────────── */
+.container-fluid {
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+}
+@media (min-width: 992px) {
+    .container-fluid {
+        padding-left: 2rem !important;
+        padding-right: 2rem !important;
+    }
+}
+@media (max-width: 576px) {
+    .container-fluid {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
 }
 
-.clickable-img {
-    cursor: pointer;
-    transition: opacity 0.2s;
-}
-
-.clickable-img:hover {
-    opacity: 0.8;
-}
+/* ── Leaflet map popup font ──────────────────── */
+.leaflet-popup-content { font-family: var(--font-main); }
+.leaflet-container { font-family: var(--font-main); }

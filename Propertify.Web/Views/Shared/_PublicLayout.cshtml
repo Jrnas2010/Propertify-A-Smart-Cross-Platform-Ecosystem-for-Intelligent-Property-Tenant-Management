@@ -4,76 +4,173 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Propertify</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        :root {
+            --pub-primary: #1e3a5f;
+            --pub-accent:  #3b82f6;
+            --pub-green:   #10b981;
+            --pub-bg:      #f8fafc;
+            --pub-text:    #0f172a;
+            --pub-muted:   #64748b;
+            --pub-radius:  18px;
+            --pub-font:    'Plus Jakarta Sans', 'Segoe UI', sans-serif;
+        }
+        * { box-sizing: border-box; }
+        body { font-family: var(--pub-font); color: var(--pub-text); background: var(--pub-bg); margin: 0; }
+
+        /* ── Navbar ── */
+        .pub-nav {
+            position: sticky; top: 0; z-index: 1030;
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+            border-bottom: 1px solid #e2e8f0;
+            padding: 0 0;
+        }
+        .pub-nav .container { display: flex; align-items: center; justify-content: space-between; height: 68px; }
+        .pub-brand { font-weight: 800; font-size: 1.25rem; color: var(--pub-primary); text-decoration: none; display: flex; align-items: center; gap: 8px; }
+        .pub-brand i { color: var(--pub-accent); }
+        .pub-brand:hover { color: var(--pub-accent); }
+        .pub-nav-links { display: flex; align-items: center; gap: 6px; list-style: none; margin: 0; padding: 0; }
+        .pub-nav-links a { font-size: 0.875rem; font-weight: 600; color: var(--pub-muted); text-decoration: none; padding: 8px 14px; border-radius: 8px; transition: all .15s; }
+        .pub-nav-links a:hover { color: var(--pub-text); background: #f1f5f9; }
+        .pub-nav-links a.active { color: var(--pub-accent); }
+        .pub-btn-login { background: var(--pub-primary); color: #fff !important; border-radius: 50px; padding: 9px 22px !important; font-size: 0.82rem !important; }
+        .pub-btn-login:hover { background: var(--pub-accent) !important; color: #fff !important; }
+        .pub-nav-toggle { display: none; background: none; border: none; font-size: 1.4rem; color: var(--pub-primary); cursor: pointer; padding: 4px 8px; }
+
+        /* ── Mobile Offcanvas ── */
+        .pub-offcanvas { display: none; position: fixed; inset: 0; z-index: 1050; }
+        .pub-offcanvas-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.4); }
+        .pub-offcanvas-panel {
+            position: absolute; top: 0; right: 0; width: 280px; height: 100%;
+            background: #fff; padding: 24px 20px; box-shadow: -4px 0 24px rgba(0,0,0,0.12);
+            display: flex; flex-direction: column; gap: 8px;
+        }
+        .pub-offcanvas-close { align-self: flex-end; background: none; border: none; font-size: 1.4rem; color: #64748b; cursor: pointer; margin-bottom: 8px; }
+        .pub-offcanvas a { display: block; padding: 12px 14px; font-weight: 600; color: var(--pub-text); text-decoration: none; border-radius: 10px; font-size: 0.92rem; }
+        .pub-offcanvas a:hover { background: #f1f5f9; color: var(--pub-accent); }
+        .pub-offcanvas .pub-btn-login { margin-top: 8px; text-align: center; background: var(--pub-primary); color: #fff !important; border-radius: 50px; }
+        .pub-offcanvas.open { display: block; }
+
+        /* ── Footer ── */
+        .pub-footer { background: #0f172a; color: #cbd5e1; padding: 60px 0 28px; margin-top: 80px; }
+        .pub-footer-brand { font-size: 1.2rem; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+        .pub-footer-brand i { color: var(--pub-accent); }
+        .pub-footer p { font-size: 0.83rem; color: #94a3b8; line-height: 1.7; }
+        .pub-footer h6 { color: #f1f5f9; font-weight: 700; font-size: 0.78rem; letter-spacing: 0.09em; text-transform: uppercase; margin-bottom: 16px; }
+        .pub-footer ul { list-style: none; padding: 0; margin: 0; }
+        .pub-footer ul li { margin-bottom: 10px; }
+        .pub-footer ul li a { color: #94a3b8; text-decoration: none; font-size: 0.85rem; transition: color .15s; }
+        .pub-footer ul li a:hover { color: var(--pub-accent); }
+        .pub-footer-contact p { margin-bottom: 8px; font-size: 0.84rem; display: flex; align-items: center; gap: 8px; }
+        .pub-footer-contact i { color: var(--pub-accent); width: 16px; }
+        .pub-footer-social { display: flex; gap: 10px; margin-top: 16px; }
+        .pub-footer-social a { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 0.85rem; text-decoration: none; transition: all .15s; }
+        .pub-footer-social a:hover { background: var(--pub-accent); color: #fff; }
+        .pub-footer-bottom { border-top: 1px solid rgba(255,255,255,0.07); margin-top: 40px; padding-top: 20px; text-align: center; font-size: 0.78rem; color: #64748b; }
+
+        @@media (max-width: 991px) {
+            .pub-nav-links { display: none; }
+            .pub-nav-toggle { display: block; }
+        }
+        @@media (max-width: 576px) {
+            .pub-footer .row > div { margin-bottom: 32px; }
+        }
+    </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top py-3">
+
+    <!-- ── Navbar ── -->
+    <nav class="pub-nav">
         <div class="container">
-            <a class="navbar-brand fw-bold text-primary" href="/">
-                <i class="fas fa-city me-2"></i>PROPERTIFY
+            <a class="pub-brand" href="/">
+                <i class="fas fa-city"></i> PROPERTIFY
             </a>
-
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
+            <ul class="pub-nav-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/Home/AllUnits">Browse Units</a></li>
+                <li><a href="/Home/About">About Us</a></li>
+                <li><a href="/Home/Inquiry">Book Now</a></li>
+                <li><a class="pub-btn-login" href="/Account/Login"><i class="fas fa-user-shield me-1"></i> Owner Login</a></li>
+            </ul>
+            <button class="pub-nav-toggle" onclick="openOffcanvas()" aria-label="Open menu">
+                <i class="fas fa-bars"></i>
             </button>
-
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto align-items-center">
-                    <li class="nav-item">
-                        <a class="nav-link px-3" href="/Home/About">About Us</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link px-3" href="#properties">Available Units</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link px-3 me-3" href="/Home/Inquiry">Book Now</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="btn btn-primary rounded-pill px-4 shadow-sm" href="/Account/Login">
-                            <i class="fas fa-user-shield me-2"></i>Login</a>
-                    </li>
-                </ul>
-            </div>
         </div>
     </nav>
 
-    <main role="main">
-        @RenderBody()
-    </main>
+    <!-- ── Mobile Offcanvas ── -->
+    <div class="pub-offcanvas" id="pubOffcanvas">
+        <div class="pub-offcanvas-backdrop" onclick="closeOffcanvas()"></div>
+        <div class="pub-offcanvas-panel">
+            <button class="pub-offcanvas-close" onclick="closeOffcanvas()"><i class="fas fa-times"></i></button>
+            <div style="font-weight:800;font-size:1.1rem;color:#1e3a5f;margin-bottom:8px;"><i class="fas fa-city" style="color:#3b82f6;"></i> PROPERTIFY</div>
+            <a href="/">Home</a>
+            <a href="/Home/AllUnits">Browse Units</a>
+            <a href="/Home/About">About Us</a>
+            <a href="/Home/Inquiry">Book Now</a>
+            <a class="pub-btn-login" href="/Account/Login"><i class="fas fa-user-shield me-1"></i> Owner Login</a>
+        </div>
+    </div>
 
-    <footer class="bg-dark text-white py-5 mt-5">
+    <main>@RenderBody()</main>
+
+    <!-- ── Footer ── -->
+    <footer class="pub-footer">
         <div class="container">
-            <div class="row">
-                <div class="col-lg-4 mb-4">
-                    <h5 class="fw-bold mb-3">Propertify</h5>
-                    <p class="text-muted">The ultimate solution for Omani property owners to track units, tenants, and financial growth in one place.</p>
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6">
+                    <div class="pub-footer-brand"><i class="fas fa-city"></i> PROPERTIFY</div>
+                    <p>The modern property management platform for the Sultanate of Oman. Discover, lease, and manage residential and commercial units in one place.</p>
+                    <div class="pub-footer-social">
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#"><i class="fab fa-whatsapp"></i></a>
+                    </div>
                 </div>
-                <div class="col-lg-4 mb-4">
-                    <h6 class="fw-bold mb-3">Quick Links</h6>
-                    <ul class="list-unstyled">
-                        <li><a href="/" class="text-muted text-decoration-none">Home</a></li>
-                        <li><a href="/Home/Inquiry" class="text-muted text-decoration-none">Book Now</a></li>
-                        <li><a href="/Account/Login" class="text-muted text-decoration-none">Login</a></li>
+                <div class="col-lg-2 col-md-3 col-6">
+                    <h6>Navigate</h6>
+                    <ul>
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/Home/AllUnits">Browse Units</a></li>
+                        <li><a href="/Home/About">About Us</a></li>
+                        <li><a href="/Home/Inquiry">Book Now</a></li>
                     </ul>
                 </div>
-                <div class="col-lg-4 mb-4">
-                    <h6 class="fw-bold mb-3">Contact</h6>
-                    <p class="text-muted mb-1"><i class="fas fa-map-marker-alt me-2"></i>Muscat, Oman</p>
-                    <p class="text-muted mb-1"><i class="fas fa-phone me-2"></i>+968 92792292</p>
-                    <p class="text-muted"><i class="fas fa-envelope me-2"></i>info@propertify.om</p>
+                <div class="col-lg-2 col-md-3 col-6">
+                    <h6>Property Types</h6>
+                    <ul>
+                        <li><a href="/Home/AllUnits">Residential</a></li>
+                        <li><a href="/Home/AllUnits">Commercial</a></li>
+                        <li><a href="/Home/AllUnits">Studio Apartments</a></li>
+                        <li><a href="/Home/AllUnits">Office Spaces</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-4 col-md-6 pub-footer-contact">
+                    <h6>Contact Us</h6>
+                    <p><i class="fas fa-map-marker-alt"></i> Muscat, Sultanate of Oman</p>
+                    <p><i class="fas fa-phone"></i> +968 92792292</p>
+                    <p><i class="fas fa-envelope"></i> info@propertify.om</p>
+                    <p><i class="fas fa-clock"></i> Sun – Thu, 9AM – 6PM</p>
                 </div>
             </div>
-            <hr class="my-4">
-            <div class="text-center text-muted">
-                <p>&copy; 2026 Propertify. All rights reserved.</p>
+            <div class="pub-footer-bottom">
+                &copy; 2026 Propertify &mdash; All rights reserved.
             </div>
         </div>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        function openOffcanvas()  { document.getElementById('pubOffcanvas').classList.add('open'); }
+        function closeOffcanvas() { document.getElementById('pubOffcanvas').classList.remove('open'); }
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

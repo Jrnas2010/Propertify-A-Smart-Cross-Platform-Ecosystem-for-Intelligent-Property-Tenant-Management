@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Propertify.Mobile.Views.InvoicesPage"
+             Title="Invoices"
+             BackgroundColor="#f8fafc">
+
+    <Shell.TitleView>
+        <Label Text="Invoices" FontSize="18" FontAttributes="Bold"
+               TextColor="White" VerticalOptions="Center" Margin="4,0,0,0"/>
+    </Shell.TitleView>
+
+    <Grid RowDefinitions="Auto,Auto,*">
+
+        <!-- Header -->
+        <Border Grid.Row="0" BackgroundColor="#1e3a5f" Padding="20,36,20,20" StrokeThickness="0">
+            <VerticalStackLayout Spacing="4">
+                <Label Text="UTILITY BILLS" FontSize="10" FontAttributes="Bold"
+                       TextColor="#93c5fd" CharacterSpacing="1.5"/>
+                <Label Text="Your invoices &amp; payments" FontSize="20" FontAttributes="Bold" TextColor="White"/>
+            </VerticalStackLayout>
+        </Border>
+
+        <!-- Filter chips -->
+        <ScrollView Grid.Row="1" Orientation="Horizontal"
+                    HorizontalScrollBarVisibility="Never"
+                    Padding="16,12">
+            <HorizontalStackLayout Spacing="8" x:Name="FilterChips">
+                <Border x:Name="ChipAll" Padding="16,8" StrokeThickness="0"
+                        BackgroundColor="#1e3a5f">
+                    <Border.StrokeShape><RoundRectangle CornerRadius="20"/></Border.StrokeShape>
+                    <Label Text="All" FontSize="12" FontAttributes="Bold" TextColor="White"/>
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnFilterAll"/>
+                    </Border.GestureRecognizers>
+                </Border>
+                <Border x:Name="ChipUnpaid" Padding="16,8" StrokeThickness="1"
+                        BackgroundColor="White">
+                    <Border.Stroke><SolidColorBrush Color="#e2e8f0"/></Border.Stroke>
+                    <Border.StrokeShape><RoundRectangle CornerRadius="20"/></Border.StrokeShape>
+                    <Label Text="Unpaid" FontSize="12" FontAttributes="Bold" TextColor="#64748b"/>
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnFilterUnpaid"/>
+                    </Border.GestureRecognizers>
+                </Border>
+                <Border x:Name="ChipPaid" Padding="16,8" StrokeThickness="1"
+                        BackgroundColor="White">
+                    <Border.Stroke><SolidColorBrush Color="#e2e8f0"/></Border.Stroke>
+                    <Border.StrokeShape><RoundRectangle CornerRadius="20"/></Border.StrokeShape>
+                    <Label Text="Paid" FontSize="12" FontAttributes="Bold" TextColor="#64748b"/>
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnFilterPaid"/>
+                    </Border.GestureRecognizers>
+                </Border>
+                <Border x:Name="ChipOverdue" Padding="16,8" StrokeThickness="1"
+                        BackgroundColor="White">
+                    <Border.Stroke><SolidColorBrush Color="#e2e8f0"/></Border.Stroke>
+                    <Border.StrokeShape><RoundRectangle CornerRadius="20"/></Border.StrokeShape>
+                    <Label Text="Overdue" FontSize="12" FontAttributes="Bold" TextColor="#64748b"/>
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnFilterOverdue"/>
+                    </Border.GestureRecognizers>
+                </Border>
+            </HorizontalStackLayout>
+        </ScrollView>
+
+        <!-- Invoices list -->
+        <RefreshView Grid.Row="2"
+                     IsRefreshing="{Binding IsRefreshing}"
+                     Command="{Binding RefreshCommand}">
+            <CollectionView ItemsSource="{Binding Invoices}"
+                            BackgroundColor="Transparent" Margin="0,4">
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Border BackgroundColor="White" Margin="16,0,16,12"
+                                Padding="16" StrokeThickness="0">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="16"/></Border.StrokeShape>
+                            <Border.Shadow><Shadow Brush="Black" Offset="0,2" Radius="8" Opacity="0.06"/></Border.Shadow>
+
+                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="14">
+                                <!-- Type icon -->
+                                <Border Grid.Column="0" BackgroundColor="#eff6ff"
+                                        WidthRequest="46" HeightRequest="46" StrokeThickness="0">
+                                    <Border.StrokeShape><RoundRectangle CornerRadius="13"/></Border.StrokeShape>
+                                    <Label Text="💡" FontSize="20"
+                                           HorizontalOptions="Center" VerticalOptions="Center"/>
+                                </Border>
+
+                                <!-- Info -->
+                                <VerticalStackLayout Grid.Column="1" Spacing="3" VerticalOptions="Center">
+                                    <Label Text="{Binding ServiceType}" FontSize="14"
+                                           FontAttributes="Bold" TextColor="#0f172a"/>
+                                    <Label Text="{Binding IssueDate}" FontSize="12" TextColor="#94a3b8"/>
+                                    <Label Text="{Binding BillId, StringFormat='INV-{0:D3}'}"
+                                           FontSize="11" TextColor="#94a3b8"/>
+                                </VerticalStackLayout>
+
+                                <!-- Amount + status -->
+                                <VerticalStackLayout Grid.Column="2" Spacing="6" HorizontalOptions="End">
+                                    <Label Text="{Binding TotalAmount, StringFormat='{0:N3}'}"
+                                           FontSize="15" FontAttributes="Bold" TextColor="#1e3a5f"
+                                           HorizontalOptions="End"/>
+                                    <Label Text="OMR" FontSize="10" TextColor="#94a3b8"
+                                           HorizontalOptions="End" Margin="0,-4,0,0"/>
+                                    <Border Padding="10,4" StrokeThickness="0" HorizontalOptions="End">
+                                        <Border.StrokeShape><RoundRectangle CornerRadius="20"/></Border.StrokeShape>
+                                        <Label Text="{Binding Status}" FontSize="10"
+                                               FontAttributes="Bold" TextColor="White"/>
+                                        <Border.BackgroundColor>
+                                            <Binding Path="Status" Converter="{StaticResource StatusToColorConverter}"/>
+                                        </Border.BackgroundColor>
+                                    </Border>
+                                </VerticalStackLayout>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center"
+                                         Spacing="12" Padding="40">
+                        <Label Text="💳" FontSize="48" HorizontalOptions="Center"/>
+                        <Label Text="No Invoices Found" FontSize="16" FontAttributes="Bold"
+                               TextColor="#0f172a" HorizontalOptions="Center"/>
+                        <Label Text="Invoices for your unit will appear here once issued."
+                               FontSize="13" TextColor="#94a3b8" HorizontalOptions="Center"
+                               HorizontalTextAlignment="Center"/>
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
+            </CollectionView>
+        </RefreshView>
+
+        <!-- Loading -->
+        <ActivityIndicator Grid.Row="2" IsRunning="{Binding IsBusy}"
+                           IsVisible="{Binding IsBusy}"
+                           Color="#3b82f6" VerticalOptions="Center" HorizontalOptions="Center"/>
+    </Grid>
+</ContentPage>

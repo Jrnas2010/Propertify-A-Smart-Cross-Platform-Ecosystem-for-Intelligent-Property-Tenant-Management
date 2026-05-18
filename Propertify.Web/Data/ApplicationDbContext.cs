@@ -19,6 +19,9 @@ namespace Propertify.Web.Data
         public DbSet<User> Users { get; set; }
         public DbSet<BookingRequest> BookingRequests { get; set; }
         public DbSet<SystemMessage> SystemMessages { get; set; }
+        public DbSet<Supplier> Suppliers { get; set; }
+        public DbSet<ActivityLog> ActivityLogs { get; set; }
+        public DbSet<SystemSetting> SystemSettings { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -64,6 +67,18 @@ namespace Propertify.Web.Data
             modelBuilder.Entity<Contract>().HasIndex(c => c.TenantId);
             modelBuilder.Entity<Contract>().HasIndex(c => c.UnitId);
             modelBuilder.Entity<User>().HasIndex(u => u.TenantId);
+
+            modelBuilder.Entity<ActivityLog>()
+                .HasOne(a => a.User)
+                .WithMany()
+                .HasForeignKey(a => a.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<ActivityLog>().HasIndex(a => a.UserId);
+            modelBuilder.Entity<ActivityLog>().HasIndex(a => a.Timestamp);
+
+            modelBuilder.Entity<SystemSetting>()
+                .HasIndex(s => s.Key)
+                .IsUnique();
         }
     }
 }

@@ -27,6 +27,9 @@ namespace Propertify.Web.Models
 
         public DateTime IssueDate { get; set; } = DateTime.Now;
 
+        [MaxLength(20)]
+        public string Status { get; set; } = "Unpaid";
+
         public int UnitId { get; set; }
 
         [ForeignKey("UnitId")]

@@ -25,6 +25,14 @@ namespace Propertify.Web.Models
         [MaxLength(20)]
         public required string Role { get; set; }
 
+        [MaxLength(20)]
+        public string Status { get; set; } = "Active";
+
+        [MaxLength(1000)]
+        public string? Permissions { get; set; }
+
+        public bool IsSystemAdmin { get; set; } = false;
+
         public int? TenantId { get; set; }
 
         [ForeignKey("TenantId")]

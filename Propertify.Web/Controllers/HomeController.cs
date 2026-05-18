@@ -14,18 +14,20 @@ namespace Propertify.Web.Controllers
             _context = context;
         }
 
-        // 1. عرض الصفحة الرئيسية مع العقارات الشاغرة فقط
         public async Task<IActionResult> Index()
         {
-            // جلب أول 6 وحدات شاغرة لعرضها في قسم "Featured Units"
             var availableUnits = await _context.Units
-                .Include(u => u.Property) // جلب بيانات المبنى المرتبط بالوحدة
-                .Where(u => u.IsOccupied == false) // الشرط الأساسي: غير محجوزة
+                .Include(u => u.Property)
+                .Where(u => u.IsOccupied == false)
                 .OrderByDescending(u => u.Id)
                 .Take(6)
                 .ToListAsync();
 
             ViewBag.AvailableUnits = availableUnits;
+            ViewBag.TotalProperties   = await _context.Properties.CountAsync();
+            ViewBag.TotalVacantUnits  = await _context.Units.CountAsync(u => !u.IsOccupied);
+            ViewBag.TotalTenants      = await _context.Tenants.CountAsync();
+
             return View(await _context.Properties.ToListAsync());
         }
 

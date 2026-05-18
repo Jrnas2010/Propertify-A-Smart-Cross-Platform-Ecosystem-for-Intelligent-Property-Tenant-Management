@@ -1,16 +1,13 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Propertify.Mobile.Views;
 
 namespace Propertify.Mobile;
 
 public partial class App : Application
 {
-	public App()
-	{
-		InitializeComponent();
-	}
-
-	protected override Window CreateWindow(IActivationState? activationState)
-	{
-		return new Window(new AppShell());
-	}
+    // LoginPage is resolved from DI (it receives LoginViewModel via its constructor).
+    public App(LoginPage loginPage)
+    {
+        InitializeComponent();
+        MainPage = loginPage;
+    }
 }

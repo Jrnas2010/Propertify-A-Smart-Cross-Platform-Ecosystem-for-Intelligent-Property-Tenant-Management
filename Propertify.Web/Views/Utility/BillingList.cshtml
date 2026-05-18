@@ -1,55 +1,299 @@
 @model IEnumerable<Propertify.Web.Models.UtilityBill>
 @{
-    ViewData["Title"] = "قائمة فواتير المرافق";
+    ViewData["Title"] = "Billing | Propertify";
+    int totalCount   = ViewBag.TotalCount   ?? 0;
+    int paidCount    = ViewBag.PaidCount    ?? 0;
+    int unpaidCount  = ViewBag.UnpaidCount  ?? 0;
+    int overdueCount = ViewBag.OverdueCount ?? 0;
+    decimal totalPaid    = ViewBag.TotalPaid    ?? 0m;
+    decimal totalUnpaid  = ViewBag.TotalUnpaid  ?? 0m;
+    decimal totalOverdue = ViewBag.TotalOverdue ?? 0m;
+
+    string activeFilter = ViewBag.TypeFilter as string ?? "all";
+
+    var typeConfig = new Dictionary<string, (string icon, string color)>(StringComparer.OrdinalIgnoreCase) {
+        { "Rent",        ("fas fa-home",     "#f97316") },
+        { "Electricity", ("fas fa-bolt",     "#eab308") },
+        { "Water",       ("fas fa-tint",     "#3b82f6") },
+        { "Building",    ("fas fa-building", "#64748b") }
+    };
 }
 
-<div class="container-fluid py-4" style="max-width: 100%; padding-left: 1rem; padding-right: 1rem;">
-    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-        <h2 class="fw-bold">فواتير المرافق</h2>
-    </div>
+<style>
+    .billing-page { max-width: 100%; }
+
+    /* Summary cards */
+    .sum-card {
+        border-radius: 14px;
+        padding: 22px 24px;
+    }
+    .sum-card-paid    { background: #f0fdf4; border: 1px solid #bbf7d0; }
+    .sum-card-pending { background: #fffbeb; border: 1px solid #fde68a; }
+    .sum-card-overdue { background: #fef2f2; border: 1px solid #fecaca; }
+    .sum-label { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: #94a3b8; }
+    .sum-amount { font-size: 1.7rem; font-weight: 800; line-height: 1.2; margin-top: 6px; }
+
+    /* Search + filter bar */
+    .filter-card { background: #fff; border-radius: 14px; border: 1px solid #f1f5f9; box-shadow: 0 1px 6px rgba(0,0,0,0.05); padding: 14px 18px; }
+    .filter-search { background: #f8fafc; border: none; border-radius: 10px; padding: 10px 14px 10px 40px; font-size: 0.87rem; width: 100%; outline: none; color: #0f172a; }
+    .filter-search::placeholder { color: #94a3b8; }
+    .filter-search-wrap { position: relative; }
+    .filter-search-wrap i { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.85rem; }
+    .filter-tab {
+        font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+        border-radius: 8px; padding: 6px 14px; border: 1px solid #e2e8f0;
+        background: #fff; color: #64748b; text-decoration: none; transition: all .15s;
+        white-space: nowrap;
+    }
+    .filter-tab:hover { background: #f8fafc; color: #0f172a; }
+    .filter-tab.active { background: #0f172a; border-color: #0f172a; color: #fff; }
+
+    /* Invoice table card */
+    .invoice-card { background: #fff; border-radius: 16px; border: 1px solid #f1f5f9; box-shadow: 0 1px 6px rgba(0,0,0,0.05); overflow: hidden; }
+    .inv-table { width: 100%; border-collapse: collapse; }
+    .inv-table th {
+        padding: 14px 20px; font-size: 0.67rem; font-weight: 700; letter-spacing: 0.09em;
+        text-transform: uppercase; color: #94a3b8; background: #fff; border-bottom: 1px solid #f1f5f9;
+    }
+    .inv-table td { padding: 16px 20px; border-bottom: 1px solid #f8fafc; vertical-align: middle; }
+    .inv-table tbody tr:last-child td { border-bottom: none; }
+    .inv-table tbody tr { transition: background .1s; }
+    .inv-table tbody tr:hover { background: #fafafa; }
+
+    /* Invoice icon */
+    .inv-icon {
+        width: 38px; height: 38px; border-radius: 10px; background: #f1f5f9;
+        display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        color: #94a3b8; font-size: 0.9rem;
+    }
+
+    /* Status indicators */
+    .status-paid    { color: #16a34a; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.05em; }
+    .status-unpaid  { color: #d97706; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.05em; }
+    .status-overdue { color: #dc2626; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.05em; }
+
+    /* Amount */
+    .inv-amount { color: #3b82f6; font-weight: 700; font-size: 0.92rem; }
+
+    /* Update hover */
+    .status-cell { position: relative; }
+    .status-edit-btn {
+        opacity: 0; transition: opacity .15s; font-size: 0.65rem;
+        margin-left: 6px; color: #94a3b8; cursor: pointer;
+    }
+    tr:hover .status-edit-btn { opacity: 1; }
+
+    /* Export btn */
+    .export-all-btn {
+        background: #0f172a; color: #fff; border: none; border-radius: 10px;
+        padding: 10px 22px; font-size: 0.8rem; font-weight: 700;
+        letter-spacing: 0.06em; display: flex; align-items: center; gap: 8px;
+        cursor: pointer; transition: background .15s;
+    }
+    .export-all-btn:hover { background: #1e293b; }
+</style>
+
+<div class="billing-page py-4 px-1">
 
     @if (TempData["Success"] != null)
     {
-        <div class="alert alert-success">@TempData["Success"]</div>
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm rounded-3 mb-3" role="alert">
+            <i class="fas fa-check-circle me-2"></i> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
     }
 
-    <div class="card shadow-sm">
-        <div class="card-body p-0">
-            <table class="table table-hover mb-0">
-                <thead class="table-dark">
+    <!-- ── Header ─────────────────────────────────────────────── -->
+    <div class="d-flex justify-content-between align-items-start mb-4">
+        <div>
+            <h2 class="fw-bold mb-0" style="color:#0f172a; font-size:1.9rem;">Billing</h2>
+            <p class="mb-0 fw-bold" style="font-size:0.72rem; letter-spacing:0.1em; color:#94a3b8; text-transform:uppercase; margin-top:2px;">
+                @totalCount Invoices
+            </p>
+        </div>
+        <button class="export-all-btn" onclick="exportBilling()">
+            <i class="fas fa-download"></i> EXPORT ALL
+        </button>
+    </div>
+
+    <!-- ── Summary Cards ──────────────────────────────────────── -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="sum-card sum-card-paid">
+                <div class="sum-label">Total Paid</div>
+                <div class="sum-amount" style="color:#16a34a;">
+                    ر.ع @totalPaid.ToString("N3")
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="sum-card sum-card-pending">
+                <div class="sum-label">Total Pending</div>
+                <div class="sum-amount" style="color:#d97706;">
+                    ر.ع @totalUnpaid.ToString("N3")
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="sum-card sum-card-overdue">
+                <div class="sum-label">Total Overdue</div>
+                <div class="sum-amount" style="color:#dc2626;">
+                    ر.ع @totalOverdue.ToString("N3")
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Search + Filter Bar ────────────────────────────────── -->
+    <div class="filter-card mb-4">
+        <form method="get" asp-action="BillingList" class="d-flex align-items-center gap-3 flex-wrap">
+            <div class="filter-search-wrap flex-grow-1" style="min-width:200px;">
+                <i class="fas fa-search"></i>
+                <input type="text" name="search" value="@(ViewBag.Search ?? "")"
+                       class="filter-search" placeholder="Search invoices or tenants...">
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <i class="fas fa-filter" style="color:#94a3b8; font-size:0.85rem;"></i>
+                @foreach (var tab in new[] {
+                    ("all","ALL"), ("rent","RENT"), ("electricity","ELECTRICITY"),
+                    ("water","WATER"), ("building","BUILDING")
+                })
+                {
+                    <a href="?typeFilter=@tab.Item1@(!string.IsNullOrEmpty(ViewBag.Search as string) ? "&search=" + ViewBag.Search : "")"
+                       class="filter-tab @(activeFilter == tab.Item1 ? "active" : "")">
+                        @tab.Item2
+                    </a>
+                }
+            </div>
+        </form>
+    </div>
+
+    <!-- ── Invoice Table ──────────────────────────────────────── -->
+    <div class="invoice-card">
+        <div style="overflow-x:auto;">
+            <table class="inv-table" id="billingTable">
+                <thead>
                     <tr>
-                        <th>#</th>
-                        <th>نوع الخدمة</th>
-                        <th>الوحدة</th>
-                        <th>المستأجر</th>
-                        <th>القراءة السابقة</th>
-                        <th>القراءة الحالية</th>
-                        <th>المبلغ الإجمالي</th>
-                        <th>تاريخ الإصدار</th>
+                        <th>Invoice</th>
+                        <th>Type</th>
+                        <th>Amount</th>
+                        <th>Due Date</th>
+                        <th>Status</th>
                     </tr>
                 </thead>
                 <tbody>
                     @if (!Model.Any())
                     {
                         <tr>
-                            <td colspan="8" class="text-center text-muted py-4">لا توجد فواتير مسجلة بعد.</td>
+                            <td colspan="5" class="text-center py-5 text-muted" style="font-size:0.88rem;">
+                                <i class="fas fa-file-invoice fa-2x d-block mb-2 opacity-25"></i>
+                                No billing records found.
+                            </td>
                         </tr>
                     }
                     @foreach (var bill in Model)
                     {
-                        <tr>
-                            <td>@bill.BillId</td>
-                            <td>@bill.ServiceType</td>
-                            <td>@(bill.Unit?.UnitNumber ?? "-")</td>
-                            <td>@(bill.Tenant?.FullNameAr ?? "-")</td>
-                            <td>@bill.PreviousReading</td>
-                            <td>@bill.CurrentReading</td>
-                            <td class="fw-bold text-success">@bill.TotalAmount.ToString("N3") ر.ع</td>
-                            <td>@bill.IssueDate.ToString("dd/MM/yyyy")</td>
+                        var tName = (bill.Tenant?.FirstNameAr + " " + bill.Tenant?.LastNameAr).Trim();
+                        var cfgRaw = typeConfig.ContainsKey(bill.ServiceType) ? typeConfig[bill.ServiceType] : ("fas fa-file-invoice", "#94a3b8");
+                        var cfgIcon  = cfgRaw.Item1;
+                        var cfgColor = cfgRaw.Item2;
+
+                        string statusClass, statusIcon;
+                        switch (bill.Status) {
+                            case "Paid":
+                                statusClass = "status-paid"; statusIcon = "fas fa-check-circle"; break;
+                            case "Overdue":
+                                statusClass = "status-overdue"; statusIcon = "fas fa-times-circle"; break;
+                            default:
+                                statusClass = "status-unpaid"; statusIcon = "fas fa-clock"; break;
+                        }
+
+                        <tr data-name="@tName" data-type="@bill.ServiceType"
+                            data-amount="@bill.TotalAmount.ToString("N3")"
+                            data-date="@bill.IssueDate.ToString("M/d/yyyy")"
+                            data-status="@bill.Status">
+
+                            <!-- INVOICE -->
+                            <td>
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="inv-icon">
+                                        <i class="fas fa-file-invoice-dollar"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold" style="font-size:0.9rem; color:#0f172a;">@tName</div>
+                                        <div class="text-muted" style="font-size:0.75rem;">INV-@bill.BillId.ToString("D3")</div>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- TYPE -->
+                            <td>
+                                <span class="d-flex align-items-center gap-2"
+                                      style="font-size:0.78rem; font-weight:700; letter-spacing:0.06em; color:#64748b; text-transform:uppercase;">
+                                    <i class="@cfgIcon" style="color:@cfgColor; font-size:0.85rem;"></i>
+                                    @bill.ServiceType.ToUpper()
+                                </span>
+                            </td>
+
+                            <!-- AMOUNT -->
+                            <td>
+                                <span class="inv-amount">ر.ع @bill.TotalAmount.ToString("N3")</span>
+                            </td>
+
+                            <!-- DUE DATE -->
+                            <td>
+                                <span class="text-muted" style="font-size:0.83rem;">
+                                    @bill.IssueDate.ToString("M/d/yyyy")
+                                </span>
+                            </td>
+
+                            <!-- STATUS (clickable dropdown) -->
+                            <td class="status-cell">
+                                <div class="dropdown d-inline-block">
+                                    <button class="border-0 bg-transparent p-0 d-flex align-items-center gap-1 @statusClass"
+                                            data-bs-toggle="dropdown" style="cursor:pointer;">
+                                        <i class="@statusIcon"></i>
+                                        @bill.Status.ToUpper()
+                                        <i class="fas fa-chevron-down status-edit-btn"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3"
+                                        style="font-size:0.82rem; min-width:140px;">
+                                        @foreach (var s in new[] { "Paid", "Unpaid", "Overdue" })
+                                        {
+                                            <li>
+                                                <form asp-action="UpdateBillStatus" method="post">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="id" value="@bill.BillId">
+                                                    <input type="hidden" name="status" value="@s">
+                                                    <button type="submit" class="dropdown-item py-2">
+                                                        Mark as @s
+                                                    </button>
+                                                </form>
+                                            </li>
+                                        }
+                                    </ul>
+                                </div>
+                            </td>
                         </tr>
                     }
                 </tbody>
             </table>
         </div>
     </div>
+
 </div>
+
+<script>
+    function exportBilling() {
+        const rows = document.querySelectorAll('#billingTable tbody tr[data-name]');
+        let csv = 'Invoice Name,Type,Amount (OMR),Due Date,Status\n';
+        rows.forEach(r => {
+            csv += `"${r.dataset.name}","${r.dataset.type}","${r.dataset.amount}","${r.dataset.date}","${r.dataset.status}"\n`;
+        });
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'billing-export.csv';
+        a.click();
+    }
+</script>

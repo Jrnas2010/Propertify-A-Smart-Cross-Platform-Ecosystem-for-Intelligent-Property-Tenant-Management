@@ -1,14 +1,31 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<Shell
-    x:Class="Propertify.Mobile.AppShell"
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:views="clr-namespace:Propertify.Mobile.Views"
-    Title="Propertify">
+<?xml version="1.0" encoding="utf-8" ?>
+<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       x:Class="Propertify.Mobile.AppShell"
+       FlyoutBehavior="Disabled"
+       Shell.TabBarBackgroundColor="#1e3a5f"
+       Shell.TabBarForegroundColor="#ffffff"
+       Shell.TabBarTitleColor="#ffffff"
+       Shell.TabBarUnselectedColor="#64748b"
+       Shell.NavBarBackgroundColor="#1e3a5f"
+       Shell.NavBarHasShadow="False">
 
-    <ShellContent
-        Title="Home"
-        ContentTemplate="{DataTemplate views:MainPage}"
-        Route="MainPage" />
+    <TabBar>
+        <Tab x:Name="DashboardTab" Title="Dashboard">
+            <ShellContent x:Name="DashboardContent" Route="dashboard"/>
+        </Tab>
+
+        <Tab x:Name="ContractsTab" Title="Contracts">
+            <ShellContent x:Name="ContractsContent" Route="contracts"/>
+        </Tab>
+
+        <Tab x:Name="InvoicesTab" Title="Invoices">
+            <ShellContent x:Name="InvoicesContent" Route="invoices"/>
+        </Tab>
+
+        <Tab x:Name="MaintenanceTab" Title="Maintenance">
+            <ShellContent x:Name="MaintenanceContent" Route="maintenance"/>
+        </Tab>
+    </TabBar>
 
 </Shell>

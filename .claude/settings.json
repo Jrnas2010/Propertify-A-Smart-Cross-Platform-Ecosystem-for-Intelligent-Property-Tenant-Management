@@ -1,7 +1,17 @@
 {
   "permissions": {
     "allow": [
-      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\User\\\\Desktop\\\\MEC\\\\Spring 2026\\\\Project Impelementation and Design\\\\Coding\\\\Propertify\\\\propertify.mobile\" -Recurse -Include \"*.xaml\",\"*.xaml.cs\")"
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\User\\\\Desktop\\\\MEC\\\\Spring 2026\\\\Project Impelementation and Design\\\\Coding\\\\Propertify\\\\propertify.mobile\" -Recurse -Include \"*.xaml\",\"*.xaml.cs\")",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\User\\\\Desktop\\\\MEC\\\\Spring 2026\\\\Project Impelementation and Design\\\\Coding\\\\Propertify\" -Recurse -Depth 2)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\User\\\\Desktop\\\\MEC\\\\Spring 2026\\\\Project Impelementation and Design\\\\Coding\\\\Propertify\\\\Propertify.Web\\\\Views\" -Directory | ForEach-Object { $_.Name })",
+      "Bash(Remove-Item \"c:\\\\Users\\\\User\\\\Desktop\\\\MEC\\\\Spring 2026\\\\Project Impelementation and Design\\\\Coding\\\\Propertify\\\\Propertify.Web\\\\Migrations\\\\20260518000001_AddLogsSettingsAndSysAdmin.cs\" -Force)",
+      "PowerShell(git add Propertify.Web/Controllers/AccountController.cs Propertify.Web/Controllers/AdminController.cs Propertify.Web/Controllers/ContractController.cs Propertify.Web/Controllers/DashboardController.cs Propertify.Web/Controllers/HomeController.cs Propertify.Web/Controllers/SettingsController.cs Propertify.Web/Controllers/TenantController.cs Propertify.Web/Controllers/UtilityController.cs Propertify.Web/Controllers/MobileApiController.cs Propertify.Web/Controllers/SupplierController.cs Propertify.Web/Data/ApplicationDbContext.cs Propertify.Web/Migrations Propertify.Web/Models/User.cs Propertify.Web/Models/UtilityBill.cs Propertify.Web/Models/ActivityLog.cs Propertify.Web/Models/Supplier.cs Propertify.Web/Models/SystemSetting.cs Propertify.Web/Program.cs Propertify.Web/Views Propertify.Web/appsettings.json Propertify.Web/wwwroot/css/site.css)",
+      "PowerShell(git status --short | Select-String \"^[AMD?]\" | Where-Object { $_ -notmatch \"bin/\" -and $_ -notmatch \"obj/\" } | head -10)",
+      "PowerShell(git status --short | Where-Object { $_ -notmatch \"bin/\" -and $_ -notmatch \"obj/\" } | Select-Object -First 20)",
+      "PowerShell(git add .claude/settings.json; git status --short | Where-Object { $_ -match \"^\\\\?\\\\?\" -or $_ -match \"^ M\" } | Where-Object { $_ -notmatch \"bin/\" -and $_ -notmatch \"obj/\" })",
+      "PowerShell(git add \"Propertify.Web/Services/\" \"Propertify.Web/wwwroot/uploads/\")",
+      "PowerShell(git status --short | Where-Object { $_ -notmatch \"bin/\" -and $_ -notmatch \"obj/\" })",
+      "PowerShell(git add .claude/settings.json)"
     ]
   }
 }

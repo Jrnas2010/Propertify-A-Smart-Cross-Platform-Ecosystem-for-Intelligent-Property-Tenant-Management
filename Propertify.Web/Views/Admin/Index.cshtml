@@ -1,49 +1,613 @@
-@model DashboardViewModel
+@model IEnumerable<Propertify.Web.Models.User>
+@using System.Text.Json
+@{
+    ViewData["Title"] = "System Users | Propertify";
+    var properties = ViewBag.Properties as List<Propertify.Web.Models.Property> ?? new();
+    var isSysAdmin = ViewBag.IsSystemAdmin == true;
+    var allPerms = new[] {
+        "Manage Properties", "Manage Tenants", "Manage Contracts",
+        "Manage Maintenance", "Manage Billing", "View Reports",
+        "Manage Users", "Create Maintenance"
+    };
+    var avatarColors = new[] { "#3b82f6", "#8b5cf6", "#10b981", "#f59e0b", "#ef4444", "#ec4899" };
+}
 
-<div class="container-fluid" style="max-width: 100%; padding-left: 1rem; padding-right: 1rem;">
-    <div class="row mb-4 g-3">
-        <div class="col-md-3">
-            <div class="card shadow border-0 bg-primary text-white p-3">
-                <h5>الدخل المتوقع (AI)</h5>
-                <h3>@Model.PredictedNextMonthRevenue OMR</h3>
-            </div>
+<div class="container-fluid py-4" style="max-width:100%;">
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm rounded-3 mb-3" role="alert">
+            <i class="fas fa-check-circle me-2"></i> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
-        <div class="col-md-3">
-            <a asp-action="ExportTenants" class="btn btn-success w-100 mb-2">تصدير المستأجرين (Excel)</a>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm rounded-3 mb-3" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i> @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
+    }
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h4 class="fw-bold mb-0" style="color:#0f172a;">System Users</h4>
+            <p class="mb-0" style="color:#94a3b8; font-size:0.83rem;">
+                @Model.Count() users registered in the system
+            </p>
+        </div>
+        <button class="btn btn-primary rounded-pill px-4"
+                data-bs-toggle="modal" data-bs-target="#addUserModal">
+            <i class="fas fa-plus me-1"></i> ADD USER
+        </button>
     </div>
 
-    <div class="row">
-        <div class="col-md-6">
-            <canvas id="occupancyChart"></canvas>
+    <!-- Filters -->
+    <div class="card border-0 shadow-sm rounded-4 p-3 mb-4">
+        <form method="get" class="row g-3 align-items-center">
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-0">
+                        <i class="fas fa-search text-muted"></i>
+                    </span>
+                    <input type="text" name="search" value="@ViewBag.Search"
+                           class="form-control bg-light border-0 shadow-none"
+                           placeholder="Search by name or email...">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select name="statusFilter" id="statusFilter" class="form-select border-0 bg-light"
+                        onchange="this.form.submit()">
+                    <option value="">All Statuses</option>
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="roleFilter" id="roleFilter" class="form-select border-0 bg-light"
+                        onchange="this.form.submit()">
+                    <option value="">All Roles</option>
+                    <option value="Owner">Owner</option>
+                    <option value="Employee">Employee</option>
+                    <option value="Tenant">Tenant</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-dark rounded-pill px-4 w-100">Search</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- User Cards -->
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5 text-muted">
+            <i class="fas fa-users-slash fa-3x mb-3 opacity-25 d-block"></i>
+            <p>No users match the current filters.</p>
         </div>
-        <div id="map" style="height: 400px;" class="col-md-6 rounded shadow"></div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var user in Model)
+            {
+                var initial = user.FullName?.FirstOrDefault().ToString()?.ToUpper() ?? "?";
+                var permList = string.IsNullOrEmpty(user.Permissions)
+                    ? Array.Empty<string>()
+                    : user.Permissions.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                var permCount = permList.Length;
+                var colorIdx = Math.Abs((user.FullName ?? "").GetHashCode()) % avatarColors.Length;
+                var avatarBg = avatarColors[colorIdx];
+                var roleBadge = user.Role switch {
+                    "Owner"    => "bg-danger-subtle text-danger",
+                    "Employee" => "bg-primary-subtle text-primary",
+                    _          => "bg-success-subtle text-success"
+                };
+
+                <div class="col-xl-3 col-lg-4 col-md-6">
+                    <div class="user-card card border-0 shadow-sm rounded-4 overflow-hidden h-100 d-flex flex-column">
+                        <div class="p-4 flex-grow-1">
+                            <!-- Avatar + Status -->
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div class="user-avatar rounded-3 d-flex align-items-center justify-content-center
+                                            fw-bold text-white fs-5"
+                                     style="width:50px;height:50px;background:@avatarBg;flex-shrink:0;">
+                                    @initial
+                                </div>
+                                <span class="badge @(user.Status == "Active" ? "bg-success-subtle text-success" : "bg-secondary-subtle text-secondary") rounded-pill px-3 small">
+                                    <i class="fas fa-circle me-1" style="font-size:7px;"></i>
+                                    @user.Status.ToUpper()
+                                </span>
+                            </div>
+
+                            <!-- Name + Role -->
+                            <h6 class="fw-bold mb-1 text-truncate" title="@user.FullName">@user.FullName</h6>
+                            <span class="badge @roleBadge rounded-pill px-2 small mb-3">@user.Role.ToUpper()</span>
+
+                            <!-- Details -->
+                            <div class="small text-muted mb-1">
+                                <i class="fas fa-envelope me-2" style="width:14px;"></i>
+                                <span class="text-truncate d-inline-block" style="max-width:160px;" title="@user.Email">
+                                    @user.Email
+                                </span>
+                            </div>
+                            <div class="small text-muted mb-1">
+                                <i class="fas fa-key me-2" style="width:14px;"></i>
+                                @permCount PERMISSIONS
+                            </div>
+                            @if (user.Tenant != null)
+                            {
+                                <div class="small text-muted">
+                                    <i class="fas fa-link me-2" style="width:14px;"></i>
+                                    @user.Tenant.FullNameAr
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Activity Log (collapsed) -->
+                        <div class="border-top px-4 py-2" id="actLog-@user.Id" style="display:none; background:#f8fafc;">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="small fw-bold text-muted text-uppercase" style="font-size:0.7rem; letter-spacing:.05em;">
+                                    <i class="fas fa-clock-rotate-left me-1"></i>Recent Activity
+                                </span>
+                                <span class="badge bg-secondary-subtle text-secondary rounded-pill" id="actBadge-@user.Id">—</span>
+                            </div>
+                            <div id="actContent-@user.Id" class="small">
+                                <div class="text-muted text-center py-2" style="font-size:0.78rem;">
+                                    <i class="fas fa-spinner fa-spin me-1"></i> Loading…
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Footer -->
+                        <div class="border-top d-flex" style="min-height:42px;">
+                            <button class="btn btn-sm btn-white flex-shrink-0 px-3 border-end"
+                                    title="Toggle Activity Log"
+                                    onclick="toggleActivity(@user.Id, this)">
+                                <i class="fas fa-chart-line text-muted"></i>
+                            </button>
+                            <button class="btn btn-sm btn-white flex-grow-1 py-2 border-end small fw-bold text-primary"
+                                    onclick="openEditModal(@user.Id, '@Html.Raw(System.Text.Json.JsonSerializer.Serialize(user.FullName))', '@user.Role', '@Html.Raw(System.Text.Json.JsonSerializer.Serialize(user.Permissions ?? ""))')">
+                                EDIT ROLE
+                            </button>
+                            <form asp-action="ToggleStatus" asp-route-id="@user.Id" method="post" class="flex-grow-1">
+                                @Html.AntiForgeryToken()
+                                <button type="submit"
+                                        class="btn btn-sm btn-white w-100 py-2 small fw-bold @(user.Status == "Active" ? "text-danger" : "text-success")">
+                                    @(user.Status == "Active" ? "DEACTIVATE" : "ACTIVATE")
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<!-- ── ADD USER MODAL ── -->
+<div class="modal fade" id="addUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow rounded-4 overflow-hidden">
+            <form asp-action="Create" method="post" id="addUserForm">
+                @Html.AntiForgeryToken()
+                <div class="modal-header py-3" style="background:#0f172a;">
+                    <div>
+                        <h6 class="modal-title fw-bold text-white mb-0">
+                            <i class="fas fa-user-plus me-2"></i> ADD USER
+                        </h6>
+                        <small class="text-white opacity-50">Create New System Account</small>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body p-4">
+                    <!-- Base fields -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Full Name</label>
+                            <input type="text" name="fullName" class="form-control rounded-3 bg-light border-0"
+                                   placeholder="e.g. Ahmed Al Balushi" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Email Address</label>
+                            <input type="email" name="email" class="form-control rounded-3 bg-light border-0"
+                                   placeholder="user@example.com" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Password</label>
+                            <input type="password" name="password" class="form-control rounded-3 bg-light border-0"
+                                   placeholder="Min. 8 characters" minlength="8" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-bold">Role</label>
+                            <select name="role" id="addRoleSelect" class="form-select rounded-3 bg-light border-0"
+                                    onchange="onAddRoleChange(this.value)" required>
+                                <option value="Employee">Employee</option>
+                                @if (isSysAdmin)
+                                {
+                                    <option value="Owner">Owner</option>
+                                }
+                                <option value="Tenant">Tenant</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-bold">Status</label>
+                            <select name="status" class="form-select rounded-3 bg-light border-0">
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- ── TENANT FIELDS (shown only when role = Tenant) ── -->
+                    <div id="tenantFields" style="display:none;" class="mb-3">
+                        <div class="row g-3 mb-2">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Property</label>
+                                <select id="addPropertySelect" class="form-select rounded-3 bg-light border-0"
+                                        onchange="loadUnitsForAdd(this.value)">
+                                    <option value="">Select Property</option>
+                                    @foreach (var p in properties)
+                                    {
+                                        <option value="@p.Id">@p.Name</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Unit</label>
+                                <select id="addUnitSelect" class="form-select rounded-3 bg-light border-0"
+                                        onchange="onAddUnitSelected(this.value)">
+                                    <option value="">Select Unit</option>
+                                </select>
+                            </div>
+                        </div>
+                        <input type="hidden" name="tenantId" id="addTenantId">
+
+                        <!-- Linked tenant badge -->
+                        <div id="linkedTenantInfo" class="rounded-3 px-3 py-2 small d-flex align-items-center gap-2"
+                             style="display:none !important; background:#eff6ff; color:#1d4ed8;">
+                            <i class="fas fa-user-tie"></i>
+                            <span>Linked tenant: <strong id="linkedTenantName"></strong></span>
+                            <span class="ms-auto badge bg-success rounded-pill">Matched</span>
+                        </div>
+                        <div id="noTenantWarning" class="rounded-3 px-3 py-2 small"
+                             style="display:none; background:#fefce8; color:#92400e;">
+                            <i class="fas fa-exclamation-triangle me-1"></i>
+                            No tenant record found for this unit. The user will be created without a tenant link.
+                        </div>
+
+                        <!-- Tenant mobile permissions -->
+                        <div class="border rounded-4 p-3 mt-3">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="fw-bold small">
+                                    <i class="fas fa-mobile-alt me-2 text-primary"></i>
+                                    MOBILE APP ACCESS
+                                </span>
+                                <span class="text-muted small">Controls which tabs are visible in the mobile app</span>
+                            </div>
+                            <div class="d-flex flex-wrap gap-2">
+                                <label class="tenant-perm-pill active d-flex align-items-center gap-1 border rounded-pill px-3 py-2 small"
+                                       style="cursor:pointer; user-select:none;">
+                                    <input type="checkbox" class="tenant-perm-check d-none" value="Contracts" checked>
+                                    <i class="fas fa-check tenant-perm-icon me-1" style="font-size:9px;"></i>
+                                    <i class="fas fa-file-contract me-1"></i> Contracts
+                                </label>
+                                <label class="tenant-perm-pill active d-flex align-items-center gap-1 border rounded-pill px-3 py-2 small"
+                                       style="cursor:pointer; user-select:none;">
+                                    <input type="checkbox" class="tenant-perm-check d-none" value="Invoices" checked>
+                                    <i class="fas fa-check tenant-perm-icon me-1" style="font-size:9px;"></i>
+                                    <i class="fas fa-file-invoice-dollar me-1"></i> Invoices &amp; Billing
+                                </label>
+                                <label class="tenant-perm-pill active d-flex align-items-center gap-1 border rounded-pill px-3 py-2 small"
+                                       style="cursor:pointer; user-select:none;">
+                                    <input type="checkbox" class="tenant-perm-check d-none" value="Maintenance" checked>
+                                    <i class="fas fa-check tenant-perm-icon me-1" style="font-size:9px;"></i>
+                                    <i class="fas fa-tools me-1"></i> Maintenance
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── ADMIN/EMPLOYEE PERMISSIONS (hidden when role = Tenant) ── -->
+                    <div id="adminPermissions" class="border rounded-4 p-3">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="fw-bold small">
+                                <i class="fas fa-shield-alt me-2 text-primary"></i>
+                                CUSTOMIZE PERMISSIONS
+                            </span>
+                            <button type="button" class="btn btn-link btn-sm text-decoration-none p-0 small"
+                                    onclick="toggleAllPerms(true)">Select All</button>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2" id="permContainer">
+                            @foreach (var perm in allPerms)
+                            {
+                                <label class="perm-pill d-flex align-items-center gap-1 border rounded-pill px-3 py-1 small"
+                                       style="cursor:pointer; user-select:none;">
+                                    <input type="checkbox" class="perm-check d-none" value="@perm">
+                                    <i class="fas fa-check perm-check-icon me-1" style="font-size:9px; display:none;"></i>
+                                    @perm
+                                </label>
+                            }
+                        </div>
+                    </div>
+
+                    <input type="hidden" name="permissions" id="permissionsInput">
+                </div>
+
+                <div class="modal-footer border-0 pt-0 px-4 pb-4">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4"
+                            onclick="collectPermissions()">
+                        <i class="fas fa-user-plus me-1"></i> CREATE USER
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
-@section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<!-- ── EDIT ROLE MODAL ── -->
+<div class="modal fade" id="editRoleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-4 overflow-hidden">
+            <form asp-action="UpdateRole" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" id="editUserId">
+                <div class="modal-header py-3" style="background:#0f172a;">
+                    <h6 class="modal-title fw-bold text-white mb-0" id="editUserTitle">Edit Role</h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Role</label>
+                        <select name="role" id="editRoleSelect" class="form-select rounded-3 bg-light border-0">
+                            <option value="Employee">Employee</option>
+                            <option value="Owner">Owner</option>
+                            <option value="Tenant">Tenant</option>
+                        </select>
+                    </div>
+                    <div class="border rounded-4 p-3">
+                        <p class="fw-bold small mb-2">
+                            <i class="fas fa-shield-alt me-2 text-primary"></i>PERMISSIONS
+                        </p>
+                        <div class="d-flex flex-wrap gap-2" id="editPermContainer">
+                            @foreach (var perm in allPerms)
+                            {
+                                <label class="edit-perm-pill d-flex align-items-center gap-1 border rounded-pill px-3 py-1 small"
+                                       style="cursor:pointer; user-select:none;">
+                                    <input type="checkbox" class="edit-perm-check d-none" value="@perm">
+                                    <i class="fas fa-check edit-perm-icon me-1" style="font-size:9px; display:none;"></i>
+                                    @perm
+                                </label>
+                            }
+                        </div>
+                        <input type="hidden" name="permissions" id="editPermissionsInput">
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0 px-4 pb-4">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4"
+                            onclick="collectEditPermissions()">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
-    <script>
-        // 1. رسم السلايس شارت
-        const ctx = document.getElementById('occupancyChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'pie',
-            data: {
-                labels: ['Occupied', 'Vacant'],
-                datasets: [{
-                    data: [@Model.OccupiedUnits, @Model.VacantUnits],
-                    backgroundColor: ['#2ecc71', '#e74c3c']
-                }]
-            }
+<style>
+    .user-card { transition: transform .15s, box-shadow .15s; }
+    .user-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1) !important; }
+    .btn-white { background:#fff; border:none; }
+    .btn-white:hover { background:#f8f9fa; }
+    .perm-pill, .edit-perm-pill, .tenant-perm-pill { transition: all .15s; }
+    .perm-pill.active, .edit-perm-pill.active {
+        background: #eff6ff; border-color: #3b82f6 !important; color: #1d4ed8;
+    }
+    .tenant-perm-pill.active {
+        background: #eff6ff; border-color: #3b82f6 !important; color: #1d4ed8;
+    }
+    .perm-pill.active .perm-check-icon,
+    .edit-perm-pill.active .edit-perm-icon { display: inline !important; }
+    .tenant-perm-pill.active .tenant-perm-icon { display: inline !important; }
+    .tenant-perm-pill:not(.active) .tenant-perm-icon { display: none; }
+</style>
+
+<script>
+    // ── Permission pill toggles ──────────────────────────────────────────────
+    document.querySelectorAll('.perm-pill').forEach(pill => {
+        pill.addEventListener('click', () => {
+            pill.classList.toggle('active');
+            pill.querySelector('.perm-check').checked = pill.classList.contains('active');
+        });
+    });
+
+    document.querySelectorAll('.edit-perm-pill').forEach(pill => {
+        pill.addEventListener('click', () => {
+            pill.classList.toggle('active');
+            pill.querySelector('.edit-perm-check').checked = pill.classList.contains('active');
+        });
+    });
+
+    document.querySelectorAll('.tenant-perm-pill').forEach(pill => {
+        pill.addEventListener('click', () => {
+            pill.classList.toggle('active');
+            pill.querySelector('.tenant-perm-check').checked = pill.classList.contains('active');
+        });
+    });
+
+    function toggleAllPerms(selectAll) {
+        document.querySelectorAll('.perm-pill').forEach(pill => {
+            if (selectAll) pill.classList.add('active');
+            else pill.classList.remove('active');
+            pill.querySelector('.perm-check').checked = selectAll;
+        });
+    }
+
+    // ── Role change: show/hide Tenant vs Admin sections ───────────────────────
+    function onAddRoleChange(role) {
+        const isTenant = role === 'Tenant';
+        document.getElementById('tenantFields').style.display     = isTenant ? '' : 'none';
+        document.getElementById('adminPermissions').style.display = isTenant ? 'none' : '';
+
+        if (!isTenant) {
+            // Reset tenant selections
+            document.getElementById('addPropertySelect').value = '';
+            document.getElementById('addUnitSelect').innerHTML  = '<option value="">Select Unit</option>';
+            document.getElementById('addTenantId').value        = '';
+            document.getElementById('linkedTenantInfo').style.display  = 'none';
+            document.getElementById('noTenantWarning').style.display   = 'none';
+        }
+    }
+
+    // ── AJAX: load units when property is selected ───────────────────────────
+    async function loadUnitsForAdd(propertyId) {
+        const unitSel = document.getElementById('addUnitSelect');
+        document.getElementById('addTenantId').value = '';
+        document.getElementById('linkedTenantInfo').style.display = 'none';
+        document.getElementById('noTenantWarning').style.display  = 'none';
+
+        if (!propertyId) {
+            unitSel.innerHTML = '<option value="">Select Unit</option>';
+            return;
+        }
+        unitSel.innerHTML = '<option value="">Loading…</option>';
+        const res   = await fetch(`/Admin/GetUnitsByProperty?propertyId=${propertyId}`);
+        const units = await res.json();
+        unitSel.innerHTML = '<option value="">Select Unit</option>' +
+            units.map(u =>
+                `<option value="${u.id}">${u.unitNumber}${u.isOccupied ? ' — Occupied' : ' — Vacant'}</option>`
+            ).join('');
+    }
+
+    // ── AJAX: find tenant when unit is selected ──────────────────────────────
+    async function onAddUnitSelected(unitId) {
+        document.getElementById('addTenantId').value = '';
+        document.getElementById('linkedTenantInfo').style.display = 'none';
+        document.getElementById('noTenantWarning').style.display  = 'none';
+
+        if (!unitId) return;
+        const res    = await fetch(`/Admin/GetTenantByUnit?unitId=${unitId}`);
+        const tenant = await res.json();
+        if (tenant) {
+            document.getElementById('addTenantId').value          = tenant.id;
+            document.getElementById('linkedTenantName').textContent = tenant.fullNameEn;
+            document.getElementById('linkedTenantInfo').style.display = '';
+        } else {
+            document.getElementById('noTenantWarning').style.display = '';
+        }
+    }
+
+    // ── Collect permissions before submit ────────────────────────────────────
+    function collectPermissions() {
+        const role = document.getElementById('addRoleSelect').value;
+        let perms;
+        if (role === 'Tenant') {
+            perms = [...document.querySelectorAll('.tenant-perm-check:checked')].map(c => c.value);
+        } else {
+            perms = [...document.querySelectorAll('.perm-check:checked')].map(c => c.value);
+        }
+        document.getElementById('permissionsInput').value = perms.join(',');
+    }
+
+    function collectEditPermissions() {
+        const checked = [...document.querySelectorAll('.edit-perm-check:checked')].map(c => c.value);
+        document.getElementById('editPermissionsInput').value = checked.join(',');
+    }
+
+    // ── Restore filter dropdowns on page load ────────────────────────────────
+    (function () {
+        var sf = '@(ViewBag.StatusFilter ?? "")';
+        var rf = '@(ViewBag.RoleFilter   ?? "")';
+        if (sf) document.getElementById('statusFilter').value = sf;
+        if (rf) document.getElementById('roleFilter').value   = rf;
+    })();
+
+    // ── Reset modal state when it opens ─────────────────────────────────────
+    document.getElementById('addUserModal').addEventListener('show.bs.modal', () => {
+        document.getElementById('addRoleSelect').value              = 'Employee';
+        document.getElementById('tenantFields').style.display       = 'none';
+        document.getElementById('adminPermissions').style.display   = '';
+        document.getElementById('addTenantId').value                = '';
+        document.getElementById('addPropertySelect').value          = '';
+        document.getElementById('addUnitSelect').innerHTML          = '<option value="">Select Unit</option>';
+        document.getElementById('linkedTenantInfo').style.display   = 'none';
+        document.getElementById('noTenantWarning').style.display    = 'none';
+        document.querySelectorAll('.perm-pill').forEach(p => {
+            p.classList.remove('active');
+            p.querySelector('.perm-check').checked = false;
+        });
+        document.querySelectorAll('.tenant-perm-pill').forEach(p => {
+            p.classList.add('active');
+            p.querySelector('.tenant-perm-check').checked = true;
+        });
+        document.getElementById('addUserForm').reset();
+    });
+
+    // ── Edit role modal ──────────────────────────────────────────────────────
+    function openEditModal(id, nameJson, role, permsJson) {
+        document.getElementById('editUserId').value = id;
+        document.getElementById('editUserTitle').textContent = 'Edit Role: ' + JSON.parse(nameJson);
+        document.getElementById('editRoleSelect').value = role;
+
+        const existingPerms = JSON.parse(permsJson || '""').split(',').map(p => p.trim()).filter(Boolean);
+        document.querySelectorAll('.edit-perm-pill').forEach(pill => {
+            const val      = pill.querySelector('.edit-perm-check').value;
+            const isActive = existingPerms.includes(val);
+            pill.classList.toggle('active', isActive);
+            pill.querySelector('.edit-perm-check').checked = isActive;
         });
 
-        // 2. ميزة الخريطة (ولاية السيب)
-        var map = L.map('map').setView([23.67, 58.18], 12); // إحداثيات السيب
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-        // إضافة دبوس افتراضي لبناية
-        L.marker([23.68, 58.19]).addTo(map).bindPopup("Al-Seeb Breeze - 5 Units Vacant");
-    </script>
-}
+        new bootstrap.Modal(document.getElementById('editRoleModal')).show();
+    }
+
+    // ── Activity log toggle ──────────────────────────────────────────────────
+    const _actLoaded = {};
+    async function toggleActivity(userId, btn) {
+        const panel = document.getElementById('actLog-' + userId);
+        const isOpen = panel.style.display !== 'none';
+
+        if (isOpen) {
+            panel.style.display = 'none';
+            btn.querySelector('i').className = 'fas fa-chart-line text-muted';
+            return;
+        }
+
+        panel.style.display = '';
+        btn.querySelector('i').className = 'fas fa-chart-line text-primary';
+
+        if (_actLoaded[userId]) return;
+        _actLoaded[userId] = true;
+
+        try {
+            const res  = await fetch(`/Admin/GetUserActivity?userId=${userId}`);
+            const logs = await res.json();
+            const badge = document.getElementById('actBadge-' + userId);
+            const content = document.getElementById('actContent-' + userId);
+
+            badge.textContent = logs.length ? logs.length + ' events' : '0 events';
+
+            if (!logs.length) {
+                content.innerHTML = '<div class="text-muted text-center py-2" style="font-size:0.78rem;">No mobile activity recorded yet.</div>';
+                return;
+            }
+
+            const platformIcon = p => p === 'Mobile'
+                ? '<i class="fas fa-mobile-alt text-primary me-1" style="font-size:10px;"></i>'
+                : '<i class="fas fa-desktop text-secondary me-1" style="font-size:10px;"></i>';
+
+            content.innerHTML = logs.map(l => `
+                <div class="d-flex justify-content-between align-items-start py-1 border-bottom" style="gap:8px;">
+                    <div style="min-width:0;">
+                        <div class="fw-semibold" style="font-size:0.78rem;">${platformIcon(l.platform)}${l.action}</div>
+                        ${l.details ? `<div class="text-muted text-truncate" style="font-size:0.72rem;">${l.details}</div>` : ''}
+                    </div>
+                    <div class="text-muted flex-shrink-0" style="font-size:0.68rem; white-space:nowrap;">${l.timestamp}</div>
+                </div>`).join('');
+        } catch {
+            document.getElementById('actContent-' + userId).innerHTML =
+                '<div class="text-danger small py-2">Failed to load activity.</div>';
+        }
+    }
+</script>

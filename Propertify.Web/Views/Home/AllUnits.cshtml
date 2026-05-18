@@ -1,125 +1,253 @@
 @model IEnumerable<Propertify.Web.Models.Unit>
 @{
     Layout = "_PublicLayout";
-    ViewData["Title"] = "All Available Units | Propertify";
+    ViewData["Title"] = "Browse Units | Propertify";
 }
 
-<div class="bg-light py-5">
-    <div class="container py-4" dir="rtl">
-        <!-- Header -->
-        <div class="text-center mb-5">
-            <h6 class="text-primary fw-bold text-uppercase mb-2">Portfolio</h6>
-            <h1 class="display-5 fw-bold mb-3">All Available Units</h1>
-            <p class="text-muted mx-auto" style="max-width: 700px;">Explore our full list of residential and commercial spaces available for lease across the Sultanate.</p>
-        </div>
+<style>
+    .au-hero { background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%); padding: 60px 0 100px; color: #fff; }
+    .au-hero h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800; margin-bottom: 10px; }
+    .au-hero p { color: #bfdbfe; font-size: 0.95rem; margin: 0; }
 
-        <!-- Filter & Search Bar -->
-        <div class="card border-0 shadow-sm rounded-4 p-3 mb-5 bg-white">
-            <div class="row g-3 align-items-center">
-                <div class="col-md-8">
-                    <div class="input-group">
-                        <span class="input-group-text bg-light border-0"><i class="fas fa-search text-muted"></i></span>
-                        <input type="text" id="unitSearch" class="form-control bg-light border-0 shadow-none" placeholder="Search by property name, unit number, or location...">
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <select class="form-select bg-light border-0 shadow-none" id="typeFilter">
-                        <option value="all">All Property Types</option>
-                        <option value="Residential">Residential</option>
-                        <option value="Commercial">Commercial</option>
-                    </select>
+    .au-filter-wrap { margin-top: -50px; position: relative; z-index: 10; margin-bottom: 40px; }
+    .au-filter-card { background: #fff; border-radius: 20px; box-shadow: 0 6px 32px rgba(0,0,0,0.1); padding: 20px 24px; }
+    .au-filter-input { background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 11px 16px 11px 44px; font-size: 0.88rem; font-family: inherit; color: #0f172a; width: 100%; outline: none; transition: border-color .15s; }
+    .au-filter-input:focus { border-color: #3b82f6; }
+    .au-filter-input::placeholder { color: #94a3b8; }
+    .au-filter-wrap-icon { position: relative; }
+    .au-filter-wrap-icon i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.85rem; pointer-events: none; }
+    .au-select { background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 11px 14px; font-size: 0.88rem; font-family: inherit; color: #0f172a; width: 100%; outline: none; appearance: none; transition: border-color .15s; }
+    .au-select:focus { border-color: #3b82f6; }
+    .au-search-btn { background: #1e3a5f; color: #fff; border: none; border-radius: 12px; padding: 12px 28px; font-size: 0.85rem; font-weight: 700; cursor: pointer; width: 100%; transition: background .15s; }
+    .au-search-btn:hover { background: #3b82f6; }
+
+    .au-results-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 8px; }
+    .au-results-count { font-size: 0.82rem; font-weight: 600; color: #64748b; }
+    .au-results-count strong { color: #0f172a; }
+
+    .unit-card {
+        background: #fff; border-radius: 20px; overflow: hidden;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.06); border: 1px solid #f1f5f9;
+        transition: transform .2s, box-shadow .2s; display: flex; flex-direction: column; height: 100%;
+    }
+    .unit-card:hover { transform: translateY(-6px); box-shadow: 0 12px 32px rgba(0,0,0,0.11); }
+    .unit-card-img { position: relative; height: 220px; overflow: hidden; }
+    .unit-card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .3s; }
+    .unit-card:hover .unit-card-img img { transform: scale(1.05); }
+    .unit-avail-badge { position: absolute; top: 14px; left: 14px; background: #10b981; color: #fff; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 5px 12px; border-radius: 50px; }
+    .unit-type-badge { position: absolute; top: 14px; right: 14px; background: rgba(15,23,42,0.75); color: #fff; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 5px 12px; border-radius: 50px; backdrop-filter: blur(4px); }
+    .unit-card-body { padding: 20px; flex: 1; display: flex; flex-direction: column; }
+    .unit-name { font-weight: 700; font-size: 1rem; color: #0f172a; margin-bottom: 4px; }
+    .unit-prop { font-size: 0.8rem; font-weight: 600; color: #3b82f6; margin-bottom: 4px; }
+    .unit-loc { color: #94a3b8; font-size: 0.78rem; display: flex; align-items: center; gap: 6px; margin-bottom: 14px; }
+    .unit-features { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 16px; }
+    .unit-feature { display: flex; align-items: center; gap: 5px; font-size: 0.78rem; font-weight: 600; color: #475569; }
+    .unit-feature i { color: #94a3b8; font-size: 0.75rem; }
+    .unit-card-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 14px; margin-top: auto; }
+    .unit-price { font-size: 1.1rem; font-weight: 800; color: #1e3a5f; }
+    .unit-price small { font-size: 0.72rem; font-weight: 500; color: #94a3b8; }
+    .unit-btn { background: #1e3a5f; color: #fff; border: none; border-radius: 50px; padding: 9px 20px; font-size: 0.78rem; font-weight: 700; cursor: pointer; text-decoration: none; transition: background .15s; }
+    .unit-btn:hover { background: #3b82f6; color: #fff; }
+
+    .no-results { text-align: center; padding: 80px 20px; color: #94a3b8; }
+    .no-results i { font-size: 3rem; opacity: 0.3; display: block; margin-bottom: 16px; }
+
+    @@media (max-width: 768px) {
+        .au-hero { padding: 40px 0 80px; }
+        .au-filter-card { padding: 16px; }
+    }
+</style>
+
+<!-- ── Page Hero ── -->
+<section class="au-hero">
+    <div class="container">
+        <div style="font-size:0.72rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:#93c5fd; margin-bottom:8px;">
+            <i class="fas fa-th-large me-1"></i> All Available Units
+        </div>
+        <h1>Find Your Perfect Space</h1>
+        <p>Explore all vacant residential and commercial units available for lease across our portfolio.</p>
+    </div>
+</section>
+
+<!-- ── Filter Card ── -->
+<div class="container au-filter-wrap">
+    <div class="au-filter-card">
+        <div class="row g-3 align-items-end">
+            <div class="col-lg-5">
+                <div class="au-filter-wrap-icon">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" class="au-filter-input" placeholder="Search by unit, property name, or location..." />
                 </div>
             </div>
-        </div>
-
-        <!-- Units Grid -->
-        <div class="row g-4" id="unitsGrid">
-            @if (Model != null && Model.Any())
-            {
-                @foreach (var unit in Model)
-                {
-                    <div class="col-lg-4 col-md-6 unit-item" data-search="@(unit.Property?.Name.ToLower() + " " + unit.UnitNumber.ToLower() + " " + unit.Property?.Location.ToLower())" data-type="@unit.Property?.Type">
-                        <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 unit-card-full">
-                            <div class="position-relative">
-                                <img src="@(string.IsNullOrEmpty(unit.UnitImages) ? "/images/default-unit.jpg" : unit.UnitImages.Split(',')[0])" 
-                                     class="card-img-top" style="height: 220px; object-fit: cover;" alt="Unit Image">
-                                <span class="badge bg-primary position-absolute top-0 end-0 m-3 rounded-pill px-3 py-2">Available</span>
-                                <div class="position-absolute bottom-0 start-0 m-3">
-                                    <span class="badge bg-dark text-white rounded-pill px-3 py-2 shadow">@unit.Property?.Type</span>
-                                </div>
-                            </div>
-                            
-                            <div class="card-body p-4">
-                                <h5 class="fw-bold mb-1">Unit @unit.UnitNumber</h5>
-                                <p class="text-primary fw-bold small mb-2">@unit.Property?.Name</p>
-                                <p class="text-muted small mb-3"><i class="fas fa-map-marker-alt ms-1 text-danger"></i> @unit.Property?.Location</p>
-                                
-                                <div class="row g-2 mb-4 border-top pt-3">
-                                    <div class="col-6">
-                                        <small class="text-muted d-block">Bedrooms</small>
-                                        <span class="fw-bold"><i class="fas fa-bed ms-1 small"></i> @unit.Bedrooms</span>
-                                    </div>
-                                    <div class="col-6">
-                                        <small class="text-muted d-block">Bathrooms</small>
-                                        <span class="fw-bold"><i class="fas fa-bath ms-1 small"></i> @unit.Bathrooms</span>
-                                    </div>
-                                </div>
-
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div class="text-dark fw-bold fs-5">
-                                        @unit.RentAmount.ToString("N3") <small class="text-muted fw-normal fs-6">OMR</small>
-                                    </div>
-                                    <a asp-action="Details" asp-controller="Home" asp-route-id="@unit.Id" class="btn btn-primary rounded-pill px-4 shadow-sm">View Details</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                }
-            }
-            else
-            {
-                <div class="col-12 text-center py-5">
-                    <div class="py-5">
-                        <i class="fas fa-home fa-4x text-muted opacity-25 mb-3"></i>
-                        <h4 class="text-muted">No units found matching your criteria.</h4>
-                        <a href="/Home/Index" class="btn btn-outline-primary rounded-pill mt-3">Back to Home</a>
-                    </div>
-                </div>
-            }
+            <div class="col-lg-2 col-md-4 col-6">
+                <select id="typeFilter" class="au-select">
+                    <option value="">All Types</option>
+                    <option value="Residential">Residential</option>
+                    <option value="Commercial">Commercial</option>
+                </select>
+            </div>
+            <div class="col-lg-2 col-md-4 col-6">
+                <select id="bedsFilter" class="au-select">
+                    <option value="">Any Beds</option>
+                    <option value="0">Studio</option>
+                    <option value="1">1 Bedroom</option>
+                    <option value="2">2 Bedrooms</option>
+                    <option value="3">3+ Bedrooms</option>
+                </select>
+            </div>
+            <div class="col-lg-2 col-md-4 col-6">
+                <select id="priceFilter" class="au-select">
+                    <option value="">Any Price</option>
+                    <option value="0-300">Up to 300 OMR</option>
+                    <option value="300-500">300 – 500 OMR</option>
+                    <option value="500-800">500 – 800 OMR</option>
+                    <option value="800+">800+ OMR</option>
+                </select>
+            </div>
+            <div class="col-lg-1 col-md-4 col-6">
+                <button class="au-search-btn" onclick="filterUnits()">
+                    <i class="fas fa-sliders-h"></i>
+                </button>
+            </div>
         </div>
     </div>
 </div>
 
-<style>
-    .unit-card-full { transition: all 0.3s ease; border: 1px solid rgba(0,0,0,0.05) !important; }
-    .unit-card-full:hover { transform: translateY(-8px); box-shadow: 0 15px 30px rgba(0,0,0,0.1) !important; border-color: transparent !important; }
-    .unit-item { transition: opacity 0.3s ease; }
-</style>
+<!-- ── Units Grid ── -->
+<div class="container pb-5">
+    <div class="au-results-bar">
+        <div class="au-results-count">Showing <strong id="visibleCount">@Model.Count()</strong> of @Model.Count() units</div>
+        <button onclick="resetFilters()" style="background:none;border:none;font-size:0.8rem;font-weight:600;color:#64748b;cursor:pointer;">
+            <i class="fas fa-times me-1"></i> Clear Filters
+        </button>
+    </div>
+
+    <div class="row g-4" id="unitsGrid">
+        @if (Model != null && Model.Any())
+        {
+            @foreach (var unit in Model)
+            {
+                var img = !string.IsNullOrEmpty(unit.UnitImages)
+                    ? unit.UnitImages.Split(',')[0].Trim()
+                    : "/images/default-unit.jpg";
+                var propType = unit.Property?.Type ?? "";
+                var searchData = ((unit.Property?.Name ?? "") + " " + unit.UnitNumber + " " + (unit.Property?.Location ?? "")).ToLower();
+
+                <div class="col-xl-4 col-md-6 unit-item"
+                     data-search="@searchData"
+                     data-type="@propType"
+                     data-beds="@unit.Bedrooms"
+                     data-price="@unit.RentAmount">
+                    <div class="unit-card">
+                        <div class="unit-card-img">
+                            <img src="@img" alt="Unit @unit.UnitNumber" loading="lazy" />
+                            <span class="unit-avail-badge">Available</span>
+                            @if (!string.IsNullOrEmpty(propType))
+                            {
+                                <span class="unit-type-badge">@propType</span>
+                            }
+                        </div>
+                        <div class="unit-card-body">
+                            <div class="unit-name">Unit @unit.UnitNumber</div>
+                            <div class="unit-prop">@unit.Property?.Name</div>
+                            <div class="unit-loc">
+                                <i class="fas fa-map-marker-alt"></i>
+                                @unit.Property?.Location
+                            </div>
+                            <div class="unit-features">
+                                @if (unit.Bedrooms >= 0)
+                                {
+                                    <span class="unit-feature"><i class="fas fa-bed"></i> @(unit.Bedrooms == 0 ? "Studio" : unit.Bedrooms + " Bed")</span>
+                                }
+                                @if (unit.Bathrooms > 0)
+                                {
+                                    <span class="unit-feature"><i class="fas fa-bath"></i> @unit.Bathrooms Bath</span>
+                                }
+                                @if (unit.Area > 0)
+                                {
+                                    <span class="unit-feature"><i class="fas fa-expand-arrows-alt"></i> @unit.Area m²</span>
+                                }
+                                @if (unit.FloorNumber > 0)
+                                {
+                                    <span class="unit-feature"><i class="fas fa-layer-group"></i> Floor @unit.FloorNumber</span>
+                                }
+                            </div>
+                            <div class="unit-card-footer">
+                                <div>
+                                    <div class="unit-price">@unit.RentAmount.ToString("N0") <small>OMR/mo</small></div>
+                                </div>
+                                <a class="unit-btn" href="/Home/Details/@unit.Id">View Details</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+
+    <!-- No Results -->
+    <div class="no-results" id="noResults" style="display:none;">
+        <i class="fas fa-search-minus"></i>
+        <h5 style="color:#0f172a; font-weight:700;">No units match your search</h5>
+        <p style="font-size:0.88rem;">Try adjusting your filters or clearing the search.</p>
+        <button onclick="resetFilters()" class="unit-btn" style="border-radius:50px; padding:10px 28px;">Clear Filters</button>
+    </div>
+</div>
 
 @section Scripts {
-    <script>
-        $(document).ready(function() {
-            function filterUnits() {
-                var searchText = $('#unitSearch').val().toLowerCase();
-                var selectedType = $('#typeFilter').val();
+<script>
+    function filterUnits() {
+        var search = document.getElementById('searchInput').value.toLowerCase().trim();
+        var type   = document.getElementById('typeFilter').value;
+        var beds   = document.getElementById('bedsFilter').value;
+        var price  = document.getElementById('priceFilter').value;
+        var visible = 0;
 
-                $('.unit-item').each(function() {
-                    var unitSearchData = $(this).data('search');
-                    var unitType = $(this).data('type');
-                    
-                    var matchesSearch = unitSearchData.indexOf(searchText) > -1;
-                    var matchesType = selectedType === 'all' || unitType === selectedType;
+        document.querySelectorAll('#unitsGrid .unit-item').forEach(function(item) {
+            var matchSearch = !search || item.dataset.search.includes(search);
+            var matchType   = !type  || item.dataset.type === type;
+            var itemBeds    = parseInt(item.dataset.beds) || 0;
+            var itemPrice   = parseFloat(item.dataset.price) || 0;
 
-                    if (matchesSearch && matchesType) {
-                        $(this).fadeIn(200);
-                    } else {
-                        $(this).fadeOut(100);
-                    }
-                });
-            }
+            var matchBeds = true;
+            if (beds === '0')  matchBeds = itemBeds === 0;
+            else if (beds === '1') matchBeds = itemBeds === 1;
+            else if (beds === '2') matchBeds = itemBeds === 2;
+            else if (beds === '3') matchBeds = itemBeds >= 3;
 
-            $('#unitSearch').on('keyup', filterUnits);
-            $('#typeFilter').on('change', filterUnits);
+            var matchPrice = true;
+            if (price === '0-300')   matchPrice = itemPrice <= 300;
+            else if (price === '300-500') matchPrice = itemPrice > 300 && itemPrice <= 500;
+            else if (price === '500-800') matchPrice = itemPrice > 500 && itemPrice <= 800;
+            else if (price === '800+')    matchPrice = itemPrice > 800;
+
+            var show = matchSearch && matchType && matchBeds && matchPrice;
+            item.style.display = show ? '' : 'none';
+            if (show) visible++;
         });
-    </script>
+
+        document.getElementById('visibleCount').textContent = visible;
+        document.getElementById('noResults').style.display = visible === 0 ? '' : 'none';
+    }
+
+    function resetFilters() {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('typeFilter').value  = '';
+        document.getElementById('bedsFilter').value  = '';
+        document.getElementById('priceFilter').value = '';
+        filterUnits();
+    }
+
+    document.getElementById('searchInput').addEventListener('input', filterUnits);
+    document.getElementById('typeFilter').addEventListener('change', filterUnits);
+    document.getElementById('bedsFilter').addEventListener('change', filterUnits);
+    document.getElementById('priceFilter').addEventListener('change', filterUnits);
+
+    // Support ?q= from homepage search
+    (function() {
+        var params = new URLSearchParams(window.location.search);
+        var q = params.get('q');
+        if (q) { document.getElementById('searchInput').value = q; filterUnits(); }
+    })();
+</script>
 }

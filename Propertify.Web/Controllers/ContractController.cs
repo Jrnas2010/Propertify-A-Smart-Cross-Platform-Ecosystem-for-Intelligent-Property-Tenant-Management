@@ -24,6 +24,7 @@ namespace Propertify.Web.Controllers
             var query = _context.Contracts
                 .Include(c => c.Tenant)
                 .Include(c => c.Unit)
+                    .ThenInclude(u => u!.Property)
                 .AsQueryable();
 
             if (!string.IsNullOrEmpty(searchTerm))

@@ -1,109 +1,218 @@
 @model IEnumerable<Propertify.Web.Models.Property>
 @{
     Layout = "_PublicLayout";
-    ViewData["Title"] = "Home Page | Propertify";
+    ViewData["Title"] = "Home | Propertify";
     var availableUnits = ViewBag.AvailableUnits as IEnumerable<Propertify.Web.Models.Unit>;
+    int totalProps   = ViewBag.TotalProperties  ?? 0;
+    int totalVacant  = ViewBag.TotalVacantUnits ?? 0;
+    int totalTenants = ViewBag.TotalTenants     ?? 0;
 }
 
-<header class="hero-section py-5 position-relative overflow-hidden" style="background: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1350&q=80') no-repeat center center; background-size: cover; min-height: 80vh; display: flex; align-items: center;">
-    <div class="container text-center text-white animate__animated animate__fadeIn">
-        <h1 class="display-3 fw-bold mb-3">Manage Your Property <span class="text-primary-custom">Smarter.</span></h1>
-        <p class="lead mb-5 px-lg-5">The ultimate solution for property management in the Sultanate of Oman. Track your units, tenants, and financial growth in one place.</p>
-        
-        <div class="search-container mx-auto" style="max-width: 800px;">
-            <form asp-action="Search" asp-controller="Home" method="get">
-                <div class="input-group input-group-lg shadow-lg rounded-pill overflow-hidden bg-white p-1">
-                    <span class="input-group-text bg-transparent border-0 ps-4">
-                        <i class="fas fa-search text-muted"></i>
-                    </span>
-                    <input type="text" name="query" class="form-control border-0 shadow-none fs-6" placeholder="Search for a location, property name, or unit number...">
-                    <button class="btn btn-primary rounded-pill px-5 fw-bold" type="submit">Search</button>
-                </div>
-            </form>
-            <div class="mt-3">
-                <span class="small opacity-75">Popular Searches: Al Khoud, Seeb, Commercial Offices, Residential Apartments</span>
-            </div>
-        </div>
-    </div>
-</header>
+<style>
+    /* ── Hero ── */
+    .hero {
+        min-height: 92vh;
+        background: linear-gradient(135deg, rgba(15,23,42,0.88) 0%, rgba(30,58,95,0.82) 100%),
+                    url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1600&q=80') center/cover no-repeat;
+        display: flex; align-items: center; padding: 80px 0 60px;
+    }
+    .hero-tag { display: inline-flex; align-items: center; gap: 8px; background: rgba(59,130,246,0.18); border: 1px solid rgba(59,130,246,0.35); color: #93c5fd; border-radius: 50px; padding: 6px 16px; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 24px; }
+    .hero h1 { font-size: clamp(2rem, 5vw, 3.6rem); font-weight: 800; color: #fff; line-height: 1.15; margin-bottom: 20px; }
+    .hero h1 span { color: #60a5fa; }
+    .hero p { color: #cbd5e1; font-size: 1.05rem; max-width: 560px; line-height: 1.7; margin-bottom: 36px; }
 
-<main class="container py-5 mt-4 text-end" dir="rtl">
-    
-    <div class="d-flex justify-content-between align-items-end mb-4 border-bottom pb-3">
-        <div>
-            <h6 class="text-primary fw-bold text-uppercase mb-1 small">Our Portfolio</h6>
-            <h2 class="fw-bold mb-0">Available Properties and Facilities</h2>
-        </div>
-        <div class="dropdown">
-            <button class="btn btn-outline-dark dropdown-toggle rounded-pill px-4" type="button" data-bs-toggle="dropdown">
-                <i class="fas fa-filter me-2"></i> Filter by
+    /* Search bar */
+    .hero-search { background: #fff; border-radius: 16px; padding: 10px 10px 10px 20px; display: flex; align-items: center; gap: 8px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); max-width: 600px; }
+    .hero-search input { flex: 1; border: none; outline: none; font-size: 0.92rem; font-family: inherit; color: #0f172a; background: transparent; padding: 6px 0; }
+    .hero-search input::placeholder { color: #94a3b8; }
+    .hero-search-icon { color: #94a3b8; flex-shrink: 0; font-size: 0.9rem; margin-right: 4px; }
+    .hero-search-btn { background: #1e3a5f; color: #fff; border: none; border-radius: 10px; padding: 12px 28px; font-size: 0.85rem; font-weight: 700; cursor: pointer; white-space: nowrap; transition: background .15s; }
+    .hero-search-btn:hover { background: #3b82f6; }
+
+    /* Stats bar */
+    .stats-bar { background: #fff; border-radius: 20px; box-shadow: 0 4px 24px rgba(0,0,0,0.07); padding: 28px 32px; margin-top: -40px; position: relative; z-index: 10; }
+    .stat-item { text-align: center; padding: 0 16px; }
+    .stat-item + .stat-item { border-left: 1px solid #e2e8f0; }
+    .stat-num { font-size: 2rem; font-weight: 800; color: #1e3a5f; line-height: 1; }
+    .stat-label { font-size: 0.73rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #94a3b8; margin-top: 4px; }
+
+    /* Section headings */
+    .section-tag { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #3b82f6; margin-bottom: 8px; }
+    .section-title { font-size: clamp(1.4rem, 3vw, 2rem); font-weight: 800; color: #0f172a; margin-bottom: 6px; }
+    .section-sub { color: #64748b; font-size: 0.9rem; }
+
+    /* Filter tabs */
+    .filter-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+    .f-tab { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; padding: 7px 16px; border-radius: 8px; border: 1.5px solid #e2e8f0; background: #fff; color: #64748b; cursor: pointer; transition: all .15s; }
+    .f-tab:hover { border-color: #3b82f6; color: #3b82f6; }
+    .f-tab.active { background: #1e3a5f; border-color: #1e3a5f; color: #fff; }
+
+    /* Unit card */
+    .unit-card {
+        background: #fff; border-radius: 20px; overflow: hidden;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.06); border: 1px solid #f1f5f9;
+        transition: transform .2s, box-shadow .2s; display: flex; flex-direction: column; height: 100%;
+    }
+    .unit-card:hover { transform: translateY(-6px); box-shadow: 0 12px 32px rgba(0,0,0,0.11); }
+    .unit-card-img { position: relative; height: 220px; overflow: hidden; }
+    .unit-card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .3s; }
+    .unit-card:hover .unit-card-img img { transform: scale(1.05); }
+    .unit-avail-badge { position: absolute; top: 14px; left: 14px; background: #10b981; color: #fff; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 5px 12px; border-radius: 50px; }
+    .unit-type-badge { position: absolute; top: 14px; right: 14px; background: rgba(15,23,42,0.75); color: #fff; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 5px 12px; border-radius: 50px; backdrop-filter: blur(4px); }
+    .unit-card-body { padding: 20px; flex: 1; display: flex; flex-direction: column; }
+    .unit-name { font-weight: 700; font-size: 1rem; color: #0f172a; margin-bottom: 4px; }
+    .unit-loc { color: #94a3b8; font-size: 0.78rem; display: flex; align-items: center; gap: 6px; margin-bottom: 14px; }
+    .unit-features { display: flex; gap: 16px; margin-bottom: 16px; }
+    .unit-feature { display: flex; align-items: center; gap: 5px; font-size: 0.78rem; font-weight: 600; color: #475569; }
+    .unit-feature i { color: #94a3b8; font-size: 0.75rem; }
+    .unit-card-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 14px; margin-top: auto; }
+    .unit-price { font-size: 1.15rem; font-weight: 800; color: #1e3a5f; }
+    .unit-price small { font-size: 0.72rem; font-weight: 500; color: #94a3b8; }
+    .unit-btn { background: #1e3a5f; color: #fff; border: none; border-radius: 50px; padding: 9px 20px; font-size: 0.78rem; font-weight: 700; cursor: pointer; text-decoration: none; transition: background .15s; }
+    .unit-btn:hover { background: #3b82f6; color: #fff; }
+
+    /* Why Propertify */
+    .why-section { background: #f8fafc; padding: 80px 0; }
+    .why-card { background: #fff; border-radius: 20px; padding: 32px 28px; border: 1px solid #f1f5f9; box-shadow: 0 2px 12px rgba(0,0,0,0.05); transition: transform .2s, box-shadow .2s; }
+    .why-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.09); }
+    .why-icon { width: 56px; height: 56px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; margin-bottom: 18px; }
+    .why-title { font-size: 1rem; font-weight: 700; color: #0f172a; margin-bottom: 8px; }
+    .why-text { font-size: 0.84rem; color: #64748b; line-height: 1.65; }
+
+    /* CTA */
+    .cta-section { background: linear-gradient(135deg, #1e3a5f 0%, #3b82f6 100%); border-radius: 24px; padding: 60px 48px; color: #fff; text-align: center; }
+    .cta-section h2 { font-size: clamp(1.5rem, 3vw, 2.4rem); font-weight: 800; margin-bottom: 14px; }
+    .cta-section p { color: #bfdbfe; max-width: 500px; margin: 0 auto 32px; line-height: 1.7; }
+    .cta-btn-white { background: #fff; color: #1e3a5f; border: none; border-radius: 50px; padding: 14px 36px; font-size: 0.9rem; font-weight: 800; cursor: pointer; text-decoration: none; transition: all .15s; }
+    .cta-btn-white:hover { background: #f0f9ff; color: #1e3a5f; }
+    .cta-btn-outline { background: transparent; color: #fff; border: 2px solid rgba(255,255,255,0.5); border-radius: 50px; padding: 12px 34px; font-size: 0.9rem; font-weight: 700; cursor: pointer; text-decoration: none; transition: all .15s; }
+    .cta-btn-outline:hover { border-color: #fff; color: #fff; }
+
+    @@media (max-width: 768px) {
+        .hero { min-height: 80vh; padding: 60px 0 50px; }
+        .stats-bar { padding: 20px 16px; margin-top: -24px; }
+        .stat-item + .stat-item { border-left: none; border-top: 1px solid #e2e8f0; padding-top: 16px; margin-top: 12px; }
+        .cta-section { padding: 40px 24px; border-radius: 16px; }
+    }
+    @@media (max-width: 576px) {
+        .hero-search { flex-wrap: wrap; gap: 10px; }
+        .hero-search-btn { width: 100%; text-align: center; border-radius: 10px; }
+    }
+</style>
+
+<!-- ── Hero ── -->
+<section class="hero">
+    <div class="container">
+        <div class="hero-tag"><i class="fas fa-star"></i> Trusted Property Platform in Oman</div>
+        <h1>Find Your Perfect<br><span>Space in Oman.</span></h1>
+        <p>Discover residential and commercial units available for lease across the Sultanate. Smart search, transparent pricing, instant booking.</p>
+
+        <div class="hero-search">
+            <i class="fas fa-search hero-search-icon"></i>
+            <input type="text" id="heroSearch" placeholder="Search by location, unit number, or property name..." />
+            <button class="hero-search-btn" onclick="heroSearchGo()">
+                <i class="fas fa-search me-1"></i> Search
             </button>
-            <ul class="dropdown-menu shadow-sm border-0">
-                <li><a class="dropdown-item" href="#" onclick="filterProperties('سكني')">Residential</a></li>
-                <li><a class="dropdown-item" href="#" onclick="filterProperties('تجاري')">Commercial</a></li>
-                <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item" href="#" onclick="filterProperties('all')">All</a></li>
-            </ul>
+        </div>
+
+        <div style="margin-top:20px; display:flex; gap:16px; flex-wrap:wrap;">
+            <a href="/Home/AllUnits" style="color:#93c5fd; font-size:0.82rem; font-weight:600; text-decoration:none;">
+                <i class="fas fa-th-large me-1"></i> Browse All Units
+            </a>
+            <a href="/Home/Inquiry" style="color:#93c5fd; font-size:0.82rem; font-weight:600; text-decoration:none;">
+                <i class="fas fa-calendar-check me-1"></i> Book a Viewing
+            </a>
         </div>
     </div>
+</section>
 
-    <div class="row g-4 mb-5" id="propertyGrid">
-        @if (Model != null && Model.Any())
-        {
-            @foreach (var property in Model)
-            {
-                <div class="col-md-4 property-card-wrapper" data-type="@property.Type">
-                    <div class="card border-0 shadow-sm h-100 property-card rounded-4 overflow-hidden">
-                        <div class="position-relative">
-                            <img src="@(string.IsNullOrEmpty(property.ImagePath) ? "/images/default-building.png" : property.ImagePath)" 
-                                 class="card-img-top" style="height: 220px; object-fit: cover;" alt="@property.Name">
-                            <span class="badge bg-primary position-absolute top-0 end-0 m-3 px-3 py-2 rounded-pill shadow-sm">@property.Type</span>
-                        </div>
-                        <div class="card-body p-4">
-                            <h5 class="fw-bold mb-1">@property.Name</h5>
-                            <p class="text-muted small mb-3"><i class="fas fa-map-marker-alt text-danger ms-1"></i> @property.Location</p>
-                            <div class="d-flex justify-content-between align-items-center border-top pt-3">
-                                <span class="text-primary-custom fw-bold">@property.TotalUnits Units</span>
-                                <a asp-action="Details" asp-controller="Property" asp-route-id="@property.Id" class="btn btn-sm btn-outline-primary px-4 rounded-pill">Details</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            }
-        }
-    </div>
-
-    <section id="units" class="py-5 bg-light rounded-5 px-4 mb-5 shadow-sm">
-        <div class="d-flex justify-content-between align-items-end mb-5">
-            <div>
-                <h6 class="text-primary fw-bold text-uppercase mb-1 small">Featured Units</h6>
-                <h2 class="fw-bold mb-0">Find Your Next Space</h2>
+<!-- ── Stats Bar ── -->
+<div class="container">
+    <div class="stats-bar">
+        <div class="row g-0 text-center">
+            <div class="col-4 stat-item">
+                <div class="stat-num">@totalProps</div>
+                <div class="stat-label">Properties</div>
             </div>
-            <a asp-action="AllUnits" asp-controller="Home" class="btn btn-dark rounded-pill px-4 shadow-sm">View All Units</a>
+            <div class="col-4 stat-item">
+                <div class="stat-num">@totalVacant</div>
+                <div class="stat-label">Available Units</div>
+            </div>
+            <div class="col-4 stat-item">
+                <div class="stat-num">@totalTenants</div>
+                <div class="stat-label">Happy Tenants</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Featured Units ── -->
+<section style="padding: 80px 0 60px;">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-end flex-wrap gap-3 mb-4">
+            <div>
+                <div class="section-tag">Available Now</div>
+                <div class="section-title">Featured Vacant Units</div>
+                <div class="section-sub">Hand-picked spaces ready for immediate occupancy</div>
+            </div>
+            <a href="/Home/AllUnits" class="unit-btn" style="display:inline-flex;align-items:center;gap:8px;">
+                View All Units <i class="fas fa-arrow-right"></i>
+            </a>
         </div>
 
-        <div class="row g-4">
+        <!-- Filter tabs -->
+        <div class="filter-tabs mb-4" id="unitFilterTabs">
+            <button class="f-tab active" data-filter="all">All</button>
+            <button class="f-tab" data-filter="Residential">Residential</button>
+            <button class="f-tab" data-filter="Commercial">Commercial</button>
+        </div>
+
+        <div class="row g-4" id="featuredGrid">
             @if (availableUnits != null && availableUnits.Any())
             {
                 @foreach (var unit in availableUnits)
                 {
-                    <div class="col-lg-4 col-md-6">
-                        <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 unit-card">
-                            <div class="position-relative">
-                            <img src="@(string.IsNullOrEmpty(unit.UnitImages) ? "/images/default-unit.jpg" : unit.UnitImages.Split(',')[0])" 
-                                     class="card-img-top" style="height: 240px; object-fit: cover;" alt="Unit Image">
-                                <span class="badge bg-success position-absolute top-0 end-0 m-3 rounded-pill px-3 py-2">Available Now</span>
+                    var img = !string.IsNullOrEmpty(unit.UnitImages)
+                        ? unit.UnitImages.Split(',')[0].Trim()
+                        : "/images/default-unit.jpg";
+                    var propType = unit.Property?.Type ?? "Residential";
+
+                    <div class="col-xl-4 col-md-6 unit-item" data-type="@propType">
+                        <div class="unit-card">
+                            <div class="unit-card-img">
+                                <img src="@img" alt="Unit @unit.UnitNumber" />
+                                <span class="unit-avail-badge">Available</span>
+                                <span class="unit-type-badge">@propType</span>
                             </div>
-                            
-                            <div class="card-body p-4">
-                                <h5 class="fw-bold mb-1">Unit @unit.UnitNumber - @unit.Property?.Name</h5>
-                                <p class="text-muted small mb-3"><i class="fas fa-map-marker-alt ms-1"></i> @unit.Property?.Location</p>
-                                
-                                <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
-                                    <div class="text-primary-custom fw-bold fs-5">
-                                        @unit.RentAmount <small class="text-muted fw-normal fs-6">OMR Monthly</small>
+                            <div class="unit-card-body">
+                                <div class="unit-name">Unit @unit.UnitNumber &mdash; @unit.Property?.Name</div>
+                                <div class="unit-loc">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    @unit.Property?.Location
+                                </div>
+                                <div class="unit-features">
+                                    @if (unit.Bedrooms > 0)
+                                    {
+                                        <span class="unit-feature"><i class="fas fa-bed"></i> @unit.Bedrooms Bed</span>
+                                    }
+                                    @if (unit.Bathrooms > 0)
+                                    {
+                                        <span class="unit-feature"><i class="fas fa-bath"></i> @unit.Bathrooms Bath</span>
+                                    }
+                                    @if (unit.Area > 0)
+                                    {
+                                        <span class="unit-feature"><i class="fas fa-expand-arrows-alt"></i> @unit.Area m²</span>
+                                    }
+                                    @if (unit.FloorNumber > 0)
+                                    {
+                                        <span class="unit-feature"><i class="fas fa-layer-group"></i> Floor @unit.FloorNumber</span>
+                                    }
+                                </div>
+                                <div class="unit-card-footer">
+                                    <div>
+                                        <div class="unit-price">@unit.RentAmount.ToString("N0") <small>OMR/mo</small></div>
                                     </div>
-                                    <a asp-action="Details" asp-controller="Home" asp-route-id="@unit.Id" class="btn btn-dark btn-sm rounded-pill px-3">Book Now</a>
+                                    <a class="unit-btn" href="/Home/Details/@unit.Id">View Details</a>
                                 </div>
                             </div>
                         </div>
@@ -112,54 +221,95 @@
             }
             else
             {
-                <div class="col-12 text-center py-5">
-                    <p class="text-muted italic">No available units at the moment.</p>
+                <div class="col-12 text-center py-5" style="color:#94a3b8;">
+                    <i class="fas fa-home fa-3x d-block mb-3 opacity-25"></i>
+                    No units available at the moment.
                 </div>
             }
         </div>
-    </section>
-</main>
+    </div>
+</section>
 
-<style>
-    :root { --primary-color: #2c3e50; --accent-color: #3498db; }
-    .text-primary-custom { color: var(--accent-color) !important; }
-    .btn-primary { background-color: var(--primary-color); border: none; }
-    .btn-primary:hover { background-color: #1a252f; }
-    
-    .property-card, .unit-card { 
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-        cursor: pointer; 
-    }
-    .property-card:hover, .unit-card:hover { 
-        transform: translateY(-12px); 
-        box-shadow: 0 15px 30px rgba(0,0,0,0.12) !important; 
-    }
-    
-    .hero-section .text-primary-custom { color: #5dade2 !important; }
-    .object-fit-cover { object-fit: cover; }
-    
-    /* Responsive adjustment for RTL */
-    [dir="rtl"] .input-group > :not(:first-child):not(.dropdown-menu):not(.valid-tooltip):not(.valid-feedback):not(.invalid-tooltip):not(.invalid-feedback) {
-        margin-right: -1px;
-        margin-left: 0;
-        border-top-left-radius: 50rem;
-        border-bottom-left-radius: 50rem;
-    }
-</style>
+<!-- ── Why Propertify ── -->
+<section class="why-section">
+    <div class="container">
+        <div class="text-center mb-5">
+            <div class="section-tag">Why Choose Us</div>
+            <div class="section-title">Everything You Need in One Platform</div>
+        </div>
+        <div class="row g-4">
+            <div class="col-lg-3 col-md-6">
+                <div class="why-card">
+                    <div class="why-icon" style="background:#eff6ff;"><i class="fas fa-shield-alt" style="color:#3b82f6;"></i></div>
+                    <div class="why-title">Verified Listings</div>
+                    <div class="why-text">Every unit is verified and managed directly by the property owner — no middlemen, no surprises.</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="why-card">
+                    <div class="why-icon" style="background:#f0fdf4;"><i class="fas fa-bolt" style="color:#10b981;"></i></div>
+                    <div class="why-title">Instant Booking</div>
+                    <div class="why-text">Submit a booking inquiry in under 2 minutes. Get a response the same business day.</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="why-card">
+                    <div class="why-icon" style="background:#fffbeb;"><i class="fas fa-map-marked-alt" style="color:#f59e0b;"></i></div>
+                    <div class="why-title">Prime Locations</div>
+                    <div class="why-text">Units across Muscat's most sought-after neighborhoods — Al Khoud, Seeb, Bausher, and more.</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="why-card">
+                    <div class="why-icon" style="background:#fdf4ff;"><i class="fas fa-chart-line" style="color:#a855f7;"></i></div>
+                    <div class="why-title">Transparent Pricing</div>
+                    <div class="why-text">See the full monthly rent upfront, in Omani Rial. No hidden fees, no surprises at signing.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── CTA Banner ── -->
+<section style="padding: 80px 0;">
+    <div class="container">
+        <div class="cta-section">
+            <h2>Ready to Find Your Next Home?</h2>
+            <p>Browse all available units or submit a booking request today. Our team will get back to you within one business day.</p>
+            <div class="d-flex justify-content-center gap-3 flex-wrap">
+                <a href="/Home/AllUnits" class="cta-btn-white">
+                    <i class="fas fa-search me-2"></i> Browse Units
+                </a>
+                <a href="/Home/Inquiry" class="cta-btn-outline">
+                    <i class="fas fa-calendar-check me-2"></i> Book a Viewing
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
 
 @section Scripts {
-    <script>
-        // دالة التصفية السريعة
-        function filterProperties(type) {
-            const cards = document.querySelectorAll('.property-card-wrapper');
-            cards.forEach(card => {
-                if (type === 'all' || card.getAttribute('data-type') === type) {
-                    card.style.display = 'block';
-                    card.classList.add('animate__fadeIn');
-                } else {
-                    card.style.display = 'none';
-                }
+<script>
+    // Hero search
+    function heroSearchGo() {
+        var q = document.getElementById('heroSearch').value.trim();
+        if (q) window.location.href = '/Home/AllUnits?q=' + encodeURIComponent(q);
+        else window.location.href = '/Home/AllUnits';
+    }
+    document.getElementById('heroSearch').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') heroSearchGo();
+    });
+
+    // Featured units filter
+    document.querySelectorAll('#unitFilterTabs .f-tab').forEach(function(tab) {
+        tab.addEventListener('click', function() {
+            document.querySelectorAll('#unitFilterTabs .f-tab').forEach(function(t) { t.classList.remove('active'); });
+            this.classList.add('active');
+            var filter = this.dataset.filter;
+            document.querySelectorAll('#featuredGrid .unit-item').forEach(function(item) {
+                item.style.display = (filter === 'all' || item.dataset.type === filter) ? '' : 'none';
             });
-        }
-    </script>
+        });
+    });
+</script>
 }

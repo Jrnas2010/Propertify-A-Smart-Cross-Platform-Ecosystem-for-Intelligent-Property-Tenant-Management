@@ -1,99 +1,252 @@
 @model Propertify.Web.Models.Unit
 @{
     Layout = "_PublicLayout";
-    ViewData["Title"] = $"Unit {Model.UnitNumber} Details | Propertify";
-    var images = !string.IsNullOrEmpty(Model.UnitImages) 
-                 ? Model.UnitImages.Split(',').ToList() 
-                 : new List<string> { "/images/default-unit.png" };
+    ViewData["Title"] = $"Unit {Model.UnitNumber} | Propertify";
+    var images = !string.IsNullOrEmpty(Model.UnitImages)
+        ? Model.UnitImages.Split(',').Select(s => s.Trim()).Where(s => !string.IsNullOrEmpty(s)).ToList()
+        : new List<string> { "/images/default-unit.jpg" };
 }
 
-<div class="container py-5" dir="rtl">
-    <nav aria-label="breadcrumb" class="mb-4">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a asp-action="Index">Home</a></li>
-            <li class="breadcrumb-item"><a asp-action="AllUnits">Units</a></li>
-            <li class="breadcrumb-item active">Unit @Model.UnitNumber</li>
-        </ol>
-    </nav>
+<style>
+    .det-hero { background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%); padding: 36px 0; color: #fff; }
+    .det-breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: #93c5fd; flex-wrap: wrap; }
+    .det-breadcrumb a { color: #93c5fd; text-decoration: none; }
+    .det-breadcrumb a:hover { color: #fff; }
+    .det-breadcrumb span { color: rgba(255,255,255,0.4); }
+    .det-hero h1 { font-size: clamp(1.5rem, 3.5vw, 2.4rem); font-weight: 800; margin: 10px 0 6px; }
+    .det-hero p { color: #bfdbfe; font-size: 0.9rem; display: flex; align-items: center; gap: 6px; margin: 0; }
 
-    <div class="row">
-        <!-- Image Gallery -->
-        <div class="col-lg-7 mb-4">
-            <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-3">
-                <img id="mainImage" src="@images[0]" class="img-fluid w-100" style="height: 450px; object-fit: cover;" alt="Unit View">
+    /* Gallery */
+    .gallery-main { border-radius: 20px; overflow: hidden; position: relative; cursor: pointer; }
+    .gallery-main img { width: 100%; height: 420px; object-fit: cover; transition: transform .3s; }
+    .gallery-main:hover img { transform: scale(1.02); }
+    .gallery-avail { position: absolute; top: 16px; left: 16px; background: #10b981; color: #fff; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 6px 14px; border-radius: 50px; }
+    .gallery-thumbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 8px; margin-top: 10px; }
+    .gallery-thumb { height: 72px; border-radius: 10px; overflow: hidden; cursor: pointer; border: 2px solid transparent; transition: border-color .15s; }
+    .gallery-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .gallery-thumb.active { border-color: #3b82f6; }
+    .gallery-thumb:hover { border-color: #93c5fd; }
+
+    /* Sidebar */
+    .det-sidebar { position: sticky; top: 84px; }
+    .det-card { background: #fff; border-radius: 20px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); border: 1px solid #f1f5f9; padding: 28px; }
+    .det-unit-no { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #94a3b8; margin-bottom: 4px; }
+    .det-unit-name { font-size: 1.4rem; font-weight: 800; color: #0f172a; margin-bottom: 4px; }
+    .det-prop-name { font-size: 0.88rem; font-weight: 600; color: #3b82f6; margin-bottom: 10px; }
+    .det-location { color: #64748b; font-size: 0.82rem; display: flex; align-items: center; gap: 6px; margin-bottom: 22px; }
+    .det-price-block { background: #f0f9ff; border-radius: 14px; padding: 18px 20px; margin-bottom: 22px; display: flex; justify-content: space-between; align-items: center; }
+    .det-price { font-size: 2rem; font-weight: 800; color: #1e3a5f; }
+    .det-price small { font-size: 0.75rem; font-weight: 500; color: #64748b; }
+    .det-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 22px; }
+    .det-stat { background: #f8fafc; border-radius: 12px; padding: 14px 10px; text-align: center; }
+    .det-stat i { font-size: 1.1rem; color: #3b82f6; margin-bottom: 6px; }
+    .det-stat-val { font-weight: 700; font-size: 1rem; color: #0f172a; }
+    .det-stat-lbl { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #94a3b8; }
+    .det-features { margin-bottom: 22px; }
+    .det-features h6 { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: #94a3b8; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 12px; }
+    .det-feature-item { display: flex; align-items: center; gap: 10px; font-size: 0.84rem; color: #475569; padding: 6px 0; }
+    .det-feature-item i { width: 18px; color: #10b981; font-size: 0.8rem; }
+    .det-book-btn { background: linear-gradient(135deg, #1e3a5f 0%, #3b82f6 100%); color: #fff; border: none; border-radius: 14px; padding: 16px; font-size: 0.95rem; font-weight: 700; cursor: pointer; width: 100%; text-align: center; text-decoration: none; display: block; transition: opacity .15s; letter-spacing: 0.02em; }
+    .det-book-btn:hover { opacity: 0.9; color: #fff; }
+    .det-contact-note { text-align: center; font-size: 0.76rem; color: #94a3b8; margin-top: 12px; }
+
+    @@media (max-width: 768px) {
+        .gallery-main img { height: 280px; }
+        .det-sidebar { position: static; }
+        .det-stats { grid-template-columns: repeat(3, 1fr); }
+    }
+    @@media (max-width: 480px) {
+        .det-stats { grid-template-columns: repeat(2, 1fr); }
+    }
+</style>
+
+<!-- ── Page Header ── -->
+<section class="det-hero">
+    <div class="container">
+        <div class="det-breadcrumb">
+            <a href="/"><i class="fas fa-home"></i> Home</a>
+            <span>/</span>
+            <a href="/Home/AllUnits">Browse Units</a>
+            <span>/</span>
+            <span style="color:#fff;">Unit @Model.UnitNumber</span>
+        </div>
+        <h1>Unit @Model.UnitNumber</h1>
+        <p>
+            <i class="fas fa-building"></i> @Model.Property?.Name
+            <span style="color:rgba(255,255,255,0.3);">—</span>
+            <i class="fas fa-map-marker-alt"></i> @Model.Property?.Location
+        </p>
+    </div>
+</section>
+
+<!-- ── Main Content ── -->
+<div class="container py-5">
+    <div class="row g-4">
+
+        <!-- Gallery -->
+        <div class="col-lg-7">
+            <div class="gallery-main" id="mainGallery">
+                <img id="mainImg" src="@images[0]" alt="Unit @Model.UnitNumber" />
+                <span class="gallery-avail">Available Now</span>
             </div>
             @if (images.Count > 1)
             {
-                <div class="row g-2">
-                    @foreach (var img in images)
+                <div class="gallery-thumbs">
+                    @for (int i = 0; i < images.Count; i++)
                     {
-                        <div class="col-3">
-                            <img src="@img" class="img-fluid rounded-3 shadow-sm clickable-img" style="height: 80px; object-fit: cover; cursor: pointer;" onclick="document.getElementById('mainImage').src=this.src">
+                        <div class="gallery-thumb @(i == 0 ? "active" : "")" onclick="switchImage(this, '@images[i]')">
+                            <img src="@images[i]" alt="View @(i+1)" loading="lazy" />
                         </div>
                     }
                 </div>
             }
+
+            <!-- Additional details below gallery on mobile -->
+            @if (!string.IsNullOrEmpty(Model.Property?.Location))
+            {
+                <div style="background:#fff; border-radius:20px; box-shadow:0 2px 12px rgba(0,0,0,0.06); border:1px solid #f1f5f9; padding:24px; margin-top:20px;">
+                    <h6 style="font-size:0.72rem; font-weight:700; letter-spacing:0.09em; text-transform:uppercase; color:#94a3b8; margin-bottom:14px;">Property Info</h6>
+                    <div style="display:flex; flex-direction:column; gap:10px;">
+                        <div style="display:flex; align-items:center; gap:10px; font-size:0.85rem; color:#475569;">
+                            <i class="fas fa-building" style="color:#3b82f6; width:18px;"></i>
+                            <span><strong>Property:</strong> @Model.Property?.Name</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:10px; font-size:0.85rem; color:#475569;">
+                            <i class="fas fa-map-marker-alt" style="color:#3b82f6; width:18px;"></i>
+                            <span><strong>Location:</strong> @Model.Property?.Location</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:10px; font-size:0.85rem; color:#475569;">
+                            <i class="fas fa-tag" style="color:#3b82f6; width:18px;"></i>
+                            <span><strong>Type:</strong> @(Model.Property?.Type ?? "Residential")</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:10px; font-size:0.85rem; color:#475569;">
+                            <i class="fas fa-layer-group" style="color:#3b82f6; width:18px;"></i>
+                            <span><strong>Floor:</strong> @Model.FloorNumber</span>
+                        </div>
+                    </div>
+                </div>
+            }
         </div>
 
-        <!-- Details Sidebar -->
+        <!-- Sidebar -->
         <div class="col-lg-5">
-            <div class="card border-0 shadow-sm rounded-4 p-4 sticky-top" style="top: 100px;">
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                    <div>
-                        <h2 class="fw-bold mb-1">Unit @Model.UnitNumber</h2>
-                        <h5 class="text-primary mb-0">@Model.Property?.Name</h5>
+            <div class="det-sidebar">
+                <div class="det-card">
+                    <div class="det-unit-no">Unit Reference &bull; INV #@Model.Id.ToString("D3")</div>
+                    <div class="det-unit-name">Unit @Model.UnitNumber</div>
+                    <div class="det-prop-name"><i class="fas fa-building me-1"></i> @Model.Property?.Name</div>
+                    <div class="det-location"><i class="fas fa-map-marker-alt"></i> @Model.Property?.Location</div>
+
+                    <!-- Price -->
+                    <div class="det-price-block">
+                        <div>
+                            <div style="font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:#64748b; margin-bottom:4px;">Monthly Rent</div>
+                            <div class="det-price">@Model.RentAmount.ToString("N0") <small>OMR</small></div>
+                        </div>
+                        <span style="background:#d1fae5; color:#065f46; font-size:0.72rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; padding:6px 14px; border-radius:50px;">
+                            <i class="fas fa-check-circle me-1"></i> Available
+                        </span>
                     </div>
-                    <span class="badge bg-success-subtle text-success rounded-pill px-3 py-2">Available Now</span>
-                </div>
 
-                <p class="text-muted mb-4 small"><i class="fas fa-map-marker-alt ms-1 text-danger"></i> @Model.Property?.Location</p>
-                
-                <div class="bg-light p-4 rounded-4 mb-4">
-                    <div class="row text-center g-3">
-                        <div class="col-4">
-                            <i class="fas fa-bed text-primary mb-2 fs-4"></i>
-                            <p class="small text-muted mb-0">Bedrooms</p>
-                            <p class="fw-bold mb-0">@Model.Bedrooms</p>
+                    <!-- Stats -->
+                    <div class="det-stats">
+                        <div class="det-stat">
+                            <i class="fas fa-bed d-block"></i>
+                            <div class="det-stat-val">@(Model.Bedrooms == 0 ? "—" : Model.Bedrooms.ToString())</div>
+                            <div class="det-stat-lbl">Bedrooms</div>
                         </div>
-                        <div class="col-4 border-start border-end">
-                            <i class="fas fa-bath text-primary mb-2 fs-4"></i>
-                            <p class="small text-muted mb-0">Bathrooms</p>
-                            <p class="fw-bold mb-0">@Model.Bathrooms</p>
+                        <div class="det-stat">
+                            <i class="fas fa-bath d-block"></i>
+                            <div class="det-stat-val">@(Model.Bathrooms == 0 ? "—" : Model.Bathrooms.ToString())</div>
+                            <div class="det-stat-lbl">Bathrooms</div>
                         </div>
-                        <div class="col-4">
-                            <i class="fas fa-expand-arrows-alt text-primary mb-2 fs-4"></i>
-                            <p class="small text-muted mb-0">Area</p>
-                            <p class="fw-bold mb-0">@Model.Area m²</p>
+                        <div class="det-stat">
+                            <i class="fas fa-expand-arrows-alt d-block"></i>
+                            <div class="det-stat-val">@(Model.Area == 0 ? "—" : Model.Area.ToString())</div>
+                            <div class="det-stat-lbl">m²</div>
                         </div>
                     </div>
-                </div>
 
-                <div class="mb-4">
-                    <h4 class="fw-bold text-dark mb-1">@Model.RentAmount.ToString("N3") OMR</h4>
-                    <p class="text-muted small">Monthly Rental Amount (Standard Contract)</p>
-                </div>
-
-                <div class="mb-4">
-                    <h6 class="fw-bold border-bottom pb-2 mb-3">Unit Features</h6>
-                    <ul class="list-unstyled row g-2">
-                        <li class="col-6 small"><i class="fas fa-check text-success ms-2"></i> Floor @Model.FloorNumber</li>
-                        <li class="col-6 small"><i class="fas fa-check text-success ms-2"></i> @Model.Kitchens Kitchens</li>
-                        <li class="col-6 small"><i class="fas fa-check text-success ms-2"></i> @Model.LivingRooms Living Rooms</li>
+                    <!-- Features -->
+                    <div class="det-features">
+                        <h6>Unit Features</h6>
+                        <div class="det-feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            Floor @Model.FloorNumber
+                        </div>
+                        @if (Model.Kitchens > 0)
+                        {
+                            <div class="det-feature-item">
+                                <i class="fas fa-check-circle"></i>
+                                @Model.Kitchens Kitchen@(Model.Kitchens > 1 ? "s" : "")
+                            </div>
+                        }
+                        @if (Model.LivingRooms > 0)
+                        {
+                            <div class="det-feature-item">
+                                <i class="fas fa-check-circle"></i>
+                                @Model.LivingRooms Living Room@(Model.LivingRooms > 1 ? "s" : "")
+                            </div>
+                        }
                         @if (Model.Majlis > 0)
                         {
-                            <li class="col-6 small"><i class="fas fa-check text-success ms-2"></i> @Model.Majlis Majlis</li>
+                            <div class="det-feature-item">
+                                <i class="fas fa-check-circle"></i>
+                                @Model.Majlis Majlis
+                            </div>
                         }
-                    </ul>
+                        @if (!string.IsNullOrEmpty(Model.ElectricityMeter))
+                        {
+                            <div class="det-feature-item">
+                                <i class="fas fa-check-circle"></i>
+                                Electricity Meter: @Model.ElectricityMeter
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.WaterMeter))
+                        {
+                            <div class="det-feature-item">
+                                <i class="fas fa-check-circle"></i>
+                                Water Meter: @Model.WaterMeter
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Book -->
+                    <a href="/Home/Inquiry?unit=@Model.UnitNumber" class="det-book-btn">
+                        <i class="fas fa-calendar-check me-2"></i> Book This Unit Now
+                    </a>
+                    <p class="det-contact-note"><i class="fas fa-shield-alt me-1"></i> No fees &bull; Response within 1 business day</p>
                 </div>
 
-                <a asp-action="Inquiry" asp-route-unit="@Model.UnitNumber" class="btn btn-primary btn-lg rounded-pill w-100 fw-bold py-3 shadow">
-                    Book This Unit Now
-                </a>
+                <!-- Contact card -->
+                <div class="det-card" style="margin-top:16px;">
+                    <h6 style="font-size:0.78rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:#94a3b8; margin-bottom:14px;">Have Questions?</h6>
+                    <div style="display:flex; flex-direction:column; gap:10px;">
+                        <a href="tel:+96892792292" style="display:flex; align-items:center; gap:10px; text-decoration:none; color:#0f172a; font-size:0.88rem; font-weight:600;">
+                            <div style="width:36px; height:36px; border-radius:10px; background:#eff6ff; display:flex; align-items:center; justify-content:center; color:#3b82f6; font-size:0.85rem; flex-shrink:0;">
+                                <i class="fas fa-phone"></i>
+                            </div>
+                            +968 92792292
+                        </a>
+                        <a href="mailto:info@propertify.om" style="display:flex; align-items:center; gap:10px; text-decoration:none; color:#0f172a; font-size:0.88rem; font-weight:600;">
+                            <div style="width:36px; height:36px; border-radius:10px; background:#eff6ff; display:flex; align-items:center; justify-content:center; color:#3b82f6; font-size:0.85rem; flex-shrink:0;">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            info@propertify.om
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<style>
-    .clickable-img:hover { opacity: 0.8; }
-</style>
+@section Scripts {
+<script>
+    function switchImage(thumb, src) {
+        document.getElementById('mainImg').src = src;
+        document.querySelectorAll('.gallery-thumb').forEach(function(t) { t.classList.remove('active'); });
+        thumb.classList.add('active');
+    }
+</script>
+}

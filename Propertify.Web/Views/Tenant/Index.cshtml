@@ -2,124 +2,198 @@
 
 @{
     ViewData["Title"] = "Tenants Management | Propertify";
+    var avatarColors = new[] { "#3b82f6", "#8b5cf6", "#10b981", "#f59e0b", "#ef4444", "#ec4899" };
 }
 
-<div class="container-fluid py-4" dir="rtl" style="max-width: 100%; padding-left: 1rem; padding-right: 1rem;">
+<div class="container-fluid py-4" style="max-width:100%;">
+
+    <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <div>
-            <h3 class="fw-bold text-primary mb-0"><i class="fas fa-users-cog ms-2"></i>Tenants Management</h3>
-            <p class="text-muted small mb-0">Search, review, and archive tenant records</p>
+            <h4 class="fw-bold mb-0" style="color:#0f172a;">Tenants Management</h4>
+            <p class="mb-0" style="color:#94a3b8; font-size:0.83rem;">
+                @Model.Count() tenant records
+            </p>
         </div>
-        <a asp-action="Create" class="btn btn-primary rounded-pill px-4 shadow-sm">
-            <i class="fas fa-plus ms-1"></i> Add New Tenant
+        <a asp-action="Create" class="btn btn-primary rounded-pill px-4">
+            <i class="fas fa-plus me-1"></i> Add New Tenant
         </a>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4 p-3 mb-4 bg-white">
+    <!-- Search & Archive Filter -->
+    <div class="card border-0 shadow-sm rounded-4 p-3 mb-4">
         <form asp-action="Index" method="get" class="row g-3 align-items-center">
-            <div class="col-md-6">
+            <div class="col-md-7">
                 <div class="input-group">
-                    <span class="input-group-text bg-light border-0"><i class="fas fa-search text-muted"></i></span>
-                    <input type="text" name="searchTerm" value="@ViewBag.SearchTerm" class="form-control bg-light border-0 shadow-none" placeholder="Search by name, national ID, or unit number...">
+                    <span class="input-group-text bg-light border-0">
+                        <i class="fas fa-search text-muted"></i>
+                    </span>
+                    <input type="text" name="searchTerm" value="@ViewBag.SearchTerm"
+                           class="form-control bg-light border-0 shadow-none"
+                           placeholder="Search by name, national ID, or unit number...">
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="form-check form-switch mt-1">
-                    @* تعديل بسيط لضمان صحة قيمة الـ Checkbox *@
-                    <input class="form-check-input" type="checkbox" name="showArchived" value="true" id="archiveSwitch" @(ViewBag.ShowingArchived == true ? "checked" : "") onchange="this.form.submit()">
-                    <label class="form-check-label fw-bold small ms-2" for="archiveSwitch">Show Archive</label>
+                    <input class="form-check-input" type="checkbox" name="showArchived" value="true"
+                           id="archiveSwitch"
+                           @(ViewBag.ShowingArchived == true ? "checked" : "")
+                           onchange="this.form.submit()">
+                    <label class="form-check-label fw-bold small ms-2" for="archiveSwitch">
+                        Show Archived
+                    </label>
                 </div>
             </div>
-            <div class="col-md-3 text-start">
-                <button type="submit" class="btn btn-dark rounded-pill px-4"> Update The Result </button>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-dark rounded-pill px-4 w-100">Search</button>
             </div>
         </form>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0 text-end">
-                <thead class="bg-light text-muted small">
-                    <tr>
-                        <th class="pr-4 py-3">Full Name (Arabic)</th>
-                        <th>Full Name (English)</th>
-                        <th>Phone Number</th>
-                        <th>Unit</th>
-                        <th>Status</th>
-                        <th class="text-center">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (Model != null && Model.Any())
-                    {
-                        @foreach (var item in Model)
-                        {
-                            <tr>
-                                <td class="pr-4 fw-bold text-dark">@item.FullNameAr</td>
-                                <td class="small text-muted">@item.FullNameEn</td>
-                                <td class="ltr-text">@item.Phone</td>
-                                <td>
-                                    @if (item.Unit != null)
-                                    {
-                                        <span class="badge bg-light text-primary border px-3">وحدة @item.Unit.UnitNumber</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted small">Not Specified</span>
-                                    }
-                                </td>
-                                <td>
-                                    @* معالجة قيمة IsArchived بأمان لمنع خطأ Null *@
-                                    @if (item.IsArchived)
-                                    {
-                                        <span class="badge bg-secondary-subtle text-secondary rounded-pill px-3">Archived</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-success-subtle text-success rounded-pill px-3">Active</span>
-                                    }
-                                </td>
-                                <td class="text-center">
-                                    <div class="btn-group shadow-sm rounded-pill overflow-hidden">
-                                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-white border-end" title="Show Details">
-                                            <i class="fas fa-eye text-primary"></i>
-                                        </a>
-                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-white border-end" title="Edit">
-                                            <i class="fas fa-edit text-warning"></i>
-                                        </a>
-                                        @if (!item.IsArchived)
+    <!-- Tenant Cards -->
+    @if (Model != null && Model.Any())
+    {
+        <div class="row g-4">
+            @foreach (var item in Model)
+            {
+                var initial = item.FirstNameAr?.FirstOrDefault().ToString()?.ToUpper() ?? "?";
+                var colorIdx = Math.Abs((item.FirstNameAr ?? "").GetHashCode()) % avatarColors.Length;
+                var avatarBg = avatarColors[colorIdx];
+                var unitRent = item.Unit?.RentAmount ?? 0m;
+
+                <div class="col-xl-4 col-lg-6">
+                    <div class="tenant-card card border-0 shadow-sm rounded-4 overflow-hidden h-100 d-flex flex-column">
+
+                        <!-- Card Top: Avatar + Name -->
+                        <div class="p-4 pb-3 d-flex gap-3 align-items-start">
+                            <div class="tenant-avatar rounded-3 fw-bold text-white d-flex align-items-center justify-content-center flex-shrink-0"
+                                 style="width:52px;height:52px;background:@avatarBg;font-size:1.3rem;">
+                                @initial
+                            </div>
+                            <div class="overflow-hidden flex-grow-1">
+                                <h6 class="fw-bold mb-0 text-truncate" title="@item.FullNameAr">
+                                    @item.FullNameAr
+                                </h6>
+                                <div class="text-muted small text-truncate">@item.FullNameEn</div>
+                                @if (!string.IsNullOrEmpty(item.Nationality) || item.Unit != null)
+                                {
+                                    <div class="d-flex align-items-center gap-2 mt-1 flex-wrap">
+                                        @if (!string.IsNullOrEmpty(item.Nationality))
                                         {
-                                            <form asp-action="Archive" asp-route-id="@item.Id" method="post" class="d-inline" onsubmit="return confirm('Are you sure you want to archive this tenant?')">
-                                                <button type="submit" class="btn btn-sm btn-white" title="Archive">
-                                                    <i class="fas fa-archive text-danger"></i>
-                                                </button>
-                                            </form>
+                                            <span class="badge bg-light text-muted border small">
+                                                <i class="fas fa-globe me-1"></i>@item.Nationality
+                                            </span>
+                                        }
+                                        @if (item.Unit != null)
+                                        {
+                                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle small">
+                                                <i class="fas fa-door-open me-1"></i>Unit @item.Unit.UnitNumber
+                                            </span>
+                                            @if (item.Unit.Property != null)
+                                            {
+                                                <span class="badge bg-info-subtle text-info border border-info-subtle small">
+                                                    <i class="fas fa-building me-1"></i>@item.Unit.Property.Name
+                                                </span>
+                                            }
                                         }
                                     </div>
-                                </td>
-                            </tr>
-                        }
-                    }
-                    else
-                    {
-                        <tr>
-                            <td colspan="6" class="text-center py-5 text-muted">
-                                <i class="fas fa-user-slash d-block mb-2 fa-2x"></i>
-                                No tenant records match the search criteria.
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Contact Info Rows -->
+                        <div class="px-4 pb-3 flex-grow-1">
+                            <div class="border-top pt-3">
+                                <div class="d-flex align-items-center gap-2 mb-2 small text-muted">
+                                    <i class="fas fa-phone text-primary" style="width:14px;"></i>
+                                    <span>@item.Phone</span>
+                                </div>
+                                @if (!string.IsNullOrEmpty(item.Email))
+                                {
+                                    <div class="d-flex align-items-center gap-2 mb-2 small text-muted">
+                                        <i class="fas fa-envelope text-primary" style="width:14px;"></i>
+                                        <span class="text-truncate">@item.Email</span>
+                                    </div>
+                                }
+                                @if (item.Unit != null)
+                                {
+                                    @if (item.Unit.Property != null)
+                                    {
+                                        <div class="d-flex align-items-center gap-2 mb-2 small text-muted">
+                                            <i class="fas fa-building text-primary" style="width:14px;"></i>
+                                            <span class="fw-semibold text-dark">@item.Unit.Property.Name</span>
+                                        </div>
+                                    }
+                                    <div class="d-flex align-items-center gap-2 mb-2 small text-muted">
+                                        <i class="fas fa-layer-group text-primary" style="width:14px;"></i>
+                                        <span>Floor @item.Unit.FloorNumber &bull; Unit @item.Unit.UnitNumber</span>
+                                    </div>
+                                }
+                                <div class="d-flex align-items-center gap-2 small text-muted">
+                                    <i class="fas fa-id-card text-primary" style="width:14px;"></i>
+                                    <span>ID: @item.IdNumber</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card Footer: Rent + Status + Button -->
+                        <div class="px-4 py-3 border-top d-flex align-items-center justify-content-between bg-light">
+                            <div>
+                                <div class="fw-bold text-primary small">
+                                    @unitRent.ToString("N0") OMR
+                                    <span class="text-muted fw-normal">/mo</span>
+                                </div>
+                                @if (item.IsArchived)
+                                {
+                                    <span class="badge bg-secondary-subtle text-secondary rounded-pill small px-2">Archived</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success-subtle text-success rounded-pill small px-2">Active</span>
+                                }
+                            </div>
+                            <div class="d-flex gap-1">
+                                <a asp-action="Details" asp-route-id="@item.Id"
+                                   class="btn btn-sm btn-dark rounded-pill px-3">
+                                    <i class="fas fa-user me-1"></i> View Profile
+                                </a>
+                                <a asp-action="Edit" asp-route-id="@item.Id"
+                                   class="btn btn-sm btn-outline-secondary rounded-circle"
+                                   style="width:32px;height:32px;padding:0;display:flex;align-items:center;justify-content:center;"
+                                   title="Edit">
+                                    <i class="fas fa-edit" style="font-size:.75rem;"></i>
+                                </a>
+                                @if (!item.IsArchived)
+                                {
+                                    <form asp-action="Archive" asp-route-id="@item.Id" method="post" class="d-inline"
+                                          onsubmit="return confirm('Archive this tenant?')">
+                                        <button type="submit"
+                                                class="btn btn-sm btn-outline-danger rounded-circle"
+                                                style="width:32px;height:32px;padding:0;display:flex;align-items:center;justify-content:center;"
+                                                title="Archive">
+                                            <i class="fas fa-archive" style="font-size:.75rem;"></i>
+                                        </button>
+                                    </form>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
         </div>
-    </div>
+    }
+    else
+    {
+        <div class="text-center py-5 text-muted">
+            <i class="fas fa-user-slash fa-3x mb-3 opacity-25 d-block"></i>
+            <p class="mb-1">No tenant records match the search criteria.</p>
+            <small>Try adjusting your search or toggle the archive switch.</small>
+        </div>
+    }
 </div>
 
 <style>
-    .btn-white { background: #fff; border: none; }
-    .btn-white:hover { background: #f8f9fa; }
-    .ltr-text { direction: ltr; display: inline-block; }
-    .table-responsive { min-height: 350px; }
-    /* تحسين شكل السويتش */
+    .tenant-card { transition: transform .15s, box-shadow .15s; }
+    .tenant-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1) !important; }
     .form-check-input:checked { background-color: #0d6efd; border-color: #0d6efd; }
 </style>

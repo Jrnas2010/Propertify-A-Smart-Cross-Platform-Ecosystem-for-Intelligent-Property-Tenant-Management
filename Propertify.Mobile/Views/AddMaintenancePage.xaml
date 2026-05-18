@@ -1,33 +1,138 @@
+<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Propertify.Mobile.Views.AddMaintenancePage"
-             Title="New Maintenance Request"
-             FlowDirection="RightToLeft">
+             Title="New Request"
+             BackgroundColor="#f8fafc">
+
+    <Shell.TitleView>
+        <Label Text="New Request" FontSize="18" FontAttributes="Bold"
+               TextColor="White" VerticalOptions="Center" Margin="4,0,0,0"/>
+    </Shell.TitleView>
 
     <ScrollView>
-        <VerticalStackLayout Padding="20" Spacing="15">
+        <VerticalStackLayout Spacing="0">
 
-            <Label Text="New Maintenance Request" FontAttributes="Bold" />
-            <Entry x:Name="TitleEntry"
-                   Placeholder="E.g., Water Leak in Kitchen"
-                   BackgroundColor="#F1F2F6" />
-
-            <Label Text="Problem Description" FontAttributes="Bold" />
-            <Editor x:Name="DescriptionEditor"
-                    Placeholder="Describe the problem in detail..."
-                    HeightRequest="120" BackgroundColor="#F1F2F6" />
-
-            <Label Text="Image of the Issue" FontAttributes="Bold" />
-            <Border HeightRequest="200" StrokeShape="RoundRectangle 15,15,15,15" Stroke="#DCDDE1" Padding="0">
-                <Grid>
-                    <Image x:Name="CapturedImage" Aspect="AspectFill" />
-                    <Button Text="Capture Photo 📷" Clicked="OnCapturePhotoClicked"
-                            BackgroundColor="#2C3E50" VerticalOptions="Center" HorizontalOptions="Center" />
-                </Grid>
+            <!-- Header -->
+            <Border BackgroundColor="#1e3a5f" Padding="20,36,20,24" StrokeThickness="0">
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="MAINTENANCE REQUEST" FontSize="10" FontAttributes="Bold"
+                           TextColor="#93c5fd" CharacterSpacing="1.5"/>
+                    <Label Text="Report an issue in your unit" FontSize="18"
+                           FontAttributes="Bold" TextColor="White"/>
+                </VerticalStackLayout>
             </Border>
 
+            <!-- Form card -->
+            <Border BackgroundColor="White" Margin="16,16,16,0"
+                    Padding="20" StrokeThickness="0">
+                <Border.StrokeShape><RoundRectangle CornerRadius="20"/></Border.StrokeShape>
+                <Border.Shadow><Shadow Brush="Black" Offset="0,2" Radius="10" Opacity="0.07"/></Border.Shadow>
+                <VerticalStackLayout Spacing="18">
+
+                    <!-- Title field -->
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="Issue Title" FontSize="12" FontAttributes="Bold"
+                               TextColor="#475569" CharacterSpacing="0.5"/>
+                        <Border BackgroundColor="#f8fafc" Padding="14,0"
+                                StrokeThickness="1.5">
+                            <Border.Stroke><SolidColorBrush Color="#e2e8f0"/></Border.Stroke>
+                            <Border.StrokeShape><RoundRectangle CornerRadius="12"/></Border.StrokeShape>
+                            <Entry x:Name="TitleEntry"
+                                   Placeholder="e.g. Water leak under kitchen sink"
+                                   PlaceholderColor="#94a3b8" TextColor="#0f172a"
+                                   FontSize="14" HeightRequest="48"
+                                   BackgroundColor="Transparent"/>
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <!-- Description field -->
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="Description" FontSize="12" FontAttributes="Bold"
+                               TextColor="#475569" CharacterSpacing="0.5"/>
+                        <Border BackgroundColor="#f8fafc" Padding="14,8"
+                                StrokeThickness="1.5">
+                            <Border.Stroke><SolidColorBrush Color="#e2e8f0"/></Border.Stroke>
+                            <Border.StrokeShape><RoundRectangle CornerRadius="12"/></Border.StrokeShape>
+                            <Editor x:Name="DescriptionEditor"
+                                    Placeholder="Describe the problem in detail. When did it start? How severe is it?"
+                                    PlaceholderColor="#94a3b8" TextColor="#0f172a"
+                                    FontSize="14" HeightRequest="110"
+                                    BackgroundColor="Transparent"/>
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <!-- Photo section -->
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="Photo (Optional)" FontSize="12" FontAttributes="Bold"
+                               TextColor="#475569" CharacterSpacing="0.5"/>
+                        <Border HeightRequest="180" StrokeThickness="1.5"
+                                BackgroundColor="#f8fafc">
+                            <Border.Stroke><SolidColorBrush Color="#e2e8f0"/></Border.Stroke>
+                            <Border.StrokeShape><RoundRectangle CornerRadius="12"/></Border.StrokeShape>
+                            <Grid>
+                                <Image x:Name="CapturedImage" Aspect="AspectFill"
+                                       IsVisible="False"/>
+                                <VerticalStackLayout x:Name="PhotoPlaceholder"
+                                                     VerticalOptions="Center" HorizontalOptions="Center"
+                                                     Spacing="8">
+                                    <Label Text="📷" FontSize="32" HorizontalOptions="Center"/>
+                                    <Label Text="Tap to capture a photo" FontSize="13"
+                                           TextColor="#94a3b8" HorizontalOptions="Center"/>
+                                </VerticalStackLayout>
+                                <Grid.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnCapturePhotoClicked"/>
+                                </Grid.GestureRecognizers>
+                            </Grid>
+                        </Border>
+                        <Button Text="📷  Capture Photo" Clicked="OnCapturePhotoClicked"
+                                BackgroundColor="#f1f5f9" TextColor="#1e3a5f"
+                                FontSize="13" FontAttributes="Bold"
+                                CornerRadius="10" HeightRequest="44"/>
+                    </VerticalStackLayout>
+
+                    <!-- Priority -->
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="Priority" FontSize="12" FontAttributes="Bold"
+                               TextColor="#475569" CharacterSpacing="0.5"/>
+                        <HorizontalStackLayout Spacing="10" x:Name="PriorityChips">
+                            <Border x:Name="PrioNormal" Padding="16,8" StrokeThickness="0"
+                                    BackgroundColor="#1e3a5f">
+                                <Border.StrokeShape><RoundRectangle CornerRadius="20"/></Border.StrokeShape>
+                                <Label Text="Normal" FontSize="12" FontAttributes="Bold" TextColor="White"/>
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnPrioNormal"/>
+                                </Border.GestureRecognizers>
+                            </Border>
+                            <Border x:Name="PrioHigh" Padding="16,8" StrokeThickness="1"
+                                    BackgroundColor="White">
+                                <Border.Stroke><SolidColorBrush Color="#e2e8f0"/></Border.Stroke>
+                                <Border.StrokeShape><RoundRectangle CornerRadius="20"/></Border.StrokeShape>
+                                <Label Text="High" FontSize="12" FontAttributes="Bold" TextColor="#64748b"/>
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnPrioHigh"/>
+                                </Border.GestureRecognizers>
+                            </Border>
+                            <Border x:Name="PrioUrgent" Padding="16,8" StrokeThickness="1"
+                                    BackgroundColor="White">
+                                <Border.Stroke><SolidColorBrush Color="#e2e8f0"/></Border.Stroke>
+                                <Border.StrokeShape><RoundRectangle CornerRadius="20"/></Border.StrokeShape>
+                                <Label Text="Urgent" FontSize="12" FontAttributes="Bold" TextColor="#64748b"/>
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnPrioUrgent"/>
+                                </Border.GestureRecognizers>
+                            </Border>
+                        </HorizontalStackLayout>
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Submit button -->
             <Button Text="Submit Request" Clicked="OnSubmitClicked"
-                    BackgroundColor="#27AE60" CornerRadius="25" HeightRequest="55" Margin="0,20,0,0" />
+                    BackgroundColor="#1e3a5f" TextColor="White"
+                    CornerRadius="14" HeightRequest="52"
+                    FontSize="15" FontAttributes="Bold"
+                    Margin="16,16,16,32"/>
 
         </VerticalStackLayout>
     </ScrollView>

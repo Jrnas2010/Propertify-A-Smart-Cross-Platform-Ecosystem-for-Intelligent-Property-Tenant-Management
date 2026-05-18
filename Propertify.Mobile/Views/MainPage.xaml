@@ -1,29 +1,208 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Propertify.Mobile.Models"
              x:Class="Propertify.Mobile.Views.MainPage"
-             BackgroundColor="#F8F9FA"
-             Shell.NavBarIsVisible="False">
+             Title="Dashboard"
+             BackgroundColor="#f8fafc">
 
-    <ScrollView>
-        <VerticalStackLayout Padding="20" Spacing="20">
-            <Label Text="Welcome, Hamad" FontSize="22" FontAttributes="Bold" TextColor="#2C3E50" />
+    <Shell.TitleView>
+        <Label Text="Dashboard" FontSize="18" FontAttributes="Bold"
+               TextColor="White" VerticalOptions="Center" Margin="4,0,0,0"/>
+    </Shell.TitleView>
 
-            <Frame BackgroundColor="#2C3E50" CornerRadius="15" HasShadow="True">
-                <VerticalStackLayout>
-                    <Label Text="Rental for April" TextColor="White" Opacity="0.7" />
-                    <Label Text="250.000 OMR" FontSize="32" TextColor="White" FontAttributes="Bold" />
+    <RefreshView IsRefreshing="{Binding IsBusy}" Command="{Binding RefreshCommand}">
+        <ScrollView>
+            <VerticalStackLayout Spacing="0">
+
+                <!-- ── Header card ── -->
+                <Border BackgroundColor="#1e3a5f" Padding="20,40,20,28"
+                        StrokeThickness="0">
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="{Binding Greeting, StringFormat='{0},'}"
+                               FontSize="14" TextColor="#93c5fd"/>
+                        <Label Text="{Binding TenantName}" FontSize="22" FontAttributes="Bold"
+                               TextColor="White"/>
+                        <Label Text="{Binding UnitInfo}" FontSize="13" TextColor="#bfdbfe"
+                               Margin="0,4,0,0"/>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- ── Quick stats row ── -->
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="12"
+                      Padding="16,16,16,4">
+                    <!-- Pending Bills -->
+                    <Border Grid.Column="0" BackgroundColor="White" Padding="16"
+                            StrokeThickness="0">
+                        <Border.StrokeShape><RoundRectangle CornerRadius="16"/></Border.StrokeShape>
+                        <Border.Shadow><Shadow Brush="Black" Offset="0,2" Radius="8" Opacity="0.06"/></Border.Shadow>
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="💳" FontSize="22"/>
+                            <Label Text="{Binding PendingBills}" FontSize="24" FontAttributes="Bold"
+                                   TextColor="#1e3a5f"/>
+                            <Label Text="Pending Bills" FontSize="11" TextColor="#64748b" FontAttributes="Bold"/>
+                            <Label Text="{Binding UnpaidAmount}" FontSize="11" TextColor="#ef4444" FontAttributes="Bold"/>
+                        </VerticalStackLayout>
+                    </Border>
+                    <!-- Maintenance -->
+                    <Border Grid.Column="1" BackgroundColor="White" Padding="16"
+                            StrokeThickness="0">
+                        <Border.StrokeShape><RoundRectangle CornerRadius="16"/></Border.StrokeShape>
+                        <Border.Shadow><Shadow Brush="Black" Offset="0,2" Radius="8" Opacity="0.06"/></Border.Shadow>
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="🔧" FontSize="22"/>
+                            <Label Text="{Binding PendingMaintenance}" FontSize="24" FontAttributes="Bold"
+                                   TextColor="#1e3a5f"/>
+                            <Label Text="Open Requests" FontSize="11" TextColor="#64748b" FontAttributes="Bold"/>
+                            <Label Text="Maintenance" FontSize="11" TextColor="#94a3b8"/>
+                        </VerticalStackLayout>
+                    </Border>
+                </Grid>
+
+                <!-- ── Contract card ── -->
+                <Border BackgroundColor="White" Margin="16,12" Padding="20" StrokeThickness="0">
+                    <Border.StrokeShape><RoundRectangle CornerRadius="20"/></Border.StrokeShape>
+                    <Border.Shadow><Shadow Brush="Black" Offset="0,2" Radius="10" Opacity="0.07"/></Border.Shadow>
+                    <VerticalStackLayout Spacing="14">
+
+                        <!-- Contract header -->
+                        <Grid ColumnDefinitions="*,Auto">
+                            <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                <Label Text="LEASE CONTRACT" FontSize="10" FontAttributes="Bold"
+                                       TextColor="#94a3b8" CharacterSpacing="1"/>
+                                <Label Text="{Binding UnitInfo}" FontSize="15" FontAttributes="Bold"
+                                       TextColor="#0f172a"/>
+                            </VerticalStackLayout>
+                            <!-- Status badge -->
+                            <Border Grid.Column="1" Padding="10,5" StrokeThickness="0"
+                                    BackgroundColor="{Binding ContractStatusColor}">
+                                <Border.StrokeShape><RoundRectangle CornerRadius="20"/></Border.StrokeShape>
+                                <Label Text="{Binding ContractStatus}" FontSize="11" FontAttributes="Bold"
+                                       TextColor="White"/>
+                            </Border>
+                        </Grid>
+
+                        <!-- Date range -->
+                        <Grid ColumnDefinitions="*,Auto,*">
+                            <VerticalStackLayout Grid.Column="0">
+                                <Label Text="Start Date" FontSize="10" TextColor="#94a3b8" FontAttributes="Bold"/>
+                                <Label Text="{Binding ContractStart}" FontSize="13" FontAttributes="Bold"
+                                       TextColor="#0f172a"/>
+                            </VerticalStackLayout>
+                            <Label Grid.Column="1" Text="→" FontSize="18" TextColor="#94a3b8"
+                                   VerticalOptions="Center" Margin="8,0"/>
+                            <VerticalStackLayout Grid.Column="2">
+                                <Label Text="End Date" FontSize="10" TextColor="#94a3b8" FontAttributes="Bold"/>
+                                <Label Text="{Binding ContractEnd}" FontSize="13" FontAttributes="Bold"
+                                       TextColor="#0f172a"/>
+                            </VerticalStackLayout>
+                        </Grid>
+
+                        <!-- Progress bar -->
+                        <VerticalStackLayout Spacing="8">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Grid.Column="0" Text="Contract Progress"
+                                       FontSize="12" TextColor="#64748b"/>
+                                <Label Grid.Column="1"
+                                       Text="{Binding DaysRemaining, StringFormat='{0} days left'}"
+                                       FontSize="12" FontAttributes="Bold" TextColor="#f59e0b"/>
+                            </Grid>
+                            <ProgressBar Progress="{Binding ContractProgress}"
+                                         ProgressColor="#3b82f6" BackgroundColor="#e2e8f0"
+                                         HeightRequest="8"/>
+                        </VerticalStackLayout>
+
+                        <!-- Monthly rent -->
+                        <Border BackgroundColor="#f0f9ff" Padding="14,10" StrokeThickness="0">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="10"/></Border.StrokeShape>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Grid.Column="0" Text="Monthly Rent" FontSize="13" TextColor="#64748b"/>
+                                <Label Grid.Column="1" Text="{Binding MonthlyRent}"
+                                       FontSize="15" FontAttributes="Bold" TextColor="#1e3a5f"/>
+                            </Grid>
+                        </Border>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- ── Recent Invoices ── -->
+                <Grid ColumnDefinitions="*,Auto" Padding="16,4,16,8">
+                    <Label Grid.Column="0" Text="Recent Invoices" FontSize="15" FontAttributes="Bold"
+                           TextColor="#0f172a" VerticalOptions="Center"/>
+                    <Label Grid.Column="1" Text="View All" FontSize="12" FontAttributes="Bold"
+                           TextColor="#3b82f6" VerticalOptions="Center"/>
+                </Grid>
+
+                <VerticalStackLayout BindableLayout.ItemsSource="{Binding RecentBills}"
+                                     Padding="16,0" Spacing="10">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate>
+                            <Border BackgroundColor="White" Padding="16,14" StrokeThickness="0">
+                                <Border.StrokeShape><RoundRectangle CornerRadius="14"/></Border.StrokeShape>
+                                <Border.Shadow><Shadow Brush="Black" Offset="0,1" Radius="6" Opacity="0.05"/></Border.Shadow>
+                                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                                    <!-- Icon -->
+                                    <Border Grid.Column="0" BackgroundColor="#eff6ff"
+                                            WidthRequest="40" HeightRequest="40" StrokeThickness="0">
+                                        <Border.StrokeShape><RoundRectangle CornerRadius="10"/></Border.StrokeShape>
+                                        <Label Text="💡" FontSize="18" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                    </Border>
+                                    <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                        <Label Text="{Binding ServiceType}" FontSize="13" FontAttributes="Bold" TextColor="#0f172a"/>
+                                        <Label Text="{Binding IssueDate}" FontSize="11" TextColor="#94a3b8"/>
+                                    </VerticalStackLayout>
+                                    <VerticalStackLayout Grid.Column="2" Spacing="4" HorizontalOptions="End">
+                                        <Label Text="{Binding TotalAmount, StringFormat='{0:N3} OMR'}"
+                                               FontSize="13" FontAttributes="Bold" TextColor="#1e3a5f"
+                                               HorizontalOptions="End"/>
+                                        <Border Padding="8,3" StrokeThickness="0" HorizontalOptions="End"
+                                                BackgroundColor="{Binding Status, Converter={StaticResource StatusToColorConverter}}">
+                                            <Border.StrokeShape><RoundRectangle CornerRadius="20"/></Border.StrokeShape>
+                                            <Label Text="{Binding Status}" FontSize="10" FontAttributes="Bold" TextColor="White"/>
+                                        </Border>
+                                    </VerticalStackLayout>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
                 </VerticalStackLayout>
-            </Frame>
 
-            <Frame BackgroundColor="#FEF9E7" BorderColor="#F7DC6F">
-                <Label Text="🔔 Alert: Water Tank Maintenance Tomorrow at 10 AM" TextColor="#9A7D0A" />
-            </Frame>
+                <!-- ── Recent Maintenance ── -->
+                <Grid ColumnDefinitions="*,Auto" Padding="16,16,16,8">
+                    <Label Grid.Column="0" Text="Recent Maintenance" FontSize="15" FontAttributes="Bold"
+                           TextColor="#0f172a" VerticalOptions="Center"/>
+                    <Label Grid.Column="1" Text="View All" FontSize="12" FontAttributes="Bold"
+                           TextColor="#3b82f6" VerticalOptions="Center"/>
+                </Grid>
 
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="15">
-                <Button Grid.Column="0" Text="🔧 Maintenance" BackgroundColor="White" TextColor="Black" Clicked="OnMaintenanceClicked" />
-                <Button Grid.Column="1" Text="📄 Contract" BackgroundColor="White" TextColor="Black" />
-            </Grid>
-        </VerticalStackLayout>
-    </ScrollView>
+                <VerticalStackLayout BindableLayout.ItemsSource="{Binding RecentMaintenance}"
+                                     Padding="16,0,16,24" Spacing="10">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate>
+                            <Border BackgroundColor="White" Padding="16,14" StrokeThickness="0">
+                                <Border.StrokeShape><RoundRectangle CornerRadius="14"/></Border.StrokeShape>
+                                <Border.Shadow><Shadow Brush="Black" Offset="0,1" Radius="6" Opacity="0.05"/></Border.Shadow>
+                                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                                    <Border Grid.Column="0" BackgroundColor="#fff7ed"
+                                            WidthRequest="40" HeightRequest="40" StrokeThickness="0">
+                                        <Border.StrokeShape><RoundRectangle CornerRadius="10"/></Border.StrokeShape>
+                                        <Label Text="🔧" FontSize="18" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                    </Border>
+                                    <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                        <Label Text="{Binding Title}" FontSize="13" FontAttributes="Bold" TextColor="#0f172a"/>
+                                        <Label Text="{Binding CreatedAt}" FontSize="11" TextColor="#94a3b8"/>
+                                    </VerticalStackLayout>
+                                    <Border Grid.Column="2" Padding="8,3" StrokeThickness="0"
+                                            BackgroundColor="{Binding Status, Converter={StaticResource StatusToColorConverter}}">
+                                        <Border.StrokeShape><RoundRectangle CornerRadius="20"/></Border.StrokeShape>
+                                        <Label Text="{Binding Status}" FontSize="10" FontAttributes="Bold" TextColor="White"/>
+                                    </Border>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </RefreshView>
 </ContentPage>

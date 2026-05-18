@@ -1,14 +1,22 @@
+using Propertify.Mobile.ViewModels;
+
 namespace Propertify.Mobile.Views;
 
 public partial class MainPage : ContentPage
 {
-	public MainPage()
-	{
-		InitializeComponent();
-	}
+    private readonly DashboardViewModel _vm;
 
-	private async void OnMaintenanceClicked(object sender, EventArgs e)
-	{
-		await Shell.Current.GoToAsync("maintenance");
-	}
+    public MainPage(DashboardViewModel vm)
+    {
+        InitializeComponent();
+        _vm            = vm;
+        BindingContext = vm;
+    }
+
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        if (!_vm.HasData)
+            await _vm.LoadAsync();
+    }
 }
