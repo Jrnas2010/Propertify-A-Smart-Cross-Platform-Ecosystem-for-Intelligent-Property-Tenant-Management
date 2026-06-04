@@ -7,7 +7,6 @@
        Shell.TabBarForegroundColor="#ffffff"
        Shell.TabBarTitleColor="#ffffff"
        Shell.TabBarUnselectedColor="#64748b"
-       Shell.NavBarBackgroundColor="#1e3a5f"
        Shell.NavBarHasShadow="False">
 
     <TabBar>

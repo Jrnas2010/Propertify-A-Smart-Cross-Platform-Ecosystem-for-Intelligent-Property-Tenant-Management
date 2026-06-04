@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 
 namespace Propertify.Mobile.ViewModels
 {
+    /// <summary>Provides all data for the tenant dashboard tab: contract progress, financials, and recent activity lists.</summary>
     public partial class DashboardViewModel : ObservableObject
     {
         private readonly ApiService     _api;
@@ -36,6 +37,7 @@ namespace Propertify.Mobile.ViewModels
             _session = session;
         }
 
+        /// <summary>Fetches dashboard data from the API and populates all observable properties and collections.</summary>
         public async Task LoadAsync()
         {
             IsBusy = true;
@@ -70,6 +72,7 @@ namespace Propertify.Mobile.ViewModels
             HasData = true;
         }
 
+        /// <summary>Pull-to-refresh command – reloads dashboard data.</summary>
         [RelayCommand]
         private async Task RefreshAsync() => await LoadAsync();
     }

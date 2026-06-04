@@ -5,6 +5,7 @@ using Propertify.Mobile.Services;
 
 namespace Propertify.Mobile.ViewModels
 {
+    /// <summary>Drives the login screen: validates input, calls the API, stores the session, and navigates to the main shell.</summary>
     public partial class LoginViewModel : ObservableObject
     {
         private readonly ApiService       _api;
@@ -24,6 +25,7 @@ namespace Propertify.Mobile.ViewModels
             _services = services;
         }
 
+        /// <summary>Validates credentials, calls the login API, saves the session, and replaces the main page with AppShell on success.</summary>
         [RelayCommand]
         private async Task LoginAsync()
         {

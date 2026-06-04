@@ -5,13 +5,16 @@ using Propertify.Mobile.Models;
 
 namespace Propertify.Mobile.Services
 {
+    /// <summary>
+    /// HTTP client wrapper for the Propertify mobile REST API.
+    /// All methods return default/empty values on network or deserialisation failure
+    /// so the UI stays stable without crashing.
+    /// </summary>
     public class ApiService
     {
         private readonly HttpClient _http;
 
-        // Android emulator → host machine localhost.
-        // Change to your LAN IP (e.g. http://192.168.1.x:5287/api/mobile/) for a real device.
-        private const string BaseUrl = "http://10.0.2.2:5287/api/mobile/";
+        private const string BaseUrl = "http://10.7.109.240:5287/api/mobile/";
 
         private static readonly JsonSerializerOptions JsonOpts = new()
         {
@@ -23,7 +26,7 @@ namespace Propertify.Mobile.Services
             _http = new HttpClient { Timeout = TimeSpan.FromSeconds(15) };
         }
 
-        // ── Login ──────────────────────────────────────────────────────────
+        /// <summary>Sends credentials to <c>POST api/mobile/login</c> and returns the server response.</summary>
         public async Task<LoginResponse> LoginAsync(string email, string password)
         {
             try
@@ -41,7 +44,7 @@ namespace Propertify.Mobile.Services
             }
         }
 
-        // ── Dashboard ──────────────────────────────────────────────────────
+        /// <summary>Fetches the aggregated dashboard data for <paramref name="tenantId"/>. Returns null on failure.</summary>
         public async Task<DashboardDto?> GetDashboardAsync(int tenantId)
         {
             try
@@ -52,7 +55,7 @@ namespace Propertify.Mobile.Services
             catch { return null; }
         }
 
-        // ── Contracts ──────────────────────────────────────────────────────
+        /// <summary>Returns the list of contracts for <paramref name="tenantId"/>, or an empty list on failure.</summary>
         public async Task<List<ContractDto>> GetContractsAsync(int tenantId)
         {
             try
@@ -63,7 +66,7 @@ namespace Propertify.Mobile.Services
             catch { return new(); }
         }
 
-        // ── Invoices ───────────────────────────────────────────────────────
+        /// <summary>Returns all utility bills for <paramref name="tenantId"/>, or an empty list on failure.</summary>
         public async Task<List<InvoiceDto>> GetInvoicesAsync(int tenantId)
         {
             try
@@ -74,7 +77,7 @@ namespace Propertify.Mobile.Services
             catch { return new(); }
         }
 
-        // ── Maintenance list ───────────────────────────────────────────────
+        /// <summary>Returns all maintenance requests for <paramref name="unitId"/>, or an empty list on failure.</summary>
         public async Task<List<MaintenanceDto>> GetMaintenanceAsync(int unitId)
         {
             try
@@ -85,7 +88,11 @@ namespace Propertify.Mobile.Services
             catch { return new(); }
         }
 
-        // ── Submit maintenance request (with optional photo) ───────────────
+        /// <summary>
+        /// Posts a new maintenance request as a multipart form.
+        /// Attaches the optional <paramref name="photo"/> as a binary stream.
+        /// Returns true if the server responded with a success status code.
+        /// </summary>
         public async Task<bool> SubmitMaintenanceAsync(string title, string description, int unitId, FileResult? photo)
         {
             try

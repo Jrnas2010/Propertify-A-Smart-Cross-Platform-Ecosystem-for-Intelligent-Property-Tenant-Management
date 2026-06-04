@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 
 namespace Propertify.Mobile.ViewModels
 {
+    /// <summary>Manages the maintenance request list with in-memory status filtering and pull-to-refresh.</summary>
     public partial class MaintenanceViewModel : ObservableObject
     {
         private readonly ApiService     _api;
@@ -25,6 +26,7 @@ namespace Propertify.Mobile.ViewModels
             _session = session;
         }
 
+        /// <summary>Loads all requests for the current unit from the API and applies the active filter.</summary>
         public async Task LoadAsync()
         {
             IsBusy      = true;
@@ -33,6 +35,7 @@ namespace Propertify.Mobile.ViewModels
             ApplyFilter(ActiveFilter);
         }
 
+        /// <summary>Filters the displayed requests to those matching <paramref name="filter"/> ("All", "Pending", "InProgress", "Completed").</summary>
         public void ApplyFilter(string filter)
         {
             ActiveFilter = filter;
@@ -44,6 +47,7 @@ namespace Propertify.Mobile.ViewModels
             IsEmpty = Requests.Count == 0;
         }
 
+        /// <summary>Pull-to-refresh command – sets IsRefreshing while reloading.</summary>
         [RelayCommand]
         private async Task RefreshAsync()
         {

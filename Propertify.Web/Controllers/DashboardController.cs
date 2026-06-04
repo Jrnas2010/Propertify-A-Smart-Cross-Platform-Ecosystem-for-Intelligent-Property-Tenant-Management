@@ -9,6 +9,7 @@ using System.Text.Json.Serialization;
 
 namespace Propertify.Web.Controllers
 {
+    /// <summary>Serves the owner dashboard with occupancy stats, revenue/expense charts, map data, and AI insights.</summary>
     [Authorize(Roles = "Owner")]
     public class DashboardController : Controller
     {
@@ -27,6 +28,11 @@ namespace Propertify.Web.Controllers
             _context = context;
         }
 
+        /// <summary>
+        /// Aggregates unit occupancy, 6-month revenue/expense trends, per-property financials,
+        /// expiring contracts, pending maintenance, visitor inquiries, and map coordinates,
+        /// then passes them as ViewBag values to the dashboard view.
+        /// </summary>
         public async Task<IActionResult> Index()
         {
             // 1. إحصائيات الوحدات

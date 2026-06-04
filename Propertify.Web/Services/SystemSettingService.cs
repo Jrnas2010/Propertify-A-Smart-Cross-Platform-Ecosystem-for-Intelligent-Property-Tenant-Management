@@ -18,6 +18,7 @@ namespace Propertify.Web.Services
             _scopeFactory = scopeFactory;
         }
 
+        /// <summary>Opens a short-lived EF scope and reads all SystemSettings rows into a dictionary.</summary>
         private Dictionary<string, string> LoadCache()
         {
             using var scope = _scopeFactory.CreateScope();
@@ -25,6 +26,7 @@ namespace Propertify.Web.Services
             return ctx.SystemSettings.ToDictionary(s => s.Key, s => s.Value);
         }
 
+        /// <summary>Returns the setting value for <paramref name="key"/>, loading the cache on first access.</summary>
         public string Get(string key, string defaultValue = "")
         {
             if (_cache == null)
@@ -37,6 +39,7 @@ namespace Propertify.Web.Services
             return _cache.TryGetValue(key, out var v) ? v : defaultValue;
         }
 
+        /// <summary>Clears the in-memory cache so the next call to <see cref="Get"/> re-reads the DB.</summary>
         public void InvalidateCache()
         {
             lock (_lock) { _cache = null; }

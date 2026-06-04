@@ -3,11 +3,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Propertify.Web.Data;
+using Propertify.Web.Helpers;
 using Propertify.Web.Models;
 
 namespace Propertify.Web.Controllers
 {
-    [Authorize(Roles = "Owner")] 
+    /// <summary>Manages tenant records: listing, creation, editing, archiving, and mobile-account provisioning.</summary>
+    [Authorize(Roles = "Owner")]
     public class TenantController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -19,7 +21,7 @@ namespace Propertify.Web.Controllers
             _environment = environment;
         }
 
-        // 1. عرض قائمة المستأجرين مع البحث والأرشفة
+        /// <summary>Lists tenants filtered by search term and archive status. Passes a tenantId→email map so the view can show which tenants already have mobile accounts.</summary>
         public async Task<IActionResult> Index(string searchTerm, bool showArchived = false)
         {
             if (!string.IsNullOrEmpty(searchTerm) && searchTerm.Length > 100)
@@ -35,13 +37,20 @@ namespace Propertify.Web.Controllers
                 .AsQueryable();
 
             if (!string.IsNullOrEmpty(searchTerm))
-            {
                 query = ApplyFilters(query, searchTerm);
-            }
 
-            return View(await query.ToListAsync());
+            var tenants = await query.ToListAsync();
+
+            // Map tenantId → account email for tenants that already have a mobile account
+            var tenantIds = tenants.Select(t => t.Id).ToList();
+            ViewBag.TenantAccounts = await _context.Users
+                .Where(u => u.TenantId != null && tenantIds.Contains(u.TenantId.Value))
+                .ToDictionaryAsync(u => u.TenantId!.Value, u => u.Email);
+
+            return View(tenants);
         }
 
+        /// <summary>Displays the "Add Tenant" form, populating the unit dropdown with vacant units only.</summary>
         public async Task<IActionResult> Create()
         {
             var vacantUnits = await _context.Units.Where(u => !u.IsOccupied).ToListAsync();
@@ -49,7 +58,7 @@ namespace Propertify.Web.Controllers
             return View();
         }
 
-        // 3. معالجة إضافة مستأجر جديد
+        /// <summary>Saves a new tenant, uploads the ID-card image if provided, and marks the linked unit as occupied.</summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Tenant tenant, IFormFile? IdCardImage)
@@ -81,7 +90,7 @@ namespace Propertify.Web.Controllers
             return View(tenant);
         }
 
-        // 4. أرشفة المستأجر عند انتهاء العقد وإخلاء الوحدة
+        /// <summary>Flags the tenant as archived and releases the linked unit back to "Vacant".</summary>
         [HttpPost]
         public async Task<IActionResult> Archive(int id)
         {
@@ -104,7 +113,7 @@ namespace Propertify.Web.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // 4.5. عرض تفاصيل المستأجر
+        /// <summary>Returns the detail view for a single tenant, including their unit and property.</summary>
         public async Task<IActionResult> Details(int id)
         {
             var tenant = await _context.Tenants
@@ -119,7 +128,7 @@ namespace Propertify.Web.Controllers
             return View(tenant);
         }
 
-        // 4.6. عرض صفحة تعديل المستأجر
+        /// <summary>Displays the edit form, including the tenant's currently assigned unit in the dropdown.</summary>
         public async Task<IActionResult> Edit(int id)
         {
             var tenant = await _context.Tenants.FindAsync(id);
@@ -132,7 +141,7 @@ namespace Propertify.Web.Controllers
             return View(tenant);
         }
 
-        // 4.7. معالجة تعديل المستأجر
+        /// <summary>Saves tenant edits; if the unit changed, frees the old unit and occupies the new one.</summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Tenant tenant, IFormFile? IdCardImage)
@@ -203,7 +212,51 @@ namespace Propertify.Web.Controllers
             return _context.Tenants.Any(e => e.Id == id);
         }
 
-        // 5. حذف نهائي للمستأجر
+        /// <summary>
+        /// Provisions a mobile-app login for a tenant: validates email uniqueness, hashes the password,
+        /// and creates a User record with Role="Tenant" linked to the tenant's ID.
+        /// </summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateMobileAccount(int tenantId, string email, string password, string? permissions)
+        {
+            var tenant = await _context.Tenants.FindAsync(tenantId);
+            if (tenant == null)
+            {
+                TempData["Error"] = "Tenant not found.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            if (_context.Users.Any(u => u.Email == email.Trim().ToLower()))
+            {
+                TempData["Error"] = "A user with this email already exists.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var existing = await _context.Users.FirstOrDefaultAsync(u => u.TenantId == tenantId);
+            if (existing != null)
+            {
+                TempData["Error"] = $"Tenant already has a mobile account ({existing.Email}).";
+                return RedirectToAction(nameof(Index));
+            }
+
+            _context.Users.Add(new User
+            {
+                FullName    = tenant.FullNameEn,
+                Email       = email.Trim().ToLower(),
+                Password    = PasswordHelper.Hash(password),
+                Role        = "Tenant",
+                Status      = "Active",
+                Permissions = string.IsNullOrWhiteSpace(permissions) ? "Contracts,Invoices,Maintenance" : permissions,
+                TenantId    = tenantId
+            });
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = $"Mobile account created for {tenant.FullNameEn}.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        /// <summary>Permanently deletes a tenant record from the database.</summary>
         [HttpPost]
         public async Task<IActionResult> Delete(int id)
         {
@@ -216,8 +269,7 @@ namespace Propertify.Web.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // --- دالت مساعدة (Helper Methods) ---
-
+        /// <summary>Filters tenants by name (Arabic/English), national ID, phone, or unit number.</summary>
         private IQueryable<Tenant> ApplyFilters(IQueryable<Tenant> query, string searchTerm)
         {
             return query.Where(t => 
@@ -228,6 +280,7 @@ namespace Propertify.Web.Controllers
                 || (t.Unit != null && t.Unit.UnitNumber.Contains(searchTerm)));
         }
 
+        /// <summary>Saves an uploaded file to <c>wwwroot/uploads/{subFolder}</c> with a GUID filename and returns the public path.</summary>
         private async Task<string> UploadFile(IFormFile file, string subFolder)
         {
             string uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", subFolder);

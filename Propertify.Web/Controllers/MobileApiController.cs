@@ -7,6 +7,11 @@ using System.Text.Json.Serialization;
 
 namespace Propertify.Web.Controllers
 {
+    /// <summary>
+    /// REST API consumed by the Propertify mobile app.
+    /// All endpoints are unauthenticated at the HTTP level; the Login action returns the session IDs
+    /// that the app uses to scope subsequent requests.
+    /// </summary>
     [Route("api/mobile")]
     [ApiController]
     public class MobileApiController : ControllerBase
@@ -24,9 +29,11 @@ namespace Propertify.Web.Controllers
             _context = context;
         }
 
+        /// <summary>Serialises <paramref name="data"/> to camel-case JSON and wraps it in a <see cref="ContentResult"/>.</summary>
         private ContentResult Json(object data) =>
             Content(JsonSerializer.Serialize(data, JsonOpts), "application/json");
 
+        /// <summary>Appends an ActivityLog row for the given user action (Platform = "Mobile").</summary>
         private async Task LogAsync(int userId, string userName, string action, string? details = null)
         {
             _context.ActivityLogs.Add(new Propertify.Web.Models.ActivityLog
@@ -41,7 +48,10 @@ namespace Propertify.Web.Controllers
             await _context.SaveChangesAsync();
         }
 
-        // ── POST api/mobile/login ──────────────────────────────────────────
+        /// <summary>
+        /// Authenticates a tenant user by email/password. On success returns userId, tenantId, unitId,
+        /// names, and the comma-separated permissions string the app uses for feature gating.
+        /// </summary>
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] MobileLoginRequest req)
         {
@@ -84,7 +94,10 @@ namespace Propertify.Web.Controllers
             }, JsonOpts), "application/json");
         }
 
-        // ── GET api/mobile/dashboard/{tenantId} ───────────────────────────
+        /// <summary>
+        /// Returns a summary for the tenant dashboard: contract progress, pending bills/maintenance counts,
+        /// unpaid amount, monthly rent, and the last 3 bills and maintenance requests.
+        /// </summary>
         [HttpGet("dashboard/{tenantId}")]
         public async Task<IActionResult> Dashboard(int tenantId)
         {
@@ -161,7 +174,7 @@ namespace Propertify.Web.Controllers
             }, JsonOpts), "application/json");
         }
 
-        // ── GET api/mobile/contracts/{tenantId} ───────────────────────────
+        /// <summary>Returns all contracts for the given tenant, ordered newest-first, with days-remaining computed.</summary>
         [HttpGet("contracts/{tenantId}")]
         public async Task<IActionResult> Contracts(int tenantId)
         {
@@ -192,7 +205,7 @@ namespace Propertify.Web.Controllers
             return Content(JsonSerializer.Serialize(contracts, JsonOpts), "application/json");
         }
 
-        // ── GET api/mobile/invoices/{tenantId} ────────────────────────────
+        /// <summary>Returns all utility bills for the given tenant, ordered newest-first.</summary>
         [HttpGet("invoices/{tenantId}")]
         public async Task<IActionResult> Invoices(int tenantId)
         {
@@ -218,7 +231,7 @@ namespace Propertify.Web.Controllers
             return Content(JsonSerializer.Serialize(bills, JsonOpts), "application/json");
         }
 
-        // ── GET api/mobile/maintenance/{unitId} ───────────────────────────
+        /// <summary>Returns all maintenance requests for the given unit, ordered newest-first.</summary>
         [HttpGet("maintenance/{unitId}")]
         public async Task<IActionResult> Maintenance(int unitId)
         {
@@ -240,7 +253,10 @@ namespace Propertify.Web.Controllers
             return Content(JsonSerializer.Serialize(requests, JsonOpts), "application/json");
         }
 
-        // ── POST api/mobile/maintenance/submit ────────────────────────────
+        /// <summary>
+        /// Creates a new maintenance request (Status="Pending", Priority="Normal").
+        /// If an image is attached it is saved to <c>wwwroot/uploads/maintenance/</c>.
+        /// </summary>
         [HttpPost("maintenance/submit")]
         public async Task<IActionResult> SubmitMaintenance([FromForm] MobileMaintenanceRequest req)
 

@@ -8,15 +8,21 @@ using System.Security.Claims;
 
 namespace Propertify.Web.Controllers
 {
+    /// <summary>Handles user authentication: login, logout, and registration.</summary>
     public class AccountController : Controller
     {
         private readonly ApplicationDbContext _context;
 
         public AccountController(ApplicationDbContext context) => _context = context;
 
+        /// <summary>Displays the login form.</summary>
         [HttpGet]
         public IActionResult Login() => View();
 
+        /// <summary>
+        /// Validates credentials, creates a cookie-based claims principal, and redirects to the dashboard.
+        /// Returns the login view with a validation error on failure.
+        /// </summary>
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
@@ -47,15 +53,21 @@ namespace Propertify.Web.Controllers
             return View(model);
         }
 
+        /// <summary>Signs the user out and redirects to the login page.</summary>
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Login");
         }
 
+        /// <summary>Displays the registration form.</summary>
         [HttpGet]
         public IActionResult Register() => View();
 
+        /// <summary>
+        /// Creates a new user account (hashed password), signs the user in automatically,
+        /// and redirects to the dashboard. Returns the form with an error if the email is taken.
+        /// </summary>
         [HttpPost]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {

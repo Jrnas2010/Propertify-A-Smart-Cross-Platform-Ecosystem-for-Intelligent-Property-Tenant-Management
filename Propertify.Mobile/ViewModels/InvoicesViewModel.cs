@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 
 namespace Propertify.Mobile.ViewModels
 {
+    /// <summary>Loads utility bills and supports in-memory filtering by payment status (All / Paid / Unpaid).</summary>
     public partial class InvoicesViewModel : ObservableObject
     {
         private readonly ApiService     _api;
@@ -25,6 +26,7 @@ namespace Propertify.Mobile.ViewModels
             _session = session;
         }
 
+        /// <summary>Fetches all invoices from the API and applies the current status filter.</summary>
         public async Task LoadAsync()
         {
             IsBusy      = true;
@@ -33,6 +35,7 @@ namespace Propertify.Mobile.ViewModels
             ApplyFilter(ActiveFilter);
         }
 
+        /// <summary>Filters the displayed invoices to those matching <paramref name="filter"/> ("All", "Paid", "Pending", etc.).</summary>
         public void ApplyFilter(string filter)
         {
             ActiveFilter = filter;
@@ -44,6 +47,7 @@ namespace Propertify.Mobile.ViewModels
             IsEmpty = Invoices.Count == 0;
         }
 
+        /// <summary>Pull-to-refresh command – sets IsRefreshing while reloading.</summary>
         [RelayCommand]
         private async Task RefreshAsync()
         {

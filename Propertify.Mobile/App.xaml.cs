@@ -1,13 +1,10 @@
-using Propertify.Mobile.Views;
-
 namespace Propertify.Mobile;
 
 public partial class App : Application
 {
-    // LoginPage is resolved from DI (it receives LoginViewModel via its constructor).
-    public App(LoginPage loginPage)
+    public App(IServiceProvider services)
     {
-        InitializeComponent();
-        MainPage = loginPage;
+        InitializeComponent();          // App.xaml resources load here
+        MainPage = services.GetRequiredService<Views.LoginPage>();
     }
 }
