@@ -1,9 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "RTTBwVNbhUg=",
+  "dgSpecHash": "2zNQq4w+chE=",
   "success": true,
   "projectFilePath": "C:\\Users\\User\\Desktop\\MEC\\Spring 2026\\Project Impelementation and Design\\Coding\\Propertify\\Propertify.Mobile\\Propertify.Mobile.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\User\\.nuget\\packages\\communitytoolkit.mvvm\\8.4.2\\communitytoolkit.mvvm.8.4.2.nupkg.sha512",
     "C:\\Users\\User\\.nuget\\packages\\googlegson\\2.13.1.1\\googlegson.2.13.1.1.nupkg.sha512",
     "C:\\Users\\User\\.nuget\\packages\\microsoft.extensions.configuration\\10.0.0\\microsoft.extensions.configuration.10.0.0.nupkg.sha512",
     "C:\\Users\\User\\.nuget\\packages\\microsoft.extensions.configuration.abstractions\\10.0.0\\microsoft.extensions.configuration.abstractions.10.0.0.nupkg.sha512",

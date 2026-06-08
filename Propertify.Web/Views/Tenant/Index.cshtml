@@ -3,6 +3,22 @@
 @{
     ViewData["Title"] = "Tenants Management | Propertify";
     var avatarColors = new[] { "#3b82f6", "#8b5cf6", "#10b981", "#f59e0b", "#ef4444", "#ec4899" };
+    var tenantAccounts = ViewBag.TenantAccounts as Dictionary<int, string> ?? new Dictionary<int, string>();
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show mb-3" role="alert">
+        <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show mb-3" role="alert">
+        <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
 }
 
 <div class="container-fluid py-4" style="max-width:100%;">
@@ -152,11 +168,30 @@
                                     <span class="badge bg-success-subtle text-success rounded-pill small px-2">Active</span>
                                 }
                             </div>
-                            <div class="d-flex gap-1">
+                            <div class="d-flex gap-1 flex-wrap">
                                 <a asp-action="Details" asp-route-id="@item.Id"
                                    class="btn btn-sm btn-dark rounded-pill px-3">
-                                    <i class="fas fa-user me-1"></i> View Profile
+                                    <i class="fas fa-user me-1"></i> View
                                 </a>
+                                @if (tenantAccounts.ContainsKey(item.Id))
+                                {
+                                    <span class="btn btn-sm btn-success rounded-pill px-2 disabled"
+                                          title="Mobile account: @tenantAccounts[item.Id]">
+                                        <i class="fas fa-mobile-alt me-1"></i> App
+                                    </span>
+                                }
+                                else if (!item.IsArchived)
+                                {
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-primary rounded-pill px-2"
+                                            title="Create mobile app account"
+                                            data-bs-toggle="modal" data-bs-target="#mobileAccountModal"
+                                            data-tenant-id="@item.Id"
+                                            data-tenant-name="@item.FullNameEn"
+                                            data-tenant-email="@item.Email">
+                                        <i class="fas fa-mobile-alt me-1"></i> App
+                                    </button>
+                                }
                                 <a asp-action="Edit" asp-route-id="@item.Id"
                                    class="btn btn-sm btn-outline-secondary rounded-circle"
                                    style="width:32px;height:32px;padding:0;display:flex;align-items:center;justify-content:center;"
@@ -192,8 +227,87 @@
     }
 </div>
 
+<!-- Mobile Account Modal -->
+<div class="modal fade" id="mobileAccountModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">
+                    <i class="fas fa-mobile-alt text-primary me-2"></i>Create Mobile App Account
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="CreateMobileAccount" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="tenantId" id="modal-tenantId" />
+                <div class="modal-body pt-2">
+                    <p class="text-muted small mb-3">
+                        Creating a login for: <strong id="modal-tenantName"></strong>
+                    </p>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Email <span class="text-danger">*</span></label>
+                        <input type="email" name="email" id="modal-email" class="form-control rounded-3"
+                               placeholder="tenant@example.com" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Password <span class="text-danger">*</span></label>
+                        <input type="password" name="password" class="form-control rounded-3"
+                               placeholder="Minimum 6 characters" minlength="6" required />
+                    </div>
+                    <div class="mb-1">
+                        <label class="form-label fw-semibold small">Permissions</label>
+                        <div class="d-flex gap-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="permissions" value="Contracts" id="perm-contracts" checked>
+                                <label class="form-check-label small" for="perm-contracts">Contracts</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="permissions" value="Invoices" id="perm-invoices" checked>
+                                <label class="form-check-label small" for="perm-invoices">Invoices</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="permissions" value="Maintenance" id="perm-maintenance" checked>
+                                <label class="form-check-label small" for="perm-maintenance">Maintenance</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4">
+                        <i class="fas fa-user-plus me-1"></i> Create Account
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <style>
     .tenant-card { transition: transform .15s, box-shadow .15s; }
     .tenant-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1) !important; }
     .form-check-input:checked { background-color: #0d6efd; border-color: #0d6efd; }
 </style>
+
+<script>
+    // Populate modal with tenant data
+    document.getElementById('mobileAccountModal').addEventListener('show.bs.modal', function (e) {
+        var btn = e.relatedTarget;
+        document.getElementById('modal-tenantId').value   = btn.dataset.tenantId;
+        document.getElementById('modal-tenantName').textContent = btn.dataset.tenantName;
+        document.getElementById('modal-email').value      = btn.dataset.tenantEmail || '';
+    });
+
+    // Build comma-separated permissions string before submit
+    document.querySelector('#mobileAccountModal form').addEventListener('submit', function () {
+        var checked = [...this.querySelectorAll('input[name="permissions"]:checked')]
+            .map(cb => cb.value).join(',');
+        var hidden = document.createElement('input');
+        hidden.type  = 'hidden';
+        hidden.name  = 'permissions';
+        hidden.value = checked;
+        this.appendChild(hidden);
+        this.querySelectorAll('input[type=checkbox][name="permissions"]')
+            .forEach(cb => cb.disabled = true);
+    });
+</script>

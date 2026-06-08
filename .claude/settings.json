@@ -18,7 +18,8 @@
       "PowerShell(\\(Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.InterfaceAlias -notmatch \"Loopback\" -and $_.InterfaceAlias -notmatch \"vEthernet\" -and $_.IPAddress -notmatch \"^169\" } | Select-Object IPAddress, InterfaceAlias\\))",
       "PowerShell(ipconfig | Select-String -Pattern \"IPv4|Wireless|Ethernet\" | Where-Object { $_ -notmatch \"169\\\\.254\" })",
       "Bash(Get-ChildItem -Directory)",
-      "Bash(Select-Object Name)"
+      "Bash(Select-Object Name)",
+      "Bash(git commit -m ' *)"
     ]
   }
 }

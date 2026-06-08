@@ -4,11 +4,298 @@
         <name>Propertify.Mobile</name>
     </assembly>
     <members>
+        <member name="T:Propertify.Mobile.ViewModels.ContractsViewModel">
+            <inheritdoc/>
+            <inheritdoc/>
+        </member>
+        <member name="P:Propertify.Mobile.ViewModels.ContractsViewModel.IsBusy">
+            <inheritdoc cref="F:Propertify.Mobile.ViewModels.ContractsViewModel.isBusy"/>
+        </member>
+        <member name="P:Propertify.Mobile.ViewModels.ContractsViewModel.IsEmpty">
+            <inheritdoc cref="F:Propertify.Mobile.ViewModels.ContractsViewModel.isEmpty"/>
+        </member>
+        <member name="P:Propertify.Mobile.ViewModels.ContractsViewModel.IsRefreshing">
+            <inheritdoc cref="F:Propertify.Mobile.ViewModels.ContractsViewModel.isRefreshing"/>
+        </member>
+        <member name="F:Propertify.Mobile.ViewModels.ContractsViewModel.refreshCommand">
+            <summary>The backing field for <see cref="P:Propertify.Mobile.ViewModels.ContractsViewModel.RefreshCommand"/>.</summary>
+        </member>
+        <member name="P:Propertify.Mobile.ViewModels.ContractsViewModel.RefreshCommand">
+            <summary>Gets an <see cref="T:CommunityToolkit.Mvvm.Input.IAsyncRelayCommand"/> instance wrapping <see cref="M:Propertify.Mobile.ViewModels.ContractsViewModel.RefreshAsync"/>.</summary>
+        </member>
+        <member name="T:Propertify.Mobile.ViewModels.DashboardViewModel">
+            <inheritdoc/>
+            <inheritdoc/>
+        </member>
+        <member name="P:Propertify.Mobile.ViewModels.DashboardViewModel.IsBusy">
+            <inheritdoc cref="F:Propertify.Mobile.ViewModels.DashboardViewModel.isBusy"/>
+        </member>
+        <member name="P:Propertify.Mobile.ViewModels.DashboardViewModel.HasData">
+            <inheritdoc cref="F:Propertify.Mobile.ViewModels.DashboardViewModel.hasData"/>
+        </member>
+        <member name="P:Propertify.Mobile.ViewModels.DashboardViewModel.Greeting">
+            <inheritdoc cref="F:Propertify.Mobile.ViewModels.DashboardViewModel.greeting"/>
+        </member>
+        <member name="P:Propertify.Mobile.ViewModels.DashboardViewModel.TenantName">
+            <inheritdoc cref="F:Propertify.Mobile.ViewModels.DashboardViewModel.tenantName"/>
+        </member>
+        <member name="P:Propertify.Mobile.ViewModels.DashboardViewModel.UnitInfo">
+            <inheritdoc cref="F:Propertify.Mobile.ViewModels.DashboardViewModel.unitInfo"/>
+        </member>
+        <member name="P:Propertify.Mobile.ViewModels.DashboardViewModel.ContractStart">
+            <inheritdoc cref="F:Propertify.Mobile.ViewModels.DashboardViewModel.contractStart"/>
+        </member>
+        <member name="P:Propertify.Mobile.ViewModels.DashboardViewModel.ContractEnd">
+            <inheritdoc cref="F:Propertify.Mobile.ViewModels.DashboardViewModel.contractEnd"/>
+        </member>
+        <member name="P:Propertify.Mobile.ViewModels.DashboardViewModel.ContractStatus">
+            <inheritdoc cref="F:Propertify.Mobile.ViewModels.DashboardViewModel.contractStatus"/>
+        </member>
+        <member name="P:Propertify.Mobile.ViewModels.DashboardViewModel.ContractStatusColor">
+            <inheritdoc cref="F:Propertify.Mobile.ViewModels.DashboardViewModel.contractStatusColor"/>
+        </member>
+        <member name="P:Propertify.Mobile.ViewModels.DashboardViewModel.DaysRemaining">
+            <inheritdoc cref="F:Propertify.Mobile.ViewModels.DashboardViewModel.daysRemaining"/>
+        </member>
+        <member name="P:Propertify.Mobile.ViewModels.DashboardViewModel.ContractProgress">
+            <inheritdoc cref="F:Propertify.Mobile.ViewModels.DashboardViewModel.contractProgress"/>
+        </member>
+        <member name="P:Propertify.Mobile.ViewModels.DashboardViewModel.MonthlyRent">
+            <inheritdoc cref="F:Propertify.Mobile.ViewModels.DashboardViewModel.monthlyRent"/>
+        </member>
+        <member name="P:Propertify.Mobile.ViewModels.DashboardViewModel.PendingBills">
+            <inheritdoc cref="F:Propertify.Mobile.ViewModels.DashboardViewModel.pendingBills"/>
+        </member>
+        <member name="P:Propertify.Mobile.ViewModels.DashboardViewModel.UnpaidAmount">
+            <inheritdoc cref="F:Propertify.Mobile.ViewModels.DashboardViewModel.unpaidAmount"/>
+        </member>
+        <member name="P:Propertify.Mobile.ViewModels.DashboardViewModel.PendingMaintenance">
+            <inheritdoc cref="F:Propertify.Mobile.ViewModels.DashboardViewModel.pendingMaintenance"/>
+        </member>
+        <member name="F:Propertify.Mobile.ViewModels.DashboardViewModel.refreshCommand">
+            <summary>The backing field for <see cref="P:Propertify.Mobile.ViewModels.DashboardViewModel.RefreshCommand"/>.</summary>
+        </member>
+        <member name="P:Propertify.Mobile.ViewModels.DashboardViewModel.RefreshCommand">
+            <summary>Gets an <see cref="T:CommunityToolkit.Mvvm.Input.IAsyncRelayCommand"/> instance wrapping <see cref="M:Propertify.Mobile.ViewModels.DashboardViewModel.RefreshAsync"/>.</summary>
+        </member>
+        <member name="T:Propertify.Mobile.ViewModels.InvoicesViewModel">
+            <inheritdoc/>
+            <inheritdoc/>
+        </member>
+        <member name="P:Propertify.Mobile.ViewModels.InvoicesViewModel.IsBusy">
+            <inheritdoc cref="F:Propertify.Mobile.ViewModels.InvoicesViewModel.isBusy"/>
+        </member>
+        <member name="P:Propertify.Mobile.ViewModels.InvoicesViewModel.IsEmpty">
+            <inheritdoc cref="F:Propertify.Mobile.ViewModels.InvoicesViewModel.isEmpty"/>
+        </member>
+        <member name="P:Propertify.Mobile.ViewModels.InvoicesViewModel.IsRefreshing">
+            <inheritdoc cref="F:Propertify.Mobile.ViewModels.InvoicesViewModel.isRefreshing"/>
+        </member>
+        <member name="P:Propertify.Mobile.ViewModels.InvoicesViewModel.ActiveFilter">
+            <inheritdoc cref="F:Propertify.Mobile.ViewModels.InvoicesViewModel.activeFilter"/>
+        </member>
+        <member name="F:Propertify.Mobile.ViewModels.InvoicesViewModel.refreshCommand">
+            <summary>The backing field for <see cref="P:Propertify.Mobile.ViewModels.InvoicesViewModel.RefreshCommand"/>.</summary>
+        </member>
+        <member name="P:Propertify.Mobile.ViewModels.InvoicesViewModel.RefreshCommand">
+            <summary>Gets an <see cref="T:CommunityToolkit.Mvvm.Input.IAsyncRelayCommand"/> instance wrapping <see cref="M:Propertify.Mobile.ViewModels.InvoicesViewModel.RefreshAsync"/>.</summary>
+        </member>
+        <member name="T:Propertify.Mobile.ViewModels.LoginViewModel">
+            <inheritdoc/>
+            <inheritdoc/>
+        </member>
+        <member name="P:Propertify.Mobile.ViewModels.LoginViewModel.Email">
+            <inheritdoc cref="F:Propertify.Mobile.ViewModels.LoginViewModel.email"/>
+        </member>
+        <member name="P:Propertify.Mobile.ViewModels.LoginViewModel.Password">
+            <inheritdoc cref="F:Propertify.Mobile.ViewModels.LoginViewModel.password"/>
+        </member>
+        <member name="P:Propertify.Mobile.ViewModels.LoginViewModel.ErrorMessage">
+            <inheritdoc cref="F:Propertify.Mobile.ViewModels.LoginViewModel.errorMessage"/>
+        </member>
+        <member name="P:Propertify.Mobile.ViewModels.LoginViewModel.IsBusy">
+            <inheritdoc cref="F:Propertify.Mobile.ViewModels.LoginViewModel.isBusy"/>
+        </member>
+        <member name="P:Propertify.Mobile.ViewModels.LoginViewModel.HasError">
+            <inheritdoc cref="F:Propertify.Mobile.ViewModels.LoginViewModel.hasError"/>
+        </member>
+        <member name="F:Propertify.Mobile.ViewModels.LoginViewModel.loginCommand">
+            <summary>The backing field for <see cref="P:Propertify.Mobile.ViewModels.LoginViewModel.LoginCommand"/>.</summary>
+        </member>
+        <member name="P:Propertify.Mobile.ViewModels.LoginViewModel.LoginCommand">
+            <summary>Gets an <see cref="T:CommunityToolkit.Mvvm.Input.IAsyncRelayCommand"/> instance wrapping <see cref="M:Propertify.Mobile.ViewModels.LoginViewModel.LoginAsync"/>.</summary>
+        </member>
+        <member name="T:Propertify.Mobile.ViewModels.MaintenanceViewModel">
+            <inheritdoc/>
+            <inheritdoc/>
+        </member>
+        <member name="P:Propertify.Mobile.ViewModels.MaintenanceViewModel.IsBusy">
+            <inheritdoc cref="F:Propertify.Mobile.ViewModels.MaintenanceViewModel.isBusy"/>
+        </member>
+        <member name="P:Propertify.Mobile.ViewModels.MaintenanceViewModel.IsEmpty">
+            <inheritdoc cref="F:Propertify.Mobile.ViewModels.MaintenanceViewModel.isEmpty"/>
+        </member>
+        <member name="P:Propertify.Mobile.ViewModels.MaintenanceViewModel.IsRefreshing">
+            <inheritdoc cref="F:Propertify.Mobile.ViewModels.MaintenanceViewModel.isRefreshing"/>
+        </member>
+        <member name="P:Propertify.Mobile.ViewModels.MaintenanceViewModel.ActiveFilter">
+            <inheritdoc cref="F:Propertify.Mobile.ViewModels.MaintenanceViewModel.activeFilter"/>
+        </member>
+        <member name="F:Propertify.Mobile.ViewModels.MaintenanceViewModel.refreshCommand">
+            <summary>The backing field for <see cref="P:Propertify.Mobile.ViewModels.MaintenanceViewModel.RefreshCommand"/>.</summary>
+        </member>
+        <member name="P:Propertify.Mobile.ViewModels.MaintenanceViewModel.RefreshCommand">
+            <summary>Gets an <see cref="T:CommunityToolkit.Mvvm.Input.IAsyncRelayCommand"/> instance wrapping <see cref="M:Propertify.Mobile.ViewModels.MaintenanceViewModel.RefreshAsync"/>.</summary>
+        </member>
         <member name="T:Propertify.Mobile.Resource">
             <summary>
             Android Resource Designer class.
             Exposes the Android Resource designer assembly into the project Namespace.
             </summary>
+        </member>
+        <member name="T:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangingArgs">
+            <summary>
+            A helper type providing cached, reusable <see cref="T:System.ComponentModel.PropertyChangingEventArgs"/> instances
+            for all properties generated with <see cref="T:CommunityToolkit.Mvvm.ComponentModel.ObservablePropertyAttribute"/>.
+            </summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangingArgs.IsBusy">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangingEventArgs"/> instance for all "IsBusy" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangingArgs.IsEmpty">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangingEventArgs"/> instance for all "IsEmpty" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangingArgs.IsRefreshing">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangingEventArgs"/> instance for all "IsRefreshing" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangingArgs.HasData">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangingEventArgs"/> instance for all "HasData" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangingArgs.Greeting">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangingEventArgs"/> instance for all "Greeting" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangingArgs.TenantName">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangingEventArgs"/> instance for all "TenantName" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangingArgs.UnitInfo">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangingEventArgs"/> instance for all "UnitInfo" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangingArgs.ContractStart">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangingEventArgs"/> instance for all "ContractStart" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangingArgs.ContractEnd">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangingEventArgs"/> instance for all "ContractEnd" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangingArgs.ContractStatus">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangingEventArgs"/> instance for all "ContractStatus" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangingArgs.ContractStatusColor">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangingEventArgs"/> instance for all "ContractStatusColor" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangingArgs.DaysRemaining">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangingEventArgs"/> instance for all "DaysRemaining" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangingArgs.ContractProgress">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangingEventArgs"/> instance for all "ContractProgress" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangingArgs.MonthlyRent">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangingEventArgs"/> instance for all "MonthlyRent" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangingArgs.PendingBills">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangingEventArgs"/> instance for all "PendingBills" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangingArgs.UnpaidAmount">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangingEventArgs"/> instance for all "UnpaidAmount" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangingArgs.PendingMaintenance">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangingEventArgs"/> instance for all "PendingMaintenance" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangingArgs.ActiveFilter">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangingEventArgs"/> instance for all "ActiveFilter" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangingArgs.Email">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangingEventArgs"/> instance for all "Email" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangingArgs.Password">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangingEventArgs"/> instance for all "Password" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangingArgs.ErrorMessage">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangingEventArgs"/> instance for all "ErrorMessage" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangingArgs.HasError">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangingEventArgs"/> instance for all "HasError" generated properties.</summary>
+        </member>
+        <member name="T:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs">
+            <summary>
+            A helper type providing cached, reusable <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instances
+            for all properties generated with <see cref="T:CommunityToolkit.Mvvm.ComponentModel.ObservablePropertyAttribute"/>.
+            </summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.IsBusy">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "IsBusy" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.IsEmpty">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "IsEmpty" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.IsRefreshing">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "IsRefreshing" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.HasData">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "HasData" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.Greeting">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "Greeting" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.TenantName">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "TenantName" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.UnitInfo">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "UnitInfo" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.ContractStart">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "ContractStart" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.ContractEnd">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "ContractEnd" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.ContractStatus">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "ContractStatus" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.ContractStatusColor">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "ContractStatusColor" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.DaysRemaining">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "DaysRemaining" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.ContractProgress">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "ContractProgress" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.MonthlyRent">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "MonthlyRent" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.PendingBills">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "PendingBills" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.UnpaidAmount">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "UnpaidAmount" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.PendingMaintenance">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "PendingMaintenance" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.ActiveFilter">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "ActiveFilter" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.Email">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "Email" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.Password">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "Password" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.ErrorMessage">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "ErrorMessage" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.HasError">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "HasError" generated properties.</summary>
         </member>
     </members>
 </doc>
