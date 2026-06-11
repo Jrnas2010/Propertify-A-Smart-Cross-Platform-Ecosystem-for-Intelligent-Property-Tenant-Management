@@ -123,7 +123,7 @@ namespace Propertify.Web.Controllers
         {
             var tenant = await _context.Tenants
                 .Include(t => t.Unit)
-                    .ThenInclude(u => u.Property)
+                    .ThenInclude(u => u!.Property)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (tenant == null)
             {

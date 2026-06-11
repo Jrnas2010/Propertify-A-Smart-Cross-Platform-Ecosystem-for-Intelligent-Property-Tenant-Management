@@ -2,7 +2,21 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
+			"label": "build",
+			"command": "dotnet",
+			"type": "process",
+			"args": [
+				"build",
+				"${workspaceFolder}/Propertify.Web/Propertify.Web.csproj",
+				"/property:GenerateFullPaths=true",
+				"/consoleloggerparameters:NoSummary;ForceNoAlign"
+			],
+			"problemMatcher": "$msCompile",
+			"group": "build"
+		},
+		{
 			"type": "maui",
+			"configuration": "Debug",
 			"problemMatcher": [
 				"$msCompile",
 				"maui-problem-matcher-location",

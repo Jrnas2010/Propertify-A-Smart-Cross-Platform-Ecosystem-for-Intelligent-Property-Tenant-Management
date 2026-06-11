@@ -1,0 +1,41 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "To run Web Application (Backend)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "cwd": "${workspaceFolder}/Propertify.Web",
+      "program": "${workspaceFolder}/Propertify.Web/bin/Debug/net10.0/Propertify.Web.dll",
+      "args": [],
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+      },
+      "console": "internalConsole",
+      "stopAtEntry": false
+    },
+    {
+      "name": "To run Mobile Application (.NET MAUI)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "maui: Build",
+      "cwd": "${workspaceFolder}/Propertify.Mobile",
+      "program": "${workspaceFolder}/Propertify.Mobile/bin/Debug/net10.0-android/Propertify.Mobile.dll",
+      "args": []
+    }
+  ],
+  "compounds": [
+    {
+      "name": "To run Web and Mobile Applications together (C#) 🚀",
+      "configurations": [
+        "To run Web Application (Backend)",
+        "To run Mobile Application (.NET MAUI)"
+      ]
+    }
+  ]
+}

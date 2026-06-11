@@ -4,18 +4,62 @@
         <name>Propertify.Mobile</name>
     </assembly>
     <members>
+        <member name="T:Propertify.Mobile.Services.ApiService">
+            <summary>
+            HTTP client wrapper for the Propertify mobile REST API.
+            All methods return default/empty values on network or deserialisation failure
+            so the UI stays stable without crashing.
+            </summary>
+        </member>
+        <member name="M:Propertify.Mobile.Services.ApiService.LoginAsync(System.String,System.String)">
+            <summary>Sends credentials to <c>POST api/mobile/login</c> and returns the server response.</summary>
+        </member>
+        <member name="M:Propertify.Mobile.Services.ApiService.GetDashboardAsync(System.Int32)">
+            <summary>Fetches the aggregated dashboard data for <paramref name="tenantId"/>. Returns null on failure.</summary>
+        </member>
+        <member name="M:Propertify.Mobile.Services.ApiService.GetContractsAsync(System.Int32)">
+            <summary>Returns the list of contracts for <paramref name="tenantId"/>, or an empty list on failure.</summary>
+        </member>
+        <member name="M:Propertify.Mobile.Services.ApiService.GetInvoicesAsync(System.Int32)">
+            <summary>Returns all utility bills for <paramref name="tenantId"/>, or an empty list on failure.</summary>
+        </member>
+        <member name="M:Propertify.Mobile.Services.ApiService.GetMaintenanceAsync(System.Int32)">
+            <summary>Returns all maintenance requests for <paramref name="unitId"/>, or an empty list on failure.</summary>
+        </member>
+        <member name="M:Propertify.Mobile.Services.ApiService.SubmitMaintenanceAsync(System.String,System.String,System.Int32,System.String,Microsoft.Maui.Storage.FileResult)">
+            <summary>
+            Posts a new maintenance request as a multipart form.
+            Attaches the optional <paramref name="photo"/> as a binary stream.
+            Returns true if the server responded with a success status code.
+            </summary>
+        </member>
+        <member name="T:Propertify.Mobile.Services.SessionService">
+            <summary>
+            In-memory session store for the currently logged-in tenant.
+            Registered as a singleton so any page or ViewModel can inject it to read the active identity.
+            </summary>
+        </member>
+        <member name="M:Propertify.Mobile.Services.SessionService.SetSession(System.Int32,System.Int32,System.Int32,System.String,System.String,System.String,System.String)">
+            <summary>Populates all session fields after a successful login response.</summary>
+        </member>
+        <member name="M:Propertify.Mobile.Services.SessionService.Clear">
+            <summary>Resets all session fields to their default values (logout).</summary>
+        </member>
+        <member name="M:Propertify.Mobile.Services.SessionService.HasPermission(System.String)">
+            <summary>Returns true if <paramref name="feature"/> appears in the permissions list, or if the list is empty (all-access).</summary>
+        </member>
         <member name="T:Propertify.Mobile.ViewModels.ContractsViewModel">
             <inheritdoc/>
             <inheritdoc/>
         </member>
         <member name="P:Propertify.Mobile.ViewModels.ContractsViewModel.IsBusy">
-            <inheritdoc cref="F:Propertify.Mobile.ViewModels.ContractsViewModel.isBusy"/>
+            <inheritdoc/>
         </member>
         <member name="P:Propertify.Mobile.ViewModels.ContractsViewModel.IsEmpty">
-            <inheritdoc cref="F:Propertify.Mobile.ViewModels.ContractsViewModel.isEmpty"/>
+            <inheritdoc/>
         </member>
         <member name="P:Propertify.Mobile.ViewModels.ContractsViewModel.IsRefreshing">
-            <inheritdoc cref="F:Propertify.Mobile.ViewModels.ContractsViewModel.isRefreshing"/>
+            <inheritdoc/>
         </member>
         <member name="F:Propertify.Mobile.ViewModels.ContractsViewModel.refreshCommand">
             <summary>The backing field for <see cref="P:Propertify.Mobile.ViewModels.ContractsViewModel.RefreshCommand"/>.</summary>
@@ -28,49 +72,49 @@
             <inheritdoc/>
         </member>
         <member name="P:Propertify.Mobile.ViewModels.DashboardViewModel.IsBusy">
-            <inheritdoc cref="F:Propertify.Mobile.ViewModels.DashboardViewModel.isBusy"/>
+            <inheritdoc/>
         </member>
         <member name="P:Propertify.Mobile.ViewModels.DashboardViewModel.HasData">
-            <inheritdoc cref="F:Propertify.Mobile.ViewModels.DashboardViewModel.hasData"/>
+            <inheritdoc/>
         </member>
         <member name="P:Propertify.Mobile.ViewModels.DashboardViewModel.Greeting">
-            <inheritdoc cref="F:Propertify.Mobile.ViewModels.DashboardViewModel.greeting"/>
+            <inheritdoc/>
         </member>
         <member name="P:Propertify.Mobile.ViewModels.DashboardViewModel.TenantName">
-            <inheritdoc cref="F:Propertify.Mobile.ViewModels.DashboardViewModel.tenantName"/>
+            <inheritdoc/>
         </member>
         <member name="P:Propertify.Mobile.ViewModels.DashboardViewModel.UnitInfo">
-            <inheritdoc cref="F:Propertify.Mobile.ViewModels.DashboardViewModel.unitInfo"/>
+            <inheritdoc/>
         </member>
         <member name="P:Propertify.Mobile.ViewModels.DashboardViewModel.ContractStart">
-            <inheritdoc cref="F:Propertify.Mobile.ViewModels.DashboardViewModel.contractStart"/>
+            <inheritdoc/>
         </member>
         <member name="P:Propertify.Mobile.ViewModels.DashboardViewModel.ContractEnd">
-            <inheritdoc cref="F:Propertify.Mobile.ViewModels.DashboardViewModel.contractEnd"/>
+            <inheritdoc/>
         </member>
         <member name="P:Propertify.Mobile.ViewModels.DashboardViewModel.ContractStatus">
-            <inheritdoc cref="F:Propertify.Mobile.ViewModels.DashboardViewModel.contractStatus"/>
+            <inheritdoc/>
         </member>
         <member name="P:Propertify.Mobile.ViewModels.DashboardViewModel.ContractStatusColor">
-            <inheritdoc cref="F:Propertify.Mobile.ViewModels.DashboardViewModel.contractStatusColor"/>
+            <inheritdoc/>
         </member>
         <member name="P:Propertify.Mobile.ViewModels.DashboardViewModel.DaysRemaining">
-            <inheritdoc cref="F:Propertify.Mobile.ViewModels.DashboardViewModel.daysRemaining"/>
+            <inheritdoc/>
         </member>
         <member name="P:Propertify.Mobile.ViewModels.DashboardViewModel.ContractProgress">
-            <inheritdoc cref="F:Propertify.Mobile.ViewModels.DashboardViewModel.contractProgress"/>
+            <inheritdoc/>
         </member>
         <member name="P:Propertify.Mobile.ViewModels.DashboardViewModel.MonthlyRent">
-            <inheritdoc cref="F:Propertify.Mobile.ViewModels.DashboardViewModel.monthlyRent"/>
+            <inheritdoc/>
         </member>
         <member name="P:Propertify.Mobile.ViewModels.DashboardViewModel.PendingBills">
-            <inheritdoc cref="F:Propertify.Mobile.ViewModels.DashboardViewModel.pendingBills"/>
+            <inheritdoc/>
         </member>
         <member name="P:Propertify.Mobile.ViewModels.DashboardViewModel.UnpaidAmount">
-            <inheritdoc cref="F:Propertify.Mobile.ViewModels.DashboardViewModel.unpaidAmount"/>
+            <inheritdoc/>
         </member>
         <member name="P:Propertify.Mobile.ViewModels.DashboardViewModel.PendingMaintenance">
-            <inheritdoc cref="F:Propertify.Mobile.ViewModels.DashboardViewModel.pendingMaintenance"/>
+            <inheritdoc/>
         </member>
         <member name="F:Propertify.Mobile.ViewModels.DashboardViewModel.refreshCommand">
             <summary>The backing field for <see cref="P:Propertify.Mobile.ViewModels.DashboardViewModel.RefreshCommand"/>.</summary>
@@ -83,16 +127,16 @@
             <inheritdoc/>
         </member>
         <member name="P:Propertify.Mobile.ViewModels.InvoicesViewModel.IsBusy">
-            <inheritdoc cref="F:Propertify.Mobile.ViewModels.InvoicesViewModel.isBusy"/>
+            <inheritdoc/>
         </member>
         <member name="P:Propertify.Mobile.ViewModels.InvoicesViewModel.IsEmpty">
-            <inheritdoc cref="F:Propertify.Mobile.ViewModels.InvoicesViewModel.isEmpty"/>
+            <inheritdoc/>
         </member>
         <member name="P:Propertify.Mobile.ViewModels.InvoicesViewModel.IsRefreshing">
-            <inheritdoc cref="F:Propertify.Mobile.ViewModels.InvoicesViewModel.isRefreshing"/>
+            <inheritdoc/>
         </member>
         <member name="P:Propertify.Mobile.ViewModels.InvoicesViewModel.ActiveFilter">
-            <inheritdoc cref="F:Propertify.Mobile.ViewModels.InvoicesViewModel.activeFilter"/>
+            <inheritdoc/>
         </member>
         <member name="F:Propertify.Mobile.ViewModels.InvoicesViewModel.refreshCommand">
             <summary>The backing field for <see cref="P:Propertify.Mobile.ViewModels.InvoicesViewModel.RefreshCommand"/>.</summary>
@@ -103,21 +147,36 @@
         <member name="T:Propertify.Mobile.ViewModels.LoginViewModel">
             <inheritdoc/>
             <inheritdoc/>
+            <inheritdoc/>
         </member>
         <member name="P:Propertify.Mobile.ViewModels.LoginViewModel.Email">
-            <inheritdoc cref="F:Propertify.Mobile.ViewModels.LoginViewModel.email"/>
+            <inheritdoc/>
         </member>
         <member name="P:Propertify.Mobile.ViewModels.LoginViewModel.Password">
-            <inheritdoc cref="F:Propertify.Mobile.ViewModels.LoginViewModel.password"/>
+            <inheritdoc/>
         </member>
         <member name="P:Propertify.Mobile.ViewModels.LoginViewModel.ErrorMessage">
-            <inheritdoc cref="F:Propertify.Mobile.ViewModels.LoginViewModel.errorMessage"/>
+            <inheritdoc/>
         </member>
         <member name="P:Propertify.Mobile.ViewModels.LoginViewModel.IsBusy">
-            <inheritdoc cref="F:Propertify.Mobile.ViewModels.LoginViewModel.isBusy"/>
+            <inheritdoc/>
         </member>
         <member name="P:Propertify.Mobile.ViewModels.LoginViewModel.HasError">
-            <inheritdoc cref="F:Propertify.Mobile.ViewModels.LoginViewModel.hasError"/>
+            <inheritdoc/>
+        </member>
+        <member name="P:Propertify.Mobile.ViewModels.LoginViewModel.IsPasswordVisible">
+            <inheritdoc/>
+        </member>
+        <member name="M:Propertify.Mobile.ViewModels.LoginViewModel.OnIsPasswordVisibleChanged(System.Boolean)">
+            <summary>Executes the logic for when <see cref="P:Propertify.Mobile.ViewModels.LoginViewModel.IsPasswordVisible"/> just changed.</summary>
+            <param name="value">The new property value that was set.</param>
+            <remarks>This method is invoked right after the value of <see cref="P:Propertify.Mobile.ViewModels.LoginViewModel.IsPasswordVisible"/> is changed.</remarks>
+        </member>
+        <member name="F:Propertify.Mobile.ViewModels.LoginViewModel.togglePasswordVisibilityCommand">
+            <summary>The backing field for <see cref="P:Propertify.Mobile.ViewModels.LoginViewModel.TogglePasswordVisibilityCommand"/>.</summary>
+        </member>
+        <member name="P:Propertify.Mobile.ViewModels.LoginViewModel.TogglePasswordVisibilityCommand">
+            <summary>Gets an <see cref="T:CommunityToolkit.Mvvm.Input.IRelayCommand"/> instance wrapping <see cref="M:Propertify.Mobile.ViewModels.LoginViewModel.TogglePasswordVisibility"/>.</summary>
         </member>
         <member name="F:Propertify.Mobile.ViewModels.LoginViewModel.loginCommand">
             <summary>The backing field for <see cref="P:Propertify.Mobile.ViewModels.LoginViewModel.LoginCommand"/>.</summary>
@@ -130,16 +189,16 @@
             <inheritdoc/>
         </member>
         <member name="P:Propertify.Mobile.ViewModels.MaintenanceViewModel.IsBusy">
-            <inheritdoc cref="F:Propertify.Mobile.ViewModels.MaintenanceViewModel.isBusy"/>
+            <inheritdoc/>
         </member>
         <member name="P:Propertify.Mobile.ViewModels.MaintenanceViewModel.IsEmpty">
-            <inheritdoc cref="F:Propertify.Mobile.ViewModels.MaintenanceViewModel.isEmpty"/>
+            <inheritdoc/>
         </member>
         <member name="P:Propertify.Mobile.ViewModels.MaintenanceViewModel.IsRefreshing">
-            <inheritdoc cref="F:Propertify.Mobile.ViewModels.MaintenanceViewModel.isRefreshing"/>
+            <inheritdoc/>
         </member>
         <member name="P:Propertify.Mobile.ViewModels.MaintenanceViewModel.ActiveFilter">
-            <inheritdoc cref="F:Propertify.Mobile.ViewModels.MaintenanceViewModel.activeFilter"/>
+            <inheritdoc/>
         </member>
         <member name="F:Propertify.Mobile.ViewModels.MaintenanceViewModel.refreshCommand">
             <summary>The backing field for <see cref="P:Propertify.Mobile.ViewModels.MaintenanceViewModel.RefreshCommand"/>.</summary>
@@ -225,6 +284,9 @@
         <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangingArgs.HasError">
             <summary>The cached <see cref="T:System.ComponentModel.PropertyChangingEventArgs"/> instance for all "HasError" generated properties.</summary>
         </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangingArgs.IsPasswordVisible">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangingEventArgs"/> instance for all "IsPasswordVisible" generated properties.</summary>
+        </member>
         <member name="T:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs">
             <summary>
             A helper type providing cached, reusable <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instances
@@ -296,6 +358,9 @@
         </member>
         <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.HasError">
             <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "HasError" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.IsPasswordVisible">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "IsPasswordVisible" generated properties.</summary>
         </member>
     </members>
 </doc>

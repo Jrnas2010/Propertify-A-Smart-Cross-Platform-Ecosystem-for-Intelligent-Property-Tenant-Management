@@ -46,8 +46,8 @@ namespace Propertify.Web.Controllers
 
             if (!string.IsNullOrWhiteSpace(search))
                 query = query.Where(b =>
-                    b.Tenant.FirstNameAr.Contains(search) ||
-                    b.Tenant.LastNameAr.Contains(search) ||
+                    (b.Tenant != null && (b.Tenant.FirstNameAr.Contains(search) ||
+                    b.Tenant.LastNameAr.Contains(search))) ||
                     (b.Unit != null && b.Unit.UnitNumber.Contains(search)));
 
             if (!string.IsNullOrWhiteSpace(typeFilter) && typeFilter != "all")

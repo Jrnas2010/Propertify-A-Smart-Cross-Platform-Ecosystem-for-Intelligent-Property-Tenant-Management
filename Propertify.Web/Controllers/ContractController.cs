@@ -80,7 +80,7 @@ namespace Propertify.Web.Controllers
             var contract = await _context.Contracts
                 .Include(c => c.Tenant)
                 .Include(c => c.Unit)
-                    .ThenInclude(u => u.Property)
+                    .ThenInclude(u => u!.Property)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (contract == null) return NotFound();

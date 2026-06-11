@@ -14,7 +14,14 @@ namespace Propertify.Mobile.Services
     {
         private readonly HttpClient _http;
 
-        private const string BaseUrl = "http://10.7.109.240:5287/api/mobile/";
+        // ── Uncomment the target you are running against, comment out the others ──
+        private const string BaseUrl = BaseUrl_AndroidEmulator;   // Android Emulator
+        //private const string BaseUrl = BaseUrl_Windows;         // Windows Desktop
+        //private const string BaseUrl = BaseUrl_PhysicalDevice;  // Physical Android device (same WiFi)
+
+        private const string BaseUrl_AndroidEmulator = "http://10.0.2.2:5287/api/mobile/";
+        private const string BaseUrl_Windows         = "http://localhost:5287/api/mobile/";
+        private const string BaseUrl_PhysicalDevice  = "http://10.7.109.240:5287/api/mobile/";
 
         private static readonly JsonSerializerOptions JsonOpts = new()
         {
