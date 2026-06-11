@@ -31,11 +31,11 @@ namespace Propertify.Mobile.Views
             if (active.Content is Label lbl) lbl.TextColor = Colors.White;
         }
 
-        private void OnPrioNormal(object sender, TappedEventArgs e) { _priority = "Normal"; SetPriorityChip(PrioNormal); }
-        private void OnPrioHigh(object sender, TappedEventArgs e)   { _priority = "High";   SetPriorityChip(PrioHigh); }
-        private void OnPrioUrgent(object sender, TappedEventArgs e) { _priority = "Urgent"; SetPriorityChip(PrioUrgent); }
+        private void OnPrioNormal(object? sender, TappedEventArgs e) { _priority = "Normal"; SetPriorityChip(PrioNormal); }
+        private void OnPrioHigh(object? sender, TappedEventArgs e)   { _priority = "High";   SetPriorityChip(PrioHigh); }
+        private void OnPrioUrgent(object? sender, TappedEventArgs e) { _priority = "Urgent"; SetPriorityChip(PrioUrgent); }
 
-        private async void OnCapturePhotoClicked(object sender, EventArgs e)
+        private async void OnCapturePhotoClicked(object? sender, EventArgs e)
         {
             try
             {
@@ -50,35 +50,36 @@ namespace Propertify.Mobile.Views
             }
             catch (Exception ex)
             {
-                await DisplayAlert("Camera Error", $"Could not open camera: {ex.Message}", "OK");
+                await DisplayAlertAsync("Camera Error", $"Could not open camera: {ex.Message}", "OK");
             }
         }
 
-        private async void OnSubmitClicked(object sender, EventArgs e)
+        private async void OnSubmitClicked(object? sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(TitleEntry.Text))
             {
-                await DisplayAlert("Missing Info", "Please enter an issue title.", "OK");
+                await DisplayAlertAsync("Missing Info", "Please enter an issue title.", "OK");
                 return;
             }
 
-            bool confirm = await DisplayAlert("Confirm", "Submit this maintenance request to the property manager?", "Yes", "Cancel");
+            bool confirm = await DisplayAlertAsync("Confirm", "Submit this maintenance request to the property manager?", "Yes", "Cancel");
             if (!confirm) return;
 
             bool success = await _api.SubmitMaintenanceAsync(
                 TitleEntry.Text,
                 DescriptionEditor.Text ?? string.Empty,
                 _session.UnitId,
+                _priority,
                 _photo);
 
             if (success)
             {
-                await DisplayAlert("Submitted", "Your maintenance request has been sent to the property manager.", "OK");
+                await DisplayAlertAsync("Submitted", "Your maintenance request has been sent to the property manager.", "OK");
                 await Shell.Current.GoToAsync("..");
             }
             else
             {
-                await DisplayAlert("Error", "Could not connect to the server. Please check your internet connection.", "OK");
+                await DisplayAlertAsync("Error", "Could not connect to the server. Please check your internet connection.", "OK");
             }
         }
     }

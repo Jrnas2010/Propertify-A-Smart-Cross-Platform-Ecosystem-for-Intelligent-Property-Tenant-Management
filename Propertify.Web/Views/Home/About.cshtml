@@ -1,67 +1,593 @@
 @{
-    Layout = "_PublicLayout"; // استخدام التخطيط العام
+    Layout = "_PublicLayout";
+    ViewData["Title"] = "About | Propertify";
 }
 
-
-
-<div class="container my-5">
-    <div class="text-center p-5 mb-4 bg-primary text-white rounded-5 shadow-lg animate__animated animate__fadeIn">
-        <h1 class="display-4 fw-bold">About Propertify</h1>
-        <p class="lead">Simplifying property management in Oman, one unit at a time.</p>
-    </div>
-
-    <div class="row g-4 mb-5">
-        <div class="col-md-6">
-            <div class="card h-100 border-0 shadow-sm rounded-4 p-4 hover-lift">
-                <div class="icon-box bg-success-subtle text-success mb-3 rounded-circle p-3 d-inline-block">
-                    <i class="fas fa-eye fa-2x"></i>
-                </div>
-                <h3>Our Vision</h3>
-                <p class="text-muted">A future where every lease and utility bill in Oman is managed with a single click, ensuring 100% transparency and zero paperwork.</p>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card h-100 border-0 shadow-sm rounded-4 p-4 hover-lift">
-                <div class="icon-box bg-info-subtle text-info mb-3 rounded-circle p-3 d-inline-block">
-                    <i class="fas fa-bullseye fa-2x"></i>
-                </div>
-                <h3>Our Target</h3>
-                <p class="text-muted">Empowering Omani landlords to manage high-density residential and commercial assets with enterprise-grade technology.</p>
-            </div>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-md-7">
-            <div class="card border-0 shadow-sm rounded-4 p-4">
-                <h4 class="mb-4">Send us a Message</h4>
-                <form id="contactForm">
-                    <div class="mb-3">
-                        <label class="form-label">Name</label>
-                        <input type="text" class="form-control rounded-pill" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Email</label>
-                        <input type="email" class="form-control rounded-pill" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Message</label>
-                        <textarea class="form-control rounded-4" rows="4" required></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary rounded-pill w-100 py-2">Submit Inquiry</button>
-                </form>
-            </div>
-        </div>
-        <div class="col-md-5">
-            <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
-                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3652.887258045624!2d58.171!3d23.572!" 
-                        width="100%" height="100%" style="border:0; min-height: 400px;" allowfullscreen="" loading="lazy"></iframe>
-            </div>
-        </div>
-    </div>
-</div>
+<!-- ── Leaflet CSS ── -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
 <style>
-    .hover-lift { transition: transform 0.3s ease; }
-    .hover-lift:hover { transform: translateY(-10px); }
+    /* ─── Design tokens (inherit from _PublicLayout) ─── */
+    :root {
+        --pub-primary: #1e3a5f;
+        --pub-accent:  #3b82f6;
+        --pub-green:   #10b981;
+        --pub-bg:      #f8fafc;
+        --pub-text:    #0f172a;
+        --pub-muted:   #64748b;
+        --pub-radius:  18px;
+        --pub-font:    'Plus Jakarta Sans', 'Segoe UI', sans-serif;
+    }
+
+    /* ─── Hero ─── */
+    .about-hero {
+        background: linear-gradient(135deg, rgba(15,23,42,0.93) 0%, rgba(30,58,95,0.87) 100%),
+                    url('https://images.unsplash.com/photo-1486325212027-8081e485255e?auto=format&fit=crop&w=1600&q=80') center/cover no-repeat;
+        padding: 100px 0 80px;
+        position: relative;
+        overflow: hidden;
+    }
+    .about-hero::after {
+        content: '';
+        position: absolute; bottom: -1px; left: 0; right: 0; height: 60px;
+        background: var(--pub-bg);
+        clip-path: ellipse(55% 100% at 50% 100%);
+    }
+    .hero-tag {
+        display: inline-flex; align-items: center; gap: 8px;
+        background: rgba(59,130,246,0.18); border: 1px solid rgba(59,130,246,0.35);
+        color: #93c5fd; border-radius: 50px; padding: 6px 16px;
+        font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em;
+        text-transform: uppercase; margin-bottom: 20px;
+    }
+    .about-hero h1 {
+        font-size: clamp(2.2rem, 5vw, 3.8rem); font-weight: 800;
+        color: #fff; line-height: 1.12; margin-bottom: 18px;
+    }
+    .about-hero h1 span { color: #60a5fa; }
+    .about-hero p.lead-text {
+        color: #cbd5e1; font-size: 1.08rem; max-width: 560px;
+        line-height: 1.75; margin-bottom: 36px;
+    }
+    .hero-badges { display: flex; gap: 12px; flex-wrap: wrap; }
+    .hero-badge {
+        display: inline-flex; align-items: center; gap: 7px;
+        background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+        color: #e2e8f0; border-radius: 50px; padding: 8px 18px;
+        font-size: 0.8rem; font-weight: 600;
+    }
+    .hero-badge i { color: #60a5fa; }
+
+    /* ─── Stats bar ─── */
+    .stats-bar {
+        background: #fff; border-radius: 22px;
+        box-shadow: 0 8px 40px rgba(0,0,0,0.09);
+        padding: 32px 40px; margin-top: -30px;
+        position: relative; z-index: 10;
+    }
+    .stat-item { text-align: center; padding: 0 20px; }
+    .stat-item + .stat-item { border-left: 1px solid #e2e8f0; }
+    .stat-num { font-size: 2.2rem; font-weight: 800; color: var(--pub-primary); line-height: 1; }
+    .stat-num span { color: var(--pub-accent); }
+    .stat-label {
+        font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em;
+        text-transform: uppercase; color: #94a3b8; margin-top: 6px;
+    }
+
+    /* ─── Section header ─── */
+    .section-tag {
+        font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em;
+        text-transform: uppercase; color: var(--pub-accent); margin-bottom: 8px;
+    }
+    .section-title {
+        font-size: clamp(1.5rem, 3vw, 2.1rem); font-weight: 800;
+        color: var(--pub-text); margin-bottom: 10px;
+    }
+    .section-sub { color: #64748b; font-size: 0.9rem; max-width: 540px; line-height: 1.7; }
+
+    /* ─── Mission / Vision cards ─── */
+    .mv-card {
+        background: #fff; border-radius: 22px; padding: 36px 32px;
+        border: 1px solid #f1f5f9; box-shadow: 0 2px 16px rgba(0,0,0,0.05);
+        transition: transform .2s, box-shadow .2s; height: 100%;
+    }
+    .mv-card:hover { transform: translateY(-6px); box-shadow: 0 16px 40px rgba(0,0,0,0.1); }
+    .mv-icon {
+        width: 60px; height: 60px; border-radius: 16px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.4rem; margin-bottom: 20px;
+    }
+    .mv-card h3 { font-size: 1.15rem; font-weight: 800; color: var(--pub-text); margin-bottom: 12px; }
+    .mv-card p { color: #64748b; font-size: 0.88rem; line-height: 1.75; margin: 0; }
+
+    /* ─── Features grid ─── */
+    .features-section { background: #f8fafc; padding: 80px 0; }
+    .feature-card {
+        background: #fff; border-radius: 18px; padding: 28px 24px;
+        border: 1px solid #f1f5f9; box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+        transition: transform .2s, box-shadow .2s; height: 100%;
+    }
+    .feature-card:hover { transform: translateY(-4px); box-shadow: 0 10px 28px rgba(0,0,0,0.09); }
+    .feature-icon {
+        width: 50px; height: 50px; border-radius: 14px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.2rem; margin-bottom: 16px;
+    }
+    .feature-card h5 { font-size: 0.95rem; font-weight: 700; color: var(--pub-text); margin-bottom: 8px; }
+    .feature-card p { color: #64748b; font-size: 0.82rem; line-height: 1.65; margin: 0; }
+
+    /* ─── Platform highlights ─── */
+    .highlight-row { padding: 80px 0; }
+    .highlight-img-wrap {
+        border-radius: 22px; overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+        position: relative;
+    }
+    .highlight-img-wrap img { width: 100%; display: block; }
+    .highlight-badge {
+        position: absolute; bottom: 20px; left: 20px;
+        background: #fff; border-radius: 14px; padding: 14px 18px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        display: flex; align-items: center; gap: 12px;
+    }
+    .highlight-badge-icon {
+        width: 40px; height: 40px; border-radius: 10px;
+        background: #dbeafe; color: var(--pub-accent);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1rem; flex-shrink: 0;
+    }
+    .highlight-badge-text { font-size: 0.78rem; font-weight: 700; color: var(--pub-text); }
+    .highlight-badge-sub { font-size: 0.7rem; color: #94a3b8; font-weight: 500; }
+    .check-list { list-style: none; padding: 0; margin: 0; }
+    .check-list li {
+        display: flex; align-items: flex-start; gap: 12px;
+        margin-bottom: 16px; font-size: 0.88rem; color: #475569; line-height: 1.5;
+    }
+    .check-list li i { color: var(--pub-green); font-size: 0.85rem; margin-top: 3px; flex-shrink: 0; }
+
+    /* ─── Tech stack ─── */
+    .tech-section { background: var(--pub-primary); padding: 64px 0; }
+    .tech-pill {
+        display: inline-flex; align-items: center; gap: 8px;
+        background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
+        color: #e2e8f0; border-radius: 50px; padding: 10px 20px;
+        font-size: 0.82rem; font-weight: 600; transition: all .2s;
+    }
+    .tech-pill:hover { background: rgba(59,130,246,0.25); border-color: rgba(59,130,246,0.5); color: #fff; }
+    .tech-pill i { color: #60a5fa; font-size: 1rem; }
+
+    /* ─── Map + Contact section ─── */
+    .contact-section { padding: 80px 0; }
+    #about-map {
+        height: 420px; border-radius: 22px;
+        overflow: hidden; border: none;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    }
+    .contact-card {
+        background: #fff; border-radius: 22px; padding: 38px 36px;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.07); border: 1px solid #f1f5f9;
+        height: 100%;
+    }
+    .contact-card h4 { font-size: 1.3rem; font-weight: 800; color: var(--pub-text); margin-bottom: 6px; }
+    .contact-card .sub { color: #64748b; font-size: 0.85rem; margin-bottom: 28px; }
+    .form-control, .form-control:focus {
+        background: #f8fafc; border: 1.5px solid #e2e8f0;
+        border-radius: 12px; padding: 12px 16px;
+        font-size: 0.875rem; color: var(--pub-text);
+        box-shadow: none; transition: border-color .15s;
+    }
+    .form-control:focus { border-color: var(--pub-accent); background: #fff; }
+    .form-label { font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 6px; letter-spacing: 0.03em; }
+    .btn-submit {
+        background: var(--pub-primary); color: #fff; border: none;
+        border-radius: 50px; padding: 14px 32px; font-size: 0.88rem;
+        font-weight: 700; width: 100%; cursor: pointer; transition: background .15s;
+        letter-spacing: 0.03em;
+    }
+    .btn-submit:hover { background: var(--pub-accent); }
+    .contact-info-item {
+        display: flex; align-items: center; gap: 14px;
+        padding: 14px 0; border-bottom: 1px solid #f1f5f9;
+    }
+    .contact-info-item:last-child { border-bottom: none; }
+    .ci-icon {
+        width: 42px; height: 42px; border-radius: 12px;
+        background: #dbeafe; color: var(--pub-accent);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.9rem; flex-shrink: 0;
+    }
+    .ci-label { font-size: 0.72rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.06em; }
+    .ci-value { font-size: 0.88rem; font-weight: 600; color: var(--pub-text); }
+
+    /* ─── Responsive ─── */
+    @@media (max-width: 768px) {
+        .stat-item + .stat-item { border-left: none; border-top: 1px solid #e2e8f0; padding-top: 20px; margin-top: 20px; }
+        .stats-bar { padding: 24px 20px; }
+        .about-hero { padding: 70px 0 60px; }
+        #about-map { height: 300px; margin-bottom: 28px; }
+    }
 </style>
+
+<!-- ─────────────────────── HERO ─────────────────────── -->
+<section class="about-hero">
+    <div class="container position-relative" style="z-index:1;">
+        <div class="col-lg-8">
+            <div class="hero-tag">
+                <i class="fas fa-city"></i> About Propertify
+            </div>
+            <h1>The Smartest Way to<br>Manage <span>Property in Oman</span></h1>
+            <p class="lead-text">
+                Propertify is a full-stack property management ecosystem — combining a powerful web dashboard
+                for owners with a mobile app for tenants, built specifically for the Sultanate of Oman.
+            </p>
+            <div class="hero-badges">
+                <span class="hero-badge"><i class="fas fa-shield-check"></i> Secure & HTTPS-Ready</span>
+                <span class="hero-badge"><i class="fas fa-mobile-screen"></i> Cross-Platform Mobile</span>
+                <span class="hero-badge"><i class="fas fa-globe"></i> Arabic & English</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ─────────────────────── STATS ─────────────────────── -->
+<section style="padding: 0 0 70px;">
+    <div class="container">
+        <div class="stats-bar">
+            <div class="row text-center g-0">
+                <div class="col-6 col-md-3 stat-item">
+                    <div class="stat-num">100<span>%</span></div>
+                    <div class="stat-label">Paperless Workflow</div>
+                </div>
+                <div class="col-6 col-md-3 stat-item">
+                    <div class="stat-num">4<span>+</span></div>
+                    <div class="stat-label">Platforms Supported</div>
+                </div>
+                <div class="col-6 col-md-3 stat-item">
+                    <div class="stat-num">2<span>x</span></div>
+                    <div class="stat-label">Faster Maintenance Response</div>
+                </div>
+                <div class="col-6 col-md-3 stat-item">
+                    <div class="stat-num">24<span>/7</span></div>
+                    <div class="stat-label">Tenant Self-Service</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ─────────────────────── MISSION / VISION ─────────────────────── -->
+<section style="padding: 0 0 80px;">
+    <div class="container">
+        <div class="text-center mb-5">
+            <div class="section-tag">Who We Are</div>
+            <div class="section-title">Built for Omani Property Managers</div>
+            <p class="section-sub mx-auto">From a single apartment to an entire residential complex — Propertify gives you the tools to manage every unit, tenant, and invoice from one place.</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="mv-card">
+                    <div class="mv-icon" style="background:#dbeafe; color:#3b82f6;"><i class="fas fa-eye"></i></div>
+                    <h3>Our Vision</h3>
+                    <p>A future where every lease and utility bill in Oman is managed digitally — ensuring full transparency, zero paperwork, and real-time visibility for owners and tenants alike.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="mv-card">
+                    <div class="mv-icon" style="background:#d1fae5; color:#10b981;"><i class="fas fa-bullseye"></i></div>
+                    <h3>Our Mission</h3>
+                    <p>To empower Omani landlords with enterprise-grade technology — automating contracts, billing, maintenance, and tenant communication at any property scale.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="mv-card">
+                    <div class="mv-icon" style="background:#fef3c7; color:#f59e0b;"><i class="fas fa-star"></i></div>
+                    <h3>Our Values</h3>
+                    <p>Transparency in every transaction. Reliability in every interaction. Innovation in every feature — guided by the needs of real property managers in the Gulf region.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ─────────────────────── FEATURES ─────────────────────── -->
+<section class="features-section">
+    <div class="container">
+        <div class="text-center mb-5">
+            <div class="section-tag">Platform Features</div>
+            <div class="section-title">Everything You Need to Manage Properties</div>
+            <p class="section-sub mx-auto">A complete toolkit covering every aspect of property operations — from listing units to collecting payments and handling tenant requests.</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-sm-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon" style="background:#dbeafe; color:#3b82f6;"><i class="fas fa-building"></i></div>
+                    <h5>Property & Unit Management</h5>
+                    <p>Add unlimited properties and units with images, videos, floor types, and occupancy status tracked in real-time.</p>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon" style="background:#d1fae5; color:#10b981;"><i class="fas fa-file-contract"></i></div>
+                    <h5>Digital Contracts</h5>
+                    <p>Create, edit, and track lease agreements with auto-expiry alerts and a full status history — no printing required.</p>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon" style="background:#fce7f3; color:#ec4899;"><i class="fas fa-file-invoice-dollar"></i></div>
+                    <h5>Utility Billing</h5>
+                    <p>Generate and track electricity, water, and service charge bills per tenant with paid/unpaid status at a glance.</p>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon" style="background:#fef3c7; color:#f59e0b;"><i class="fas fa-wrench"></i></div>
+                    <h5>Maintenance Requests</h5>
+                    <p>Tenants submit requests with photos and priority levels from the mobile app. Owners track progress in real time.</p>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon" style="background:#ede9fe; color:#8b5cf6;"><i class="fas fa-mobile-screen"></i></div>
+                    <h5>Tenant Mobile App</h5>
+                    <p>A cross-platform MAUI app for Android, iOS, and Windows — tenants can view contracts, bills, and submit requests anywhere.</p>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon" style="background:#ecfdf5; color:#059669;"><i class="fas fa-chart-line"></i></div>
+                    <h5>Analytics Dashboard</h5>
+                    <p>Revenue trends, occupancy rates, expiring contracts, and AI-driven insights — all in one interactive dashboard.</p>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon" style="background:#fff7ed; color:#ea580c;"><i class="fas fa-truck"></i></div>
+                    <h5>Supplier Management</h5>
+                    <p>Maintain a verified directory of maintenance suppliers with contact details and service categories for quick dispatching.</p>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon" style="background:#f0fdf4; color:#16a34a;"><i class="fas fa-map-location-dot"></i></div>
+                    <h5>Interactive Map</h5>
+                    <p>All your properties pinned on a live map so you can visualise your portfolio geographically across Oman.</p>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon" style="background:#f0f9ff; color:#0ea5e9;"><i class="fas fa-clock-rotate-left"></i></div>
+                    <h5>Activity Logs</h5>
+                    <p>Full audit trail of every action performed on the web or mobile — who did what, when, from which platform.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ─────────────────────── HIGHLIGHT ROW ─────────────────────── -->
+<section class="highlight-row">
+    <div class="container">
+        <div class="row align-items-center g-5 mb-5">
+            <div class="col-lg-6">
+                <div class="highlight-img-wrap">
+                    <img src="https://images.unsplash.com/photo-1551836022-4c4c79ecde51?auto=format&fit=crop&w=900&q=80" alt="Dashboard preview">
+                    <div class="highlight-badge">
+                        <div class="highlight-badge-icon"><i class="fas fa-chart-pie"></i></div>
+                        <div>
+                            <div class="highlight-badge-text">Live Analytics</div>
+                            <div class="highlight-badge-sub">Revenue & Occupancy in Real-Time</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="section-tag">Web Dashboard</div>
+                <div class="section-title">Full Control for Property Owners</div>
+                <p class="section-sub mb-4">The owner dashboard gives you a bird's-eye view of every property, unit, tenant, and financial transaction — with full Arabic/English support and a dark mode.</p>
+                <ul class="check-list">
+                    <li><i class="fas fa-circle-check"></i> Multi-property portfolio with individual unit tracking</li>
+                    <li><i class="fas fa-circle-check"></i> 6-month revenue and expense trend charts</li>
+                    <li><i class="fas fa-circle-check"></i> Expiring contract alerts up to 3 months ahead</li>
+                    <li><i class="fas fa-circle-check"></i> Visitor booking requests from the public portal</li>
+                    <li><i class="fas fa-circle-check"></i> One-click mobile account provisioning per tenant</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="row align-items-center g-5 flex-lg-row-reverse">
+            <div class="col-lg-6">
+                <div class="highlight-img-wrap">
+                    <img src="https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&w=900&q=80" alt="Mobile app preview">
+                    <div class="highlight-badge">
+                        <div class="highlight-badge-icon"><i class="fas fa-mobile-screen"></i></div>
+                        <div>
+                            <div class="highlight-badge-text">Tenant App</div>
+                            <div class="highlight-badge-sub">Android · iOS · Windows</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="section-tag">Mobile App</div>
+                <div class="section-title">Always-On Access for Tenants</div>
+                <p class="section-sub mb-4">The .NET MAUI tenant app gives residents secure access to their lease, bills, and maintenance history — available on any device, any time.</p>
+                <ul class="check-list">
+                    <li><i class="fas fa-circle-check"></i> Instant login with email & password</li>
+                    <li><i class="fas fa-circle-check"></i> Contract progress bar with days remaining</li>
+                    <li><i class="fas fa-circle-check"></i> Utility bill history with paid/unpaid status</li>
+                    <li><i class="fas fa-circle-check"></i> Submit maintenance requests with photo & priority</li>
+                    <li><i class="fas fa-circle-check"></i> Permission-based feature access per account</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ─────────────────────── TECH STACK ─────────────────────── -->
+<section class="tech-section">
+    <div class="container text-center">
+        <p class="section-tag" style="color:#93c5fd;">Built With Modern Technology</p>
+        <h2 class="section-title" style="color:#fff; margin-bottom:10px;">Our Technology Stack</h2>
+        <p style="color:#94a3b8; font-size:0.9rem; max-width:500px; margin: 0 auto 36px;">
+            Enterprise-grade open-source technologies powering a production-ready property platform.
+        </p>
+        <div class="d-flex flex-wrap justify-content-center gap-3">
+            <span class="tech-pill"><i class="fab fa-microsoft"></i> ASP.NET Core 10</span>
+            <span class="tech-pill"><i class="fas fa-database"></i> SQL Server + EF Core</span>
+            <span class="tech-pill"><i class="fas fa-mobile-screen"></i> .NET MAUI</span>
+            <span class="tech-pill"><i class="fab fa-bootstrap"></i> Bootstrap 5</span>
+            <span class="tech-pill"><i class="fas fa-map-location-dot"></i> Leaflet.js Maps</span>
+            <span class="tech-pill"><i class="fas fa-chart-bar"></i> Chart.js</span>
+            <span class="tech-pill"><i class="fas fa-lock"></i> PBKDF2-SHA256</span>
+            <span class="tech-pill"><i class="fas fa-language"></i> i18n (AR / EN)</span>
+            <span class="tech-pill"><i class="fas fa-server"></i> REST Mobile API</span>
+        </div>
+    </div>
+</section>
+
+<!-- ─────────────────────── MAP + CONTACT ─────────────────────── -->
+<section class="contact-section">
+    <div class="container">
+        <div class="text-center mb-5">
+            <div class="section-tag">Find Us</div>
+            <div class="section-title">Our Location & Contact</div>
+            <p class="section-sub mx-auto">Based in Muscat, Sultanate of Oman. Reach out for demos, partnerships, or support.</p>
+        </div>
+
+        <div class="row g-4 align-items-stretch">
+            <!-- Map -->
+            <div class="col-lg-7">
+                <div id="about-map"></div>
+            </div>
+
+            <!-- Contact info + form -->
+            <div class="col-lg-5">
+                <div class="contact-card">
+                    <!-- Contact info -->
+                    <div class="mb-4">
+                        <div class="contact-info-item">
+                            <div class="ci-icon"><i class="fas fa-map-marker-alt"></i></div>
+                            <div>
+                                <div class="ci-label">Address</div>
+                                <div class="ci-value">Muscat, Sultanate of Oman</div>
+                            </div>
+                        </div>
+                        <div class="contact-info-item">
+                            <div class="ci-icon"><i class="fas fa-phone"></i></div>
+                            <div>
+                                <div class="ci-label">Phone</div>
+                                <div class="ci-value">+968 9279 2292</div>
+                            </div>
+                        </div>
+                        <div class="contact-info-item">
+                            <div class="ci-icon"><i class="fas fa-envelope"></i></div>
+                            <div>
+                                <div class="ci-label">Email</div>
+                                <div class="ci-value">info@propertify.om</div>
+                            </div>
+                        </div>
+                        <div class="contact-info-item">
+                            <div class="ci-icon"><i class="fas fa-clock"></i></div>
+                            <div>
+                                <div class="ci-label">Business Hours</div>
+                                <div class="ci-value">Sun – Thu, 9 AM – 6 PM</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr style="border-color:#f1f5f9; margin: 20px 0;">
+
+                    <!-- Message form -->
+                    <h4>Send a Message</h4>
+                    <p class="sub">We'll get back to you within one business day.</p>
+                    <form id="contactForm">
+                        <div class="mb-3">
+                            <label class="form-label">Your Name</label>
+                            <input type="text" class="form-control" placeholder="Hamid Al-Rashdi" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email Address</label>
+                            <input type="email" class="form-control" placeholder="you@example.com" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Message</label>
+                            <textarea class="form-control" rows="3" placeholder="How can we help you?" style="border-radius:12px;" required></textarea>
+                        </div>
+                        <button type="submit" class="btn-submit">
+                            <i class="fas fa-paper-plane me-2"></i> Send Message
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── Leaflet JS ── -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+@section Scripts {
+<script>
+    // ── Leaflet Map – Muscat, Oman ──────────────────────────────────
+    (function () {
+        const lat = 23.5859, lng = 58.4059;
+
+        const map = L.map('about-map', {
+            center: [lat, lng],
+            zoom: 13,
+            scrollWheelZoom: false,
+            zoomControl: true
+        });
+
+        // Tile layer (OpenStreetMap – no API key required)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Custom marker icon
+        const icon = L.divIcon({
+            className: '',
+            html: `<div style="
+                background:#1e3a5f; width:42px; height:42px; border-radius:50% 50% 50% 0;
+                transform:rotate(-45deg); border:3px solid #fff;
+                box-shadow:0 4px 16px rgba(0,0,0,0.25);
+                display:flex; align-items:center; justify-content:center;">
+                <span style="transform:rotate(45deg); color:#fff; font-size:14px;">&#xf015;</span>
+            </div>`,
+            iconSize: [42, 42],
+            iconAnchor: [21, 42],
+            popupAnchor: [0, -44]
+        });
+
+        const marker = L.marker([lat, lng], { icon }).addTo(map);
+        marker.bindPopup(`
+            <div style="font-family:'Plus Jakarta Sans',sans-serif; min-width:180px; padding:4px;">
+                <div style="font-weight:800; font-size:0.95rem; color:#1e3a5f; margin-bottom:4px;">
+                    <i class="fas fa-city" style="color:#3b82f6;"></i> Propertify HQ
+                </div>
+                <div style="font-size:0.8rem; color:#64748b;">Muscat, Sultanate of Oman</div>
+                <div style="font-size:0.78rem; color:#94a3b8; margin-top:4px;">
+                    <i class="fas fa-phone" style="color:#3b82f6;"></i> +968 9279 2292
+                </div>
+            </div>
+        `, { maxWidth: 240 }).openPopup();
+    })();
+
+    // ── Contact form feedback ────────────────────────────────────────
+    document.getElementById('contactForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const btn = this.querySelector('.btn-submit');
+        btn.innerHTML = '<i class="fas fa-circle-check me-2"></i> Message Sent!';
+        btn.style.background = '#10b981';
+        btn.disabled = true;
+        setTimeout(() => {
+            btn.innerHTML = '<i class="fas fa-paper-plane me-2"></i> Send Message';
+            btn.style.background = '';
+            btn.disabled = false;
+            this.reset();
+        }, 3500);
+    });
+</script>
+}

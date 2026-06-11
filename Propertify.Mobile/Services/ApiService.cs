@@ -93,7 +93,7 @@ namespace Propertify.Mobile.Services
         /// Attaches the optional <paramref name="photo"/> as a binary stream.
         /// Returns true if the server responded with a success status code.
         /// </summary>
-        public async Task<bool> SubmitMaintenanceAsync(string title, string description, int unitId, FileResult? photo)
+        public async Task<bool> SubmitMaintenanceAsync(string title, string description, int unitId, string priority, FileResult? photo)
         {
             try
             {
@@ -101,10 +101,11 @@ namespace Propertify.Mobile.Services
                 form.Add(new StringContent(title),             "Title");
                 form.Add(new StringContent(description),       "Description");
                 form.Add(new StringContent(unitId.ToString()), "UnitId");
+                form.Add(new StringContent(priority),          "Priority");
 
                 if (photo != null)
                 {
-                    var stream      = await photo.OpenReadAsync();
+                    await using var stream = await photo.OpenReadAsync();
                     var fileContent = new StreamContent(stream);
                     fileContent.Headers.ContentType = new MediaTypeHeaderValue(
                         string.IsNullOrEmpty(photo.ContentType) ? "image/jpeg" : photo.ContentType);

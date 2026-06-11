@@ -280,6 +280,7 @@ namespace Propertify.Web.Controllers
                 .Include(u => u.Property)
                 .FirstOrDefaultAsync(u => u.Id == req.UnitId);
 
+            var allowedPriorities = new HashSet<string> { "Normal", "High", "Urgent" };
             var maintenance = new Propertify.Web.Models.MaintenanceRequest
             {
                 Title        = req.Title,
@@ -288,7 +289,7 @@ namespace Propertify.Web.Controllers
                 PropertyId   = unit?.PropertyId ?? 0,
                 PropertyName = unit?.Property?.Name,
                 Status       = "Pending",
-                Priority     = "Normal",
+                Priority     = allowedPriorities.Contains(req.Priority) ? req.Priority : "Normal",
                 ImagePath    = imagePath
             };
 
@@ -315,6 +316,7 @@ namespace Propertify.Web.Controllers
         public string  Title       { get; set; } = string.Empty;
         public string? Description { get; set; }
         public int     UnitId      { get; set; }
+        public string  Priority    { get; set; } = "Normal";
         public IFormFile? ImageFile { get; set; }
     }
 }

@@ -5,18 +5,25 @@ using Propertify.Mobile.Services;
 
 namespace Propertify.Mobile.ViewModels
 {
-    /// <summary>Drives the login screen: validates input, calls the API, stores the session, and navigates to the main shell.</summary>
     public partial class LoginViewModel : ObservableObject
     {
         private readonly ApiService       _api;
         private readonly SessionService   _session;
         private readonly IServiceProvider _services;
 
-        [ObservableProperty] private string email        = string.Empty;
-        [ObservableProperty] private string password     = string.Empty;
-        [ObservableProperty] private string errorMessage = string.Empty;
-        [ObservableProperty] private bool   isBusy       = false;
-        [ObservableProperty] private bool   hasError     = false;
+        [ObservableProperty] public partial string Email             { get; set; } = string.Empty;
+        [ObservableProperty] public partial string Password          { get; set; } = string.Empty;
+        [ObservableProperty] public partial string ErrorMessage      { get; set; } = string.Empty;
+        [ObservableProperty] public partial bool   IsBusy            { get; set; } = false;
+        [ObservableProperty] public partial bool   HasError          { get; set; } = false;
+        [ObservableProperty] public partial bool   IsPasswordVisible { get; set; } = false;
+
+        public string EyeIcon => IsPasswordVisible ? "🙈" : "👁";
+
+        partial void OnIsPasswordVisibleChanged(bool value) => OnPropertyChanged(nameof(EyeIcon));
+
+        [RelayCommand]
+        private void TogglePasswordVisibility() => IsPasswordVisible = !IsPasswordVisible;
 
         public LoginViewModel(ApiService api, SessionService session, IServiceProvider services)
         {
@@ -25,7 +32,6 @@ namespace Propertify.Mobile.ViewModels
             _services = services;
         }
 
-        /// <summary>Validates credentials, calls the login API, saves the session, and replaces the main page with AppShell on success.</summary>
         [RelayCommand]
         private async Task LoginAsync()
         {
@@ -61,8 +67,7 @@ namespace Propertify.Mobile.ViewModels
                 result.FullName,
                 result.Permissions);
 
-            // Resolve AppShell from DI so all tabs get their pages via constructor injection.
-            Application.Current!.MainPage = _services.GetRequiredService<AppShell>();
+            Application.Current!.Windows[0].Page = _services.GetRequiredService<AppShell>();
         }
     }
 }

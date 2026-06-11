@@ -34,12 +34,12 @@ public partial class MaintenancePage : ContentPage
         if (active.Content is Label lbl) lbl.TextColor = Colors.White;
     }
 
-    private void OnFilterAll(object sender, TappedEventArgs e)        { SetActiveChip(ChipAll);        _vm.ApplyFilter("All"); }
-    private void OnFilterPending(object sender, TappedEventArgs e)    { SetActiveChip(ChipPending);    _vm.ApplyFilter("Pending"); }
-    private void OnFilterInProgress(object sender, TappedEventArgs e) { SetActiveChip(ChipInProgress); _vm.ApplyFilter("InProgress"); }
-    private void OnFilterDone(object sender, TappedEventArgs e)       { SetActiveChip(ChipDone);       _vm.ApplyFilter("Done"); }
+    private void OnFilterAll(object? sender, TappedEventArgs e)        { SetActiveChip(ChipAll);        _vm.ApplyFilter("All"); }
+    private void OnFilterPending(object? sender, TappedEventArgs e)    { SetActiveChip(ChipPending);    _vm.ApplyFilter("Pending"); }
+    private void OnFilterInProgress(object? sender, TappedEventArgs e) { SetActiveChip(ChipInProgress); _vm.ApplyFilter("InProgress"); }
+    private void OnFilterDone(object? sender, TappedEventArgs e)       { SetActiveChip(ChipDone);       _vm.ApplyFilter("Done"); }
 
-    private async void OnAddClicked(object sender, EventArgs e)
+    private async void OnAddClicked(object? sender, EventArgs e)
     {
         await Shell.Current.GoToAsync("addmaintenance");
     }

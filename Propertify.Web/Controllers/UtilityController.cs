@@ -20,6 +20,22 @@ namespace Propertify.Web.Controllers
 
         public IActionResult Index() => RedirectToAction(nameof(BillingList));
 
+        [HttpGet]
+        public async Task<IActionResult> CreateBill()
+        {
+            ViewBag.Units = await _context.Units
+                .Include(u => u.Property)
+                .OrderBy(u => u.Property!.Name).ThenBy(u => u.UnitNumber)
+                .ToListAsync();
+
+            ViewBag.Tenants = await _context.Tenants
+                .Where(t => !t.IsArchived)
+                .OrderBy(t => t.FirstNameEn)
+                .ToListAsync();
+
+            return View();
+        }
+
         public async Task<IActionResult> BillingList(string? search, string? typeFilter)
         {
             var query = _context.UtilityBills
@@ -56,17 +72,39 @@ namespace Propertify.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateBill(UtilityBill bill)
         {
-            if (ModelState.IsValid)
+            // Auto-resolve tenant from unit when not provided
+            if (bill.TenantId == 0)
+            {
+                var tenant = await _context.Tenants.FirstOrDefaultAsync(t => t.UnitId == bill.UnitId);
+                if (tenant != null) bill.TenantId = tenant.Id;
+            }
+
+            // If total not manually entered, calculate from readings using configured tariff
+            if (bill.TotalAmount == 0 && bill.CurrentReading > bill.PreviousReading)
             {
                 var tariff = _configuration.GetValue<decimal>("UtilitySettings:TariffPerUnit", 0.020m);
                 bill.TotalAmount = (bill.CurrentReading - bill.PreviousReading) * tariff;
-                bill.IssueDate = DateTime.Now;
-                bill.Status = "Unpaid";
+            }
 
+            ModelState.Remove(nameof(bill.Unit));
+            ModelState.Remove(nameof(bill.Tenant));
+
+            if (ModelState.IsValid)
+            {
                 _context.UtilityBills.Add(bill);
                 await _context.SaveChangesAsync();
+                TempData["Success"] = "Bill created successfully.";
                 return RedirectToAction(nameof(BillingList));
             }
+
+            ViewBag.Units = await _context.Units
+                .Include(u => u.Property)
+                .OrderBy(u => u.Property!.Name).ThenBy(u => u.UnitNumber)
+                .ToListAsync();
+            ViewBag.Tenants = await _context.Tenants
+                .Where(t => !t.IsArchived)
+                .OrderBy(t => t.FirstNameEn)
+                .ToListAsync();
             return View(bill);
         }
 

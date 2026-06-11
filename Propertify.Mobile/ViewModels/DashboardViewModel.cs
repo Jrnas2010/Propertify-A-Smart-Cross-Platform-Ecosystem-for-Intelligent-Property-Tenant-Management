@@ -6,27 +6,26 @@ using System.Collections.ObjectModel;
 
 namespace Propertify.Mobile.ViewModels
 {
-    /// <summary>Provides all data for the tenant dashboard tab: contract progress, financials, and recent activity lists.</summary>
     public partial class DashboardViewModel : ObservableObject
     {
         private readonly ApiService     _api;
         private readonly SessionService _session;
 
-        [ObservableProperty] private bool    isBusy        = false;
-        [ObservableProperty] private bool    hasData       = false;
-        [ObservableProperty] private string  greeting      = string.Empty;
-        [ObservableProperty] private string  tenantName    = string.Empty;
-        [ObservableProperty] private string  unitInfo      = string.Empty;
-        [ObservableProperty] private string  contractStart = string.Empty;
-        [ObservableProperty] private string  contractEnd   = string.Empty;
-        [ObservableProperty] private string  contractStatus = string.Empty;
-        [ObservableProperty] private string  contractStatusColor = "#10b981";
-        [ObservableProperty] private int     daysRemaining = 0;
-        [ObservableProperty] private double  contractProgress = 0;
-        [ObservableProperty] private string  monthlyRent   = string.Empty;
-        [ObservableProperty] private int     pendingBills  = 0;
-        [ObservableProperty] private string  unpaidAmount  = string.Empty;
-        [ObservableProperty] private int     pendingMaintenance = 0;
+        [ObservableProperty] public partial bool   IsBusy               { get; set; } = false;
+        [ObservableProperty] public partial bool   HasData              { get; set; } = false;
+        [ObservableProperty] public partial string Greeting             { get; set; } = string.Empty;
+        [ObservableProperty] public partial string TenantName           { get; set; } = string.Empty;
+        [ObservableProperty] public partial string UnitInfo             { get; set; } = string.Empty;
+        [ObservableProperty] public partial string ContractStart        { get; set; } = string.Empty;
+        [ObservableProperty] public partial string ContractEnd          { get; set; } = string.Empty;
+        [ObservableProperty] public partial string ContractStatus       { get; set; } = string.Empty;
+        [ObservableProperty] public partial string ContractStatusColor  { get; set; } = "#10b981";
+        [ObservableProperty] public partial int    DaysRemaining        { get; set; } = 0;
+        [ObservableProperty] public partial double ContractProgress     { get; set; } = 0;
+        [ObservableProperty] public partial string MonthlyRent          { get; set; } = string.Empty;
+        [ObservableProperty] public partial int    PendingBills         { get; set; } = 0;
+        [ObservableProperty] public partial string UnpaidAmount         { get; set; } = string.Empty;
+        [ObservableProperty] public partial int    PendingMaintenance   { get; set; } = 0;
 
         public ObservableCollection<InvoiceDto>     RecentBills       { get; } = new();
         public ObservableCollection<MaintenanceDto> RecentMaintenance { get; } = new();
@@ -37,7 +36,6 @@ namespace Propertify.Mobile.ViewModels
             _session = session;
         }
 
-        /// <summary>Fetches dashboard data from the API and populates all observable properties and collections.</summary>
         public async Task LoadAsync()
         {
             IsBusy = true;
@@ -49,19 +47,19 @@ namespace Propertify.Mobile.ViewModels
 
             if (data == null) { HasData = false; return; }
 
-            TenantName       = data.TenantName;
-            UnitInfo         = $"Unit {data.UnitNumber} · {data.PropertyName}";
-            ContractStart    = data.ContractStart;
-            ContractEnd      = data.ContractEnd;
-            ContractStatus   = data.ContractStatus;
+            TenantName          = data.TenantName;
+            UnitInfo            = $"Unit {data.UnitNumber} · {data.PropertyName}";
+            ContractStart       = data.ContractStart;
+            ContractEnd         = data.ContractEnd;
+            ContractStatus      = data.ContractStatus;
             ContractStatusColor = data.ContractStatus == "Active" ? "#10b981"
                                 : data.ContractStatus == "Expired" ? "#ef4444" : "#f59e0b";
-            DaysRemaining    = data.ContractDaysRemaining;
-            ContractProgress = data.ContractProgress;
-            MonthlyRent      = $"{data.MonthlyRent:N3} OMR";
-            PendingBills     = data.PendingBills;
-            UnpaidAmount     = $"{data.UnpaidAmount:N3} OMR";
-            PendingMaintenance = data.PendingMaintenance;
+            DaysRemaining       = data.ContractDaysRemaining;
+            ContractProgress    = data.ContractProgress;
+            MonthlyRent         = $"{data.MonthlyRent:N3} OMR";
+            PendingBills        = data.PendingBills;
+            UnpaidAmount        = $"{data.UnpaidAmount:N3} OMR";
+            PendingMaintenance  = data.PendingMaintenance;
 
             RecentBills.Clear();
             foreach (var b in data.RecentBills) RecentBills.Add(b);
@@ -72,7 +70,6 @@ namespace Propertify.Mobile.ViewModels
             HasData = true;
         }
 
-        /// <summary>Pull-to-refresh command – reloads dashboard data.</summary>
         [RelayCommand]
         private async Task RefreshAsync() => await LoadAsync();
     }

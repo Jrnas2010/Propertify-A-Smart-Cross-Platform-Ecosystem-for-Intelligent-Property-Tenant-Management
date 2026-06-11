@@ -1,93 +1,391 @@
 @model Propertify.Web.Models.Property
-
 @{
-    ViewData["Title"] = "Edit Property - " + Model.Name;
+    ViewData["Title"] = "Edit Property";
 }
 
-<div class="container-fluid px-4 py-4" style="max-width: 100%;">
+<style>
+    /* ── Design tokens ── */
+    :root {
+        --p-primary:  #1e3a5f;
+        --p-accent:   #3b82f6;
+        --p-green:    #10b981;
+        --p-amber:    #f59e0b;
+        --p-red:      #ef4444;
+        --p-bg:       #f8fafc;
+        --p-card:     #ffffff;
+        --p-border:   #e2e8f0;
+        --p-text:     #0f172a;
+        --p-muted:    #64748b;
+        --p-subtle:   #94a3b8;
+        --p-radius:   14px;
+        --p-input-bg: #f8fafc;
+    }
+
+    /* ── Page ── */
+    .edit-page { background: var(--p-bg); min-height: 100vh; padding-bottom: 100px; }
+
+    /* ── Section card ── */
+    .section-card {
+        background: var(--p-card); border-radius: 20px;
+        border: 1px solid var(--p-border);
+        box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+        margin-bottom: 20px; overflow: hidden;
+    }
+    .section-head {
+        padding: 18px 24px; border-bottom: 1px solid var(--p-border);
+        display: flex; align-items: center; justify-content: space-between;
+    }
+    .section-head-title {
+        display: flex; align-items: center; gap: 10px;
+    }
+    .section-icon {
+        width: 36px; height: 36px; border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.9rem; flex-shrink: 0;
+    }
+    .section-label {
+        font-size: 0.8rem; font-weight: 800; letter-spacing: 0.08em;
+        text-transform: uppercase; color: var(--p-text);
+    }
+    .section-sub {
+        font-size: 0.68rem; color: var(--p-subtle); letter-spacing: 0.05em;
+        text-transform: uppercase; margin-top: 1px;
+    }
+    .section-body { padding: 24px; }
+
+    /* ── Field group (icon + input) ── */
+    .field-group { position: relative; }
+    .field-label {
+        font-size: 0.72rem; font-weight: 700; color: var(--p-muted);
+        letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 7px;
+        display: flex; align-items: center; gap: 5px;
+    }
+    .field-label .req { color: var(--p-red); font-size: 0.75rem; }
+    .field-wrap {
+        position: relative; display: flex; align-items: center;
+    }
+    .field-icon {
+        position: absolute; left: 14px; color: var(--p-subtle);
+        font-size: 0.85rem; pointer-events: none; z-index: 2;
+        transition: color .15s;
+    }
+    .f-input {
+        width: 100%; background: var(--p-input-bg);
+        border: 1.5px solid var(--p-border); border-radius: var(--p-radius);
+        padding: 11px 14px 11px 40px;
+        font-size: 0.875rem; color: var(--p-text);
+        transition: border-color .15s, background .15s, box-shadow .15s;
+        outline: none; appearance: none; -webkit-appearance: none;
+    }
+    .f-input:focus {
+        border-color: var(--p-accent); background: #fff;
+        box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+    }
+    .f-input:focus ~ .field-icon, .field-wrap:focus-within .field-icon {
+        color: var(--p-accent);
+    }
+    .f-input.no-icon { padding-left: 14px; }
+    .f-select { padding-right: 36px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; cursor: pointer; }
+    .f-input-sm { padding: 9px 12px 9px 36px; font-size: 0.82rem; }
+    .f-input-sm.no-icon { padding-left: 12px; }
+    .field-hint { font-size: 0.68rem; color: var(--p-subtle); margin-top: 5px; }
+    .field-error { font-size: 0.72rem; color: var(--p-red); margin-top: 4px; }
+
+    /* ── Image upload zone ── */
+    .img-upload-zone {
+        border: 2px dashed var(--p-border); border-radius: var(--p-radius);
+        padding: 20px; text-align: center; cursor: pointer;
+        transition: border-color .2s, background .2s;
+        background: var(--p-input-bg); position: relative;
+    }
+    .img-upload-zone:hover { border-color: var(--p-accent); background: #f0f7ff; }
+    .img-upload-zone input[type=file] {
+        position: absolute; inset: 0; opacity: 0; cursor: pointer; z-index: 3;
+    }
+    .img-upload-zone .uz-icon { font-size: 1.6rem; color: var(--p-subtle); margin-bottom: 6px; }
+    .img-upload-zone .uz-text { font-size: 0.78rem; font-weight: 600; color: var(--p-muted); }
+    .img-upload-zone .uz-hint { font-size: 0.68rem; color: var(--p-subtle); margin-top: 3px; }
+    .img-preview-wrap { position: relative; display: inline-block; }
+    .img-preview-wrap img { width: 100%; max-height: 140px; object-fit: cover; border-radius: 10px; display: block; }
+    .img-change-overlay {
+        position: absolute; inset: 0; background: rgba(0,0,0,0.45);
+        border-radius: 10px; display: flex; align-items: center; justify-content: center;
+        opacity: 0; transition: opacity .2s; cursor: pointer;
+    }
+    .img-preview-wrap:hover .img-change-overlay { opacity: 1; }
+
+    /* ── Unit card ── */
+    .unit-card {
+        background: #fff; border-radius: 18px;
+        border: 1.5px solid var(--p-border);
+        margin-bottom: 16px; overflow: hidden;
+        transition: box-shadow .2s;
+    }
+    .unit-card:hover { box-shadow: 0 6px 24px rgba(0,0,0,0.08); }
+    .unit-head {
+        padding: 14px 20px; display: flex; align-items: center;
+        justify-content: space-between; cursor: pointer;
+        user-select: none; background: #fafbfc;
+        border-bottom: 1.5px solid transparent;
+        transition: background .15s;
+    }
+    .unit-head:hover { background: #f1f5f9; }
+    .unit-head.open { background: #fff; border-bottom-color: var(--p-border); }
+    .unit-head-left { display: flex; align-items: center; gap: 12px; }
+    .unit-num-badge {
+        width: 34px; height: 34px; border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.78rem; font-weight: 800; flex-shrink: 0;
+    }
+    .unit-title { font-size: 0.88rem; font-weight: 700; color: var(--p-text); }
+    .unit-meta  { font-size: 0.7rem; color: var(--p-subtle); margin-top: 1px; }
+    .status-pill {
+        font-size: 0.65rem; font-weight: 700; letter-spacing: 0.07em;
+        text-transform: uppercase; padding: 4px 12px; border-radius: 50px;
+    }
+    .status-vacant      { background: #dcfce7; color: #16a34a; }
+    .status-occupied    { background: #dbeafe; color: #1d4ed8; }
+    .status-maintenance { background: #fef3c7; color: #d97706; }
+    .unit-chevron { color: var(--p-subtle); font-size: 0.75rem; transition: transform .2s; }
+    .unit-chevron.open { transform: rotate(180deg); }
+    .unit-body { padding: 20px; display: none; }
+    .unit-body.open { display: block; }
+
+    /* sub-section inside unit */
+    .unit-sub-label {
+        font-size: 0.62rem; font-weight: 800; letter-spacing: 0.1em;
+        text-transform: uppercase; color: var(--p-subtle); margin-bottom: 12px;
+        padding-bottom: 6px; border-bottom: 1px solid var(--p-border);
+        display: flex; align-items: center; gap: 6px;
+    }
+    .unit-sub-label i { color: var(--p-accent); }
+
+    /* counter stepper */
+    .stepper {
+        display: flex; align-items: center; gap: 0; border: 1.5px solid var(--p-border);
+        border-radius: var(--p-radius); overflow: hidden; background: var(--p-input-bg);
+    }
+    .stepper button {
+        width: 36px; height: 38px; border: none; background: transparent;
+        color: var(--p-muted); font-size: 1rem; cursor: pointer; flex-shrink: 0;
+        display: flex; align-items: center; justify-content: center;
+        transition: background .15s;
+    }
+    .stepper button:hover { background: #f1f5f9; color: var(--p-text); }
+    .stepper input {
+        flex: 1; border: none; background: transparent; text-align: center;
+        font-size: 0.88rem; font-weight: 700; color: var(--p-text);
+        outline: none; min-width: 0; padding: 0;
+    }
+    .stepper-label { font-size: 0.7rem; font-weight: 700; color: var(--p-muted); letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 6px; text-align: center; }
+
+    /* file drop zone (unit) */
+    .file-drop {
+        border: 2px dashed var(--p-border); border-radius: var(--p-radius);
+        padding: 16px 12px; text-align: center; cursor: pointer;
+        position: relative; transition: all .2s; background: var(--p-input-bg);
+    }
+    .file-drop:hover { border-color: var(--p-accent); background: #f0f7ff; }
+    .file-drop input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    .file-drop i { font-size: 1.2rem; margin-bottom: 5px; display: block; }
+    .file-drop .fd-text { font-size: 0.74rem; font-weight: 600; color: var(--p-muted); }
+    .file-drop .fd-hint { font-size: 0.66rem; color: var(--p-subtle); margin-top: 2px; }
+    .file-exists { font-size: 0.7rem; font-weight: 600; color: var(--p-green); margin-top: 6px; display: flex; align-items: center; gap: 5px; justify-content: center; }
+
+    /* ── New unit card (green accent) ── */
+    .unit-card.is-new { border-color: #bbf7d0; }
+    .unit-card.is-new .unit-head { background: #f0fdf4; }
+    .unit-card.is-new .unit-head:hover { background: #dcfce7; }
+    .unit-card.is-new .unit-body.open { border-top: 1.5px solid #bbf7d0; }
+
+    /* ── Add unit button ── */
+    .add-unit-btn {
+        width: 100%; padding: 14px; border: 2px dashed var(--p-border);
+        border-radius: 16px; background: transparent; cursor: pointer;
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+        font-size: 0.82rem; font-weight: 700; color: var(--p-muted);
+        letter-spacing: 0.04em; transition: all .2s;
+    }
+    .add-unit-btn:hover { border-color: var(--p-green); color: var(--p-green); background: #f0fdf4; }
+
+    /* ── Sticky save bar ── */
+    .save-bar {
+        position: fixed; bottom: 0; left: var(--sidebar-width, 260px); right: 0;
+        background: rgba(255,255,255,0.95); backdrop-filter: blur(12px);
+        border-top: 1px solid var(--p-border); padding: 14px 28px;
+        display: flex; align-items: center; justify-content: space-between;
+        z-index: 900; gap: 12px;
+    }
+    .save-bar-info { font-size: 0.78rem; color: var(--p-muted); display: flex; align-items: center; gap: 8px; }
+    .save-bar-info strong { color: var(--p-text); }
+    .btn-cancel {
+        padding: 10px 24px; border-radius: 50px; border: 1.5px solid var(--p-border);
+        background: #fff; font-size: 0.82rem; font-weight: 700;
+        color: var(--p-muted); cursor: pointer; transition: all .15s; text-decoration: none;
+        display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn-cancel:hover { border-color: var(--p-text); color: var(--p-text); }
+    .btn-save {
+        padding: 11px 32px; border-radius: 50px; border: none;
+        background: var(--p-primary); font-size: 0.85rem; font-weight: 700;
+        color: #fff; cursor: pointer; transition: background .15s;
+        display: inline-flex; align-items: center; gap: 8px;
+        box-shadow: 0 4px 14px rgba(30,58,95,0.3);
+    }
+    .btn-save:hover { background: var(--p-accent); }
+
+    /* ── Alert ── */
+    .modern-alert {
+        border-radius: 14px; border: none; padding: 14px 18px;
+        display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
+        font-size: 0.85rem; font-weight: 500;
+    }
+    .modern-alert.danger { background: #fef2f2; color: #dc2626; }
+    .modern-alert .al-icon { font-size: 1rem; flex-shrink: 0; }
+    .modern-alert .btn-close { margin-left: auto; }
+
+    /* ── Coordinates row ── */
+    .coord-badge {
+        font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em;
+        text-transform: uppercase; padding: 3px 10px; border-radius: 50px;
+        background: #dbeafe; color: #1d4ed8; display: inline-flex;
+        align-items: center; gap: 4px;
+    }
+
+    @@media (max-width: 768px) {
+        .save-bar { left: 0; padding: 12px 16px; }
+        .section-body { padding: 16px; }
+    }
+</style>
+
+<div class="edit-page container-fluid px-4 py-4" style="max-width: 960px; margin: 0 auto;">
 
     @if (TempData["Error"] != null)
     {
-        <div class="alert alert-danger alert-dismissible fade show rounded-3 border-0 shadow-sm mb-4">
-            <i class="fas fa-exclamation-circle me-2"></i> @TempData["Error"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <div class="modern-alert danger" role="alert">
+            <i class="fas fa-circle-exclamation al-icon"></i>
+            <span>@TempData["Error"]</span>
+            <button type="button" class="btn-close btn-close-sm ms-auto" data-bs-dismiss="alert"></button>
         </div>
     }
 
-    <!-- Page Header -->
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <!-- ── Page Header ── -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
         <div>
-            <h4 class="fw-bold text-dark mb-1">
-                <i class="fas fa-building text-primary me-2"></i> Edit Property —
-                <span class="text-primary">@Model.Name</span>
-            </h4>
-            <p class="text-muted small mb-0">Update your property information, units and meters</p>
+            <div style="font-size:0.72rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--p-accent); margin-bottom:4px;">
+                <i class="fas fa-building me-1"></i> Property Management
+            </div>
+            <h3 style="font-size:1.6rem; font-weight:800; color:var(--p-text); margin:0; line-height:1.2;">
+                Edit — <span style="color:var(--p-accent);">@Model.Name</span>
+            </h3>
+            <p style="font-size:0.8rem; color:var(--p-muted); margin:4px 0 0;">
+                Update property details, units, meters and media
+            </p>
         </div>
-        <a asp-action="Index" class="btn btn-outline-secondary rounded-pill px-4">
-            <i class="fas fa-arrow-left me-2"></i> Back to Properties
+        <a asp-action="Index"
+           style="display:inline-flex; align-items:center; gap:7px; padding:9px 20px; border-radius:50px;
+                  border:1.5px solid var(--p-border); background:#fff; font-size:0.8rem;
+                  font-weight:700; color:var(--p-muted); text-decoration:none; transition:all .15s;"
+           onmouseover="this.style.borderColor='var(--p-text)';this.style.color='var(--p-text)'"
+           onmouseout="this.style.borderColor='var(--p-border)';this.style.color='var(--p-muted)'">
+            <i class="fas fa-arrow-left" style="font-size:0.75rem;"></i> Back
         </a>
     </div>
 
-    <form asp-action="Edit" method="post" enctype="multipart/form-data">
+    <form asp-action="Edit" method="post" enctype="multipart/form-data" id="editForm">
         @Html.AntiForgeryToken()
         <input type="hidden" asp-for="Id" />
         <input type="hidden" asp-for="ImagePath" />
         <input type="hidden" asp-for="ImageUrl" />
 
-        <!-- ── Section 1: Main Property Info ── -->
-        <div class="card border-0 shadow-sm rounded-4 mb-4">
-            <div class="card-header bg-white border-bottom rounded-top-4 py-3 px-4">
-                <h6 class="fw-bold text-primary mb-0">
-                    <i class="fas fa-info-circle me-2"></i> Main Property Information
-                </h6>
+        <!-- ══════════════════════════════════════════
+             SECTION 1 — PROPERTY INFORMATION
+        ══════════════════════════════════════════ -->
+        <div class="section-card">
+            <div class="section-head">
+                <div class="section-head-title">
+                    <div class="section-icon" style="background:#dbeafe; color:#3b82f6;">
+                        <i class="fas fa-info-circle"></i>
+                    </div>
+                    <div>
+                        <div class="section-label">Property Information</div>
+                        <div class="section-sub">Name · Type · Location · Coordinates</div>
+                    </div>
+                </div>
             </div>
-            <div class="card-body p-4">
+            <div class="section-body">
                 <div class="row g-4">
 
                     <!-- Property Name -->
-                    <div class="col-12 col-md-4">
-                        <label class="form-label fw-semibold small">Property Name <span class="text-danger">*</span></label>
-                        <input asp-for="Name" class="form-control rounded-3" placeholder="e.g. Sultan Complex" required />
-                        <span asp-validation-for="Name" class="text-danger small"></span>
+                    <div class="col-12 col-md-5">
+                        <div class="field-group">
+                            <div class="field-label"><i class="fas fa-tag" style="color:var(--p-accent);"></i> Property Name <span class="req">*</span></div>
+                            <div class="field-wrap">
+                                <i class="field-icon fas fa-building"></i>
+                                <input asp-for="Name" class="f-input" placeholder="e.g. Sultan Residential Complex" required />
+                            </div>
+                            <span asp-validation-for="Name" class="field-error"></span>
+                        </div>
                     </div>
 
-                    <!-- Property Type -->
+                    <!-- Type -->
                     <div class="col-12 col-md-4">
-                        <label class="form-label fw-semibold small">Property Type <span class="text-danger">*</span></label>
-                        <select asp-for="Type" class="form-select rounded-3">
-                            <option value="Residential">Residential</option>
-                            <option value="Commercial">Commercial</option>
-                            <option value="Residential & Commercial">Residential &amp; Commercial</option>
-                        </select>
+                        <div class="field-group">
+                            <div class="field-label"><i class="fas fa-tag" style="color:var(--p-accent);"></i> Property Type <span class="req">*</span></div>
+                            <div class="field-wrap">
+                                <i class="field-icon fas fa-layer-group"></i>
+                                <select asp-for="Type" class="f-input f-select">
+                                    <option value="Residential">Residential</option>
+                                    <option value="Commercial">Commercial</option>
+                                    <option value="Residential & Commercial">Residential &amp; Commercial</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Total Units -->
-                    <div class="col-12 col-md-4">
-                        <label class="form-label fw-semibold small">Total Units</label>
-                        <input asp-for="TotalUnits" type="number" min="0" class="form-control rounded-3" />
+                    <div class="col-12 col-md-3">
+                        <div class="field-group">
+                            <div class="field-label"><i class="fas fa-hashtag" style="color:var(--p-accent);"></i> Total Units</div>
+                            <div class="field-wrap">
+                                <i class="field-icon fas fa-door-open"></i>
+                                <input asp-for="TotalUnits" type="number" min="0" class="f-input" />
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Location -->
                     <div class="col-12 col-md-8">
-                        <label class="form-label fw-semibold small">Location <span class="text-danger">*</span></label>
-                        <input asp-for="Location" class="form-control rounded-3" placeholder="e.g. Al-Seeb, Muscat Governorate, Oman" />
-                        <span asp-validation-for="Location" class="text-danger small"></span>
+                        <div class="field-group">
+                            <div class="field-label"><i class="fas fa-map-pin" style="color:var(--p-accent);"></i> Location <span class="req">*</span></div>
+                            <div class="field-wrap">
+                                <i class="field-icon fas fa-location-dot"></i>
+                                <input asp-for="Location" class="f-input" placeholder="e.g. Al-Seeb, Muscat Governorate, Oman" required />
+                            </div>
+                            <span asp-validation-for="Location" class="field-error"></span>
+                        </div>
                     </div>
 
-                    <!-- Image Upload + Preview -->
-                    <div class="col-12 col-md-4">
-                        <label class="form-label fw-semibold small">Property Image</label>
-                        <div class="d-flex align-items-center gap-3 flex-wrap">
-                            <img id="editPreview"
-                                 src="@(Model.ImageUrl ?? Model.ImagePath ?? "/images/default-building.png")"
-                                 class="rounded-3 border shadow-sm flex-shrink-0"
-                                 style="width:90px; height:70px; object-fit:cover;"
-                                 alt="Property preview" />
-                            <div class="flex-grow-1">
-                                <input type="file" name="ImageFile" class="form-control form-control-sm rounded-3"
-                                       accept="image/jpeg,image/png,image/webp"
-                                       onchange="previewImage(this, 'editPreview')" />
-                                <div class="form-text">JPEG / PNG / WebP · Max 10 MB</div>
+                    <!-- Coordinates -->
+                    <div class="col-6 col-md-2">
+                        <div class="field-group">
+                            <div class="field-label">
+                                <span class="coord-badge"><i class="fas fa-map"></i> Lat</span>
+                            </div>
+                            <div class="field-wrap">
+                                <i class="field-icon fas fa-crosshairs"></i>
+                                <input asp-for="Latitude" type="number" step="0.000001" class="f-input" placeholder="23.5859" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-2">
+                        <div class="field-group">
+                            <div class="field-label">
+                                <span class="coord-badge"><i class="fas fa-map"></i> Lng</span>
+                            </div>
+                            <div class="field-wrap">
+                                <i class="field-icon fas fa-crosshairs"></i>
+                                <input asp-for="Longitude" type="number" step="0.000001" class="f-input" placeholder="58.4059" />
                             </div>
                         </div>
                     </div>
@@ -96,276 +394,529 @@
             </div>
         </div>
 
-        <!-- ── Section 2: Units ── -->
-        <div class="card border-0 shadow-sm rounded-4 mb-4">
-            <div class="card-header bg-white border-bottom rounded-top-4 py-3 px-4">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h6 class="fw-bold text-primary mb-0">
-                        <i class="fas fa-door-open me-2"></i> Units
-                        <span class="badge bg-primary-subtle text-primary rounded-pill ms-1" id="unitCountBadge">@Model.Units.Count</span>
-                    </h6>
-                    <button type="button" class="btn btn-sm btn-success rounded-pill px-3 shadow-sm" onclick="addUnit()">
-                        <i class="fas fa-plus me-1"></i> Add New Unit
-                    </button>
+        <!-- ══════════════════════════════════════════
+             SECTION 2 — PROPERTY IMAGE
+        ══════════════════════════════════════════ -->
+        <div class="section-card">
+            <div class="section-head">
+                <div class="section-head-title">
+                    <div class="section-icon" style="background:#ede9fe; color:#8b5cf6;">
+                        <i class="fas fa-image"></i>
+                    </div>
+                    <div>
+                        <div class="section-label">Property Image</div>
+                        <div class="section-sub">JPEG · PNG · WebP · Max 10 MB</div>
+                    </div>
+                </div>
+            </div>
+            <div class="section-body">
+                <div class="row g-4 align-items-center">
+                    @{
+                        var existingImg = Model.ImageUrl ?? Model.ImagePath;
+                    }
+                    @if (!string.IsNullOrEmpty(existingImg))
+                    {
+                        <!-- Current image + change overlay -->
+                        <div class="col-12 col-md-4">
+                            <div class="img-preview-wrap" id="currentImgWrap">
+                                <img id="editPreview" src="@existingImg" alt="Property photo" />
+                                <div class="img-change-overlay">
+                                    <span style="color:#fff; font-size:0.75rem; font-weight:700; letter-spacing:0.06em;">
+                                        <i class="fas fa-camera me-1"></i> CHANGE
+                                    </span>
+                                </div>
+                            </div>
+                            <div style="font-size:0.7rem; color:var(--p-subtle); margin-top:8px; text-align:center;">
+                                <i class="fas fa-circle-check" style="color:var(--p-green);"></i> Current image
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-8">
+                            <div class="img-upload-zone" id="imgDropZone">
+                                <input type="file" name="ImageFile" accept="image/jpeg,image/png,image/webp"
+                                       onchange="previewImage(this,'editPreview')" />
+                                <div class="uz-icon"><i class="fas fa-cloud-arrow-up" style="color:var(--p-accent);"></i></div>
+                                <div class="uz-text">Drop a new image here or <span style="color:var(--p-accent);">browse</span></div>
+                                <div class="uz-hint">Replaces the current image · JPEG / PNG / WebP · Max 10 MB</div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="col-12">
+                            <div class="img-upload-zone" id="imgDropZone">
+                                <input type="file" name="ImageFile" accept="image/jpeg,image/png,image/webp"
+                                       onchange="previewNewImage(this)" />
+                                <div id="uploadPlaceholder">
+                                    <div class="uz-icon"><i class="fas fa-cloud-arrow-up" style="color:var(--p-accent);"></i></div>
+                                    <div class="uz-text">Drop an image here or <span style="color:var(--p-accent);">browse</span></div>
+                                    <div class="uz-hint">JPEG / PNG / WebP · Max 10 MB</div>
+                                </div>
+                                <img id="newImgPreview" style="display:none; max-height:140px; border-radius:10px; margin:0 auto;" alt="" />
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════
+             SECTION 3 — UNITS
+        ══════════════════════════════════════════ -->
+        <div class="section-card">
+            <div class="section-head">
+                <div class="section-head-title">
+                    <div class="section-icon" style="background:#d1fae5; color:#059669;">
+                        <i class="fas fa-door-open"></i>
+                    </div>
+                    <div>
+                        <div class="section-label">
+                            Units
+                            <span id="unitCountBadge" style="display:inline-flex;align-items:center;justify-content:center;
+                                   width:22px;height:22px;border-radius:50%;background:#3b82f6;color:#fff;
+                                   font-size:0.65rem;font-weight:800;margin-left:6px;">@Model.Units.Count</span>
+                        </div>
+                        <div class="section-sub">Rooms · Rent · Meters · Media</div>
+                    </div>
                 </div>
             </div>
 
-            <div class="card-body p-4">
+            <div class="section-body">
                 <div id="unitTypesContainer">
                     @for (int i = 0; i < Model.Units.Count; i++)
                     {
                         var u = Model.Units.ElementAt(i);
-                        <div class="unit-card card border rounded-4 p-3 mb-3 shadow-sm">
-                            <input type="hidden" name="Units[@i].Id" value="@u.Id" />
+                        string statusClass = u.Status == "Occupied" ? "status-occupied" : u.Status == "Maintenance" ? "status-maintenance" : "status-vacant";
+                        string numBg       = u.Status == "Occupied" ? "#dbeafe" : u.Status == "Maintenance" ? "#fef3c7" : "#dcfce7";
+                        string numColor    = u.Status == "Occupied" ? "#1d4ed8" : u.Status == "Maintenance" ? "#d97706"  : "#16a34a";
+                        <div class="unit-card" data-unit="@i">
+                            <input type="hidden" name="Units[@i].Id"         value="@u.Id" />
                             <input type="hidden" name="Units[@i].PropertyId" value="@u.PropertyId" />
 
-                            <!-- Unit header -->
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <span class="fw-bold text-primary">
-                                    <i class="fas fa-door-closed me-1"></i> Unit @(i + 1)
-                                    @if (!string.IsNullOrEmpty(u.UnitNumber))
-                                    {
-                                        <span class="text-muted fw-normal small ms-1">— #@u.UnitNumber</span>
-                                    }
-                                </span>
-                                <span class="badge @(u.IsOccupied ? "bg-success" : "bg-secondary") rounded-pill">
-                                    @(u.IsOccupied ? "Occupied" : "Vacant")
-                                </span>
+                            <!-- Unit header (click to expand) -->
+                            <div class="unit-head open" onclick="toggleUnit(this)">
+                                <div class="unit-head-left">
+                                    <div class="unit-num-badge" style="background:@numBg; color:@numColor;">@(i+1)</div>
+                                    <div>
+                                        <div class="unit-title">
+                                            Unit @(i+1)
+                                            @if (!string.IsNullOrEmpty(u.UnitNumber))
+                                            { <span style="font-weight:400; color:var(--p-muted);">— #@u.UnitNumber</span> }
+                                        </div>
+                                        <div class="unit-meta">
+                                            @if (u.Bedrooms > 0) { <span>@u.Bedrooms bd · </span> }
+                                            @if (u.Area > 0)     { <span>@u.Area m² · </span> }
+                                            @if (u.RentAmount > 0){ <span>@u.RentAmount.ToString("N0") OMR/mo</span> }
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="status-pill @statusClass">@u.Status</span>
+                                    <i class="fas fa-chevron-down unit-chevron open"></i>
+                                </div>
                             </div>
 
-                            <div class="row g-3">
-                                <!-- Row 1: identity fields -->
-                                <div class="col-6 col-md-2">
-                                    <label class="form-label small fw-semibold">Unit No.</label>
-                                    <input type="text" name="Units[@i].UnitNumber" value="@u.UnitNumber"
-                                           class="form-control form-control-sm rounded-3" placeholder="e.g. 101" />
-                                </div>
-                                <div class="col-6 col-md-2">
-                                    <label class="form-label small fw-semibold">Floor</label>
-                                    <input type="number" name="Units[@i].FloorNumber" value="@u.FloorNumber" min="0"
-                                           class="form-control form-control-sm rounded-3" />
-                                </div>
-                                <div class="col-6 col-md-2">
-                                    <label class="form-label small fw-semibold">Area (m²)</label>
-                                    <input type="number" name="Units[@i].Area" value="@u.Area" min="0" step="0.5"
-                                           class="form-control form-control-sm rounded-3" />
-                                </div>
-                                <div class="col-6 col-md-2">
-                                    <label class="form-label small fw-semibold">Rent (OMR)</label>
-                                    <input type="number" name="Units[@i].RentAmount" value="@u.RentAmount" min="0" step="0.5"
-                                           class="form-control form-control-sm rounded-3" />
-                                </div>
-                                <div class="col-6 col-md-2">
-                                    <label class="form-label small fw-semibold">Status</label>
-                                    <select name="Units[@i].Status" class="form-select form-select-sm rounded-3">
-                                        <option value="Vacant"      selected="@(u.Status == "Vacant"      ? "selected" : null)">Vacant</option>
-                                        <option value="Occupied"    selected="@(u.Status == "Occupied"    ? "selected" : null)">Occupied</option>
-                                        <option value="Maintenance" selected="@(u.Status == "Maintenance" ? "selected" : null)">Maintenance</option>
-                                    </select>
-                                </div>
-                                <div class="col-6 col-md-2">
-                                    <label class="form-label small fw-semibold">Bedrooms</label>
-                                    <input type="number" name="Units[@i].Bedrooms" value="@u.Bedrooms" min="0"
-                                           class="form-control form-control-sm rounded-3" />
-                                </div>
-
-                                <!-- Row 2: rooms -->
-                                <div class="col-6 col-md-2">
-                                    <label class="form-label small fw-semibold">Bathrooms</label>
-                                    <input type="number" name="Units[@i].Bathrooms" value="@u.Bathrooms" min="0"
-                                           class="form-control form-control-sm rounded-3" />
-                                </div>
-                                <div class="col-6 col-md-2">
-                                    <label class="form-label small fw-semibold">Kitchens</label>
-                                    <input type="number" name="Units[@i].Kitchens" value="@u.Kitchens" min="0"
-                                           class="form-control form-control-sm rounded-3" />
-                                </div>
-                                <div class="col-6 col-md-2">
-                                    <label class="form-label small fw-semibold">Living Rooms</label>
-                                    <input type="number" name="Units[@i].LivingRooms" value="@u.LivingRooms" min="0"
-                                           class="form-control form-control-sm rounded-3" />
-                                </div>
-                                <div class="col-6 col-md-2">
-                                    <label class="form-label small fw-semibold">Majlis</label>
-                                    <input type="number" name="Units[@i].Majlis" value="@u.Majlis" min="0"
-                                           class="form-control form-control-sm rounded-3" />
-                                </div>
-
-                                <!-- Row 3: meters -->
-                                <div class="col-12 col-md-4">
-                                    <label class="form-label small fw-semibold text-warning">
-                                        <i class="fas fa-bolt me-1"></i> Electricity Meter
-                                    </label>
-                                    <input type="text" name="Units[@i].ElectricityMeter" value="@u.ElectricityMeter"
-                                           class="form-control form-control-sm border-warning-subtle rounded-3" placeholder="Meter number" />
-                                </div>
-                                <div class="col-12 col-md-4">
-                                    <label class="form-label small fw-semibold text-info">
-                                        <i class="fas fa-tint me-1"></i> Water Meter
-                                    </label>
-                                    <input type="text" name="Units[@i].WaterMeter" value="@u.WaterMeter"
-                                           class="form-control form-control-sm border-info-subtle rounded-3" placeholder="Meter number" />
+                            <!-- Unit body -->
+                            <div class="unit-body open">
+                                <!-- ① Identity -->
+                                <div class="unit-sub-label"><i class="fas fa-fingerprint"></i> Identity & Financials</div>
+                                <div class="row g-3 mb-4">
+                                    <div class="col-6 col-md-3">
+                                        <div class="field-group">
+                                            <div class="field-label">Unit No. <span class="req">*</span></div>
+                                            <div class="field-wrap">
+                                                <i class="field-icon fas fa-hashtag"></i>
+                                                <input type="text" name="Units[@i].UnitNumber" value="@u.UnitNumber"
+                                                       class="f-input f-input-sm" placeholder="101" required />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 col-md-2">
+                                        <div class="field-group">
+                                            <div class="field-label">Floor</div>
+                                            <div class="field-wrap">
+                                                <i class="field-icon fas fa-layer-group"></i>
+                                                <input type="number" name="Units[@i].FloorNumber" value="@u.FloorNumber" min="0"
+                                                       class="f-input f-input-sm" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 col-md-3">
+                                        <div class="field-group">
+                                            <div class="field-label">Area (m²)</div>
+                                            <div class="field-wrap">
+                                                <i class="field-icon fas fa-ruler-combined"></i>
+                                                <input type="number" name="Units[@i].Area" value="@u.Area" min="0" step="0.5"
+                                                       class="f-input f-input-sm" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 col-md-2">
+                                        <div class="field-group">
+                                            <div class="field-label">Rent (OMR)</div>
+                                            <div class="field-wrap">
+                                                <i class="field-icon fas fa-coins"></i>
+                                                <input type="number" name="Units[@i].RentAmount" value="@u.RentAmount" min="0" step="0.5"
+                                                       class="f-input f-input-sm" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 col-md-2">
+                                        <div class="field-group">
+                                            <div class="field-label">Status</div>
+                                            <div class="field-wrap">
+                                                <i class="field-icon fas fa-circle-dot"></i>
+                                                <select name="Units[@i].Status" class="f-input f-input-sm f-select no-icon"
+                                                        style="padding-left:12px;" onchange="updateUnitStatus(this)">
+                                                    @foreach (var opt in new[] { "Vacant", "Occupied", "Maintenance" })
+                                                    {
+                                                        <option value="@opt" selected="@(u.Status == opt)">@opt</option>
+                                                    }
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
 
-                                <!-- Row 4: files -->
-                                <div class="col-12 col-md-6">
-                                    <label class="form-label small fw-semibold text-success">
-                                        <i class="fas fa-images me-1"></i> Unit Images
-                                    </label>
-                                    <input type="file" name="Units[@i].UnitImageFiles"
-                                           class="form-control form-control-sm rounded-3"
-                                           accept="image/jpeg,image/png,image/webp" multiple />
-                                    @if (!string.IsNullOrEmpty(u.UnitImages))
+                                <!-- ② Rooms -->
+                                <div class="unit-sub-label"><i class="fas fa-th-large"></i> Room Breakdown</div>
+                                <div class="row g-3 mb-4">
+                                    @{
+                                        var roomFields = new[] {
+                                            ("Bedrooms",    "fa-bed",         $"Units[{i}].Bedrooms",    u.Bedrooms.ToString()),
+                                            ("Bathrooms",   "fa-shower",      $"Units[{i}].Bathrooms",   u.Bathrooms.ToString()),
+                                            ("Kitchens",    "fa-utensils",    $"Units[{i}].Kitchens",    u.Kitchens.ToString()),
+                                            ("Living Rooms","fa-couch",       $"Units[{i}].LivingRooms", u.LivingRooms.ToString()),
+                                            ("Majlis",      "fa-carpet-blank",$"Units[{i}].Majlis",      u.Majlis.ToString()),
+                                        };
+                                    }
+                                    @foreach (var (rLabel, rIcon, rName, rVal) in roomFields)
                                     {
-                                        <div class="form-text text-success">
-                                            <i class="fas fa-check-circle me-1"></i>
-                                            @(u.UnitImages.Split(',').Length) image(s) already uploaded
+                                        <div class="col-4 col-md-2">
+                                            <div class="stepper-label">@rLabel</div>
+                                            <div class="stepper">
+                                                <button type="button" onclick="stepDown(this)">−</button>
+                                                <input type="number" name="@rName" value="@rVal" min="0" />
+                                                <button type="button" onclick="stepUp(this)">+</button>
+                                            </div>
                                         </div>
                                     }
                                 </div>
-                                <div class="col-12 col-md-6">
-                                    <label class="form-label small fw-semibold text-danger">
-                                        <i class="fas fa-video me-1"></i> Unit Video
-                                    </label>
-                                    <input type="file" name="Units[@i].VideoFile"
-                                           class="form-control form-control-sm rounded-3"
-                                           accept="video/mp4,video/webm,video/quicktime" />
-                                    @if (!string.IsNullOrEmpty(u.VideoPath))
-                                    {
-                                        <div class="form-text text-success">
-                                            <i class="fas fa-check-circle me-1"></i> Video already uploaded
+
+                                <!-- ③ Utility Meters -->
+                                <div class="unit-sub-label"><i class="fas fa-gauge-high"></i> Utility Meters</div>
+                                <div class="row g-3 mb-4">
+                                    <div class="col-12 col-md-6">
+                                        <div class="field-group">
+                                            <div class="field-label" style="color:#d97706;">
+                                                <i class="fas fa-bolt" style="color:#f59e0b;"></i> Electricity Meter
+                                            </div>
+                                            <div class="field-wrap">
+                                                <i class="field-icon fas fa-bolt" style="color:#f59e0b;"></i>
+                                                <input type="text" name="Units[@i].ElectricityMeter" value="@u.ElectricityMeter"
+                                                       class="f-input f-input-sm"
+                                                       style="border-color:#fde68a; background:#fffbeb;"
+                                                       placeholder="Meter number" />
+                                            </div>
                                         </div>
-                                    }
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <div class="field-group">
+                                            <div class="field-label" style="color:#0369a1;">
+                                                <i class="fas fa-droplet" style="color:#38bdf8;"></i> Water Meter
+                                            </div>
+                                            <div class="field-wrap">
+                                                <i class="field-icon fas fa-droplet" style="color:#38bdf8;"></i>
+                                                <input type="text" name="Units[@i].WaterMeter" value="@u.WaterMeter"
+                                                       class="f-input f-input-sm"
+                                                       style="border-color:#bae6fd; background:#f0f9ff;"
+                                                       placeholder="Meter number" />
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
+
+                                <!-- ④ Media -->
+                                <div class="unit-sub-label"><i class="fas fa-photo-film"></i> Media</div>
+                                <div class="row g-3">
+                                    <div class="col-12 col-md-7">
+                                        <div class="file-drop">
+                                            <input type="file" name="Units[@i].UnitImageFiles"
+                                                   accept="image/jpeg,image/png,image/webp" multiple />
+                                            <i class="fas fa-images" style="color:#8b5cf6;"></i>
+                                            <div class="fd-text">Add unit photos</div>
+                                            <div class="fd-hint">JPEG / PNG / WebP — multiple allowed</div>
+                                        </div>
+                                        @if (!string.IsNullOrEmpty(u.UnitImages))
+                                        {
+                                            <div class="file-exists">
+                                                <i class="fas fa-circle-check"></i>
+                                                @(u.UnitImages.Split(',').Length) photo(s) already uploaded
+                                            </div>
+                                        }
+                                    </div>
+                                    <div class="col-12 col-md-5">
+                                        <div class="file-drop">
+                                            <input type="file" name="Units[@i].VideoFile"
+                                                   accept="video/mp4,video/webm,video/quicktime" />
+                                            <i class="fas fa-clapperboard" style="color:#ec4899;"></i>
+                                            <div class="fd-text">Add unit video</div>
+                                            <div class="fd-hint">MP4 / WebM · Max 100 MB</div>
+                                        </div>
+                                        @if (!string.IsNullOrEmpty(u.VideoPath))
+                                        {
+                                            <div class="file-exists">
+                                                <i class="fas fa-circle-check"></i> Video already uploaded
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div><!-- /unit-body -->
                         </div>
                     }
                 </div>
 
                 @if (!Model.Units.Any())
                 {
-                    <div class="text-center text-muted py-5" id="emptyUnitsMsg">
-                        <i class="fas fa-door-open fa-3x mb-3 opacity-25"></i>
-                        <p>No units yet. Click <strong>Add New Unit</strong> to get started.</p>
+                    <div class="text-center py-5" style="color:var(--p-subtle);" id="emptyUnitsMsg">
+                        <i class="fas fa-door-open fa-3x mb-3 d-block" style="opacity:.25;"></i>
+                        <p style="font-size:0.85rem;">No units yet — click <strong style="color:var(--p-text);">Add Unit</strong> below to start.</p>
                     </div>
                 }
+
+                <!-- Add unit button -->
+                <button type="button" class="add-unit-btn mt-2" onclick="addUnit()">
+                    <i class="fas fa-plus-circle"></i> Add New Unit
+                </button>
             </div>
         </div>
 
-        <!-- Save Bar -->
-        <div class="d-flex justify-content-end gap-3 mb-5">
-            <a asp-action="Index" class="btn btn-outline-secondary rounded-pill px-4">
-                Cancel
-            </a>
-            <button type="submit" class="btn btn-primary rounded-pill px-5 shadow-sm">
-                <i class="fas fa-save me-2"></i> Save Changes
-            </button>
-        </div>
+    </form><!-- /form — save bar submits it -->
+</div>
 
-    </form>
+<!-- ── Sticky Save Bar ── -->
+<div class="save-bar no-print">
+    <div class="save-bar-info">
+        <i class="fas fa-pencil" style="color:var(--p-accent);"></i>
+        Editing <strong>@Model.Name</strong>
+        <span id="unitCountInfo" style="background:#f1f5f9; border-radius:50px; padding:2px 10px; font-size:0.7rem;">
+            <span id="saveBarUnitCount">@Model.Units.Count</span> units
+        </span>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="Index" class="btn-cancel">
+            <i class="fas fa-xmark"></i> Cancel
+        </a>
+        <button type="submit" form="editForm" class="btn-save">
+            <i class="fas fa-floppy-disk"></i> Save Changes
+        </button>
+    </div>
 </div>
 
 @section Scripts {
 <script>
     let unitIndex = @Model.Units.Count;
 
+    // ── Image preview (existing) ─────────────────────────────────
     function previewImage(input, previewId) {
-        if (input.files && input.files[0]) {
+        if (input.files?.[0]) {
             const reader = new FileReader();
             reader.onload = e => document.getElementById(previewId).src = e.target.result;
             reader.readAsDataURL(input.files[0]);
         }
     }
 
+    // ── Image preview (no existing image) ───────────────────────
+    function previewNewImage(input) {
+        if (input.files?.[0]) {
+            const reader = new FileReader();
+            reader.onload = e => {
+                const preview = document.getElementById('newImgPreview');
+                const placeholder = document.getElementById('uploadPlaceholder');
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+                if (placeholder) placeholder.style.display = 'none';
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    // ── Toggle unit card ─────────────────────────────────────────
+    function toggleUnit(head) {
+        const body    = head.nextElementSibling;
+        const chevron = head.querySelector('.unit-chevron');
+        const isOpen  = body.classList.contains('open');
+        body.classList.toggle('open', !isOpen);
+        head.classList.toggle('open', !isOpen);
+        chevron.classList.toggle('open', !isOpen);
+    }
+
+    // ── Update unit status pill on change ────────────────────────
+    function updateUnitStatus(select) {
+        const card = select.closest('.unit-card');
+        const pill = card.querySelector('.status-pill');
+        const badge = card.querySelector('.unit-num-badge');
+        const val = select.value;
+        pill.className = 'status-pill ' +
+            (val === 'Occupied' ? 'status-occupied' : val === 'Maintenance' ? 'status-maintenance' : 'status-vacant');
+        pill.textContent = val;
+        badge.style.background = val === 'Occupied' ? '#dbeafe' : val === 'Maintenance' ? '#fef3c7' : '#dcfce7';
+        badge.style.color = val === 'Occupied' ? '#1d4ed8' : val === 'Maintenance' ? '#d97706' : '#16a34a';
+    }
+
+    // ── Stepper buttons ──────────────────────────────────────────
+    function stepUp(btn) {
+        const input = btn.previousElementSibling;
+        input.value = Math.max(0, parseInt(input.value || 0) + 1);
+    }
+    function stepDown(btn) {
+        const input = btn.nextElementSibling;
+        input.value = Math.max(0, parseInt(input.value || 0) - 1);
+    }
+
+    // ── Add new unit ─────────────────────────────────────────────
     function addUnit() {
         document.getElementById('emptyUnitsMsg')?.remove();
-
-        const container = document.getElementById('unitTypesContainer');
         const i = unitIndex;
         const html = `
-        <div class="unit-card card border border-success rounded-4 p-3 mb-3 shadow-sm position-relative">
-            <button type="button" class="btn-close position-absolute top-0 end-0 m-3"
-                    onclick="removeUnit(this)" title="Remove unit"></button>
-            <div class="fw-bold text-success mb-3">
-                <i class="fas fa-plus-circle me-1"></i> New Unit
+        <div class="unit-card is-new" data-unit="${i}">
+            <div class="unit-head open" onclick="toggleUnit(this)">
+                <div class="unit-head-left">
+                    <div class="unit-num-badge" style="background:#dcfce7;color:#16a34a;">${i+1}</div>
+                    <div>
+                        <div class="unit-title">New Unit <span style="font-weight:400;color:var(--p-muted);">(unsaved)</span></div>
+                        <div class="unit-meta">Fill in the details below</div>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="status-pill status-vacant">Vacant</span>
+                    <button type="button" onclick="removeUnit(event,this)"
+                            style="width:28px;height:28px;border-radius:50%;border:1.5px solid #fca5a5;
+                                   background:#fff;color:#ef4444;cursor:pointer;font-size:0.75rem;
+                                   display:flex;align-items:center;justify-content:center;"
+                            title="Remove unit">
+                        <i class="fas fa-xmark"></i>
+                    </button>
+                    <i class="fas fa-chevron-down unit-chevron open"></i>
+                </div>
             </div>
-            <div class="row g-3">
-                <div class="col-6 col-md-2">
-                    <label class="form-label small fw-semibold">Unit No.</label>
-                    <input type="text" name="Units[${i}].UnitNumber" class="form-control form-control-sm rounded-3" placeholder="e.g. 101" required />
+            <div class="unit-body open">
+                <div class="unit-sub-label"><i class="fas fa-fingerprint"></i> Identity & Financials</div>
+                <div class="row g-3 mb-4">
+                    <div class="col-6 col-md-3">
+                        <div class="field-label">Unit No. <span class="req">*</span></div>
+                        <div class="field-wrap">
+                            <i class="field-icon fas fa-hashtag"></i>
+                            <input type="text" name="Units[${i}].UnitNumber" class="f-input f-input-sm" placeholder="e.g. 101" required />
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-2">
+                        <div class="field-label">Floor</div>
+                        <div class="field-wrap">
+                            <i class="field-icon fas fa-layer-group"></i>
+                            <input type="number" name="Units[${i}].FloorNumber" class="f-input f-input-sm" value="1" min="0" />
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="field-label">Area (m²)</div>
+                        <div class="field-wrap">
+                            <i class="field-icon fas fa-ruler-combined"></i>
+                            <input type="number" name="Units[${i}].Area" class="f-input f-input-sm" min="0" step="0.5" />
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-2">
+                        <div class="field-label">Rent (OMR)</div>
+                        <div class="field-wrap">
+                            <i class="field-icon fas fa-coins"></i>
+                            <input type="number" name="Units[${i}].RentAmount" class="f-input f-input-sm" min="0" step="0.5" />
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-2">
+                        <div class="field-label">Status</div>
+                        <div class="field-wrap">
+                            <select name="Units[${i}].Status" class="f-input f-input-sm f-select no-icon"
+                                    style="padding-left:12px;" onchange="updateUnitStatus(this)">
+                                <option value="Vacant" selected>Vacant</option>
+                                <option value="Occupied">Occupied</option>
+                                <option value="Maintenance">Maintenance</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-6 col-md-2">
-                    <label class="form-label small fw-semibold">Floor</label>
-                    <input type="number" name="Units[${i}].FloorNumber" class="form-control form-control-sm rounded-3" value="1" min="0" />
+
+                <div class="unit-sub-label"><i class="fas fa-th-large"></i> Room Breakdown</div>
+                <div class="row g-3 mb-4">
+                    ${['Bedrooms','Bathrooms','Kitchens','Living Rooms','Majlis'].map((label, ri) => {
+                        const names = ['Bedrooms','Bathrooms','Kitchens','LivingRooms','Majlis'];
+                        return `<div class="col-4 col-md-2">
+                            <div class="stepper-label">${label}</div>
+                            <div class="stepper">
+                                <button type="button" onclick="stepDown(this)">−</button>
+                                <input type="number" name="Units[${i}].${names[ri]}" value="${ri < 3 ? 1 : 0}" min="0" />
+                                <button type="button" onclick="stepUp(this)">+</button>
+                            </div>
+                        </div>`;
+                    }).join('')}
                 </div>
-                <div class="col-6 col-md-2">
-                    <label class="form-label small fw-semibold">Area (m²)</label>
-                    <input type="number" name="Units[${i}].Area" class="form-control form-control-sm rounded-3" min="0" step="0.5" />
+
+                <div class="unit-sub-label"><i class="fas fa-gauge-high"></i> Utility Meters</div>
+                <div class="row g-3 mb-4">
+                    <div class="col-12 col-md-6">
+                        <div class="field-label" style="color:#d97706;"><i class="fas fa-bolt" style="color:#f59e0b;"></i> Electricity Meter</div>
+                        <div class="field-wrap">
+                            <i class="field-icon fas fa-bolt" style="color:#f59e0b;"></i>
+                            <input type="text" name="Units[${i}].ElectricityMeter" class="f-input f-input-sm"
+                                   style="border-color:#fde68a;background:#fffbeb;" placeholder="Meter number" />
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="field-label" style="color:#0369a1;"><i class="fas fa-droplet" style="color:#38bdf8;"></i> Water Meter</div>
+                        <div class="field-wrap">
+                            <i class="field-icon fas fa-droplet" style="color:#38bdf8;"></i>
+                            <input type="text" name="Units[${i}].WaterMeter" class="f-input f-input-sm"
+                                   style="border-color:#bae6fd;background:#f0f9ff;" placeholder="Meter number" />
+                        </div>
+                    </div>
                 </div>
-                <div class="col-6 col-md-2">
-                    <label class="form-label small fw-semibold">Rent (OMR)</label>
-                    <input type="number" name="Units[${i}].RentAmount" class="form-control form-control-sm rounded-3" min="0" step="0.5" />
-                </div>
-                <div class="col-6 col-md-2">
-                    <label class="form-label small fw-semibold">Status</label>
-                    <select name="Units[${i}].Status" class="form-select form-select-sm rounded-3">
-                        <option value="Vacant" selected>Vacant</option>
-                        <option value="Occupied">Occupied</option>
-                        <option value="Maintenance">Maintenance</option>
-                    </select>
-                </div>
-                <div class="col-6 col-md-2">
-                    <label class="form-label small fw-semibold">Bedrooms</label>
-                    <input type="number" name="Units[${i}].Bedrooms" class="form-control form-control-sm rounded-3" value="1" min="0" />
-                </div>
-                <div class="col-6 col-md-2">
-                    <label class="form-label small fw-semibold">Bathrooms</label>
-                    <input type="number" name="Units[${i}].Bathrooms" class="form-control form-control-sm rounded-3" value="1" min="0" />
-                </div>
-                <div class="col-6 col-md-2">
-                    <label class="form-label small fw-semibold">Kitchens</label>
-                    <input type="number" name="Units[${i}].Kitchens" class="form-control form-control-sm rounded-3" value="1" min="0" />
-                </div>
-                <div class="col-6 col-md-2">
-                    <label class="form-label small fw-semibold">Living Rooms</label>
-                    <input type="number" name="Units[${i}].LivingRooms" class="form-control form-control-sm rounded-3" value="1" min="0" />
-                </div>
-                <div class="col-6 col-md-2">
-                    <label class="form-label small fw-semibold">Majlis</label>
-                    <input type="number" name="Units[${i}].Majlis" class="form-control form-control-sm rounded-3" value="0" min="0" />
-                </div>
-                <div class="col-12 col-md-4">
-                    <label class="form-label small fw-semibold text-warning"><i class="fas fa-bolt me-1"></i> Electricity Meter</label>
-                    <input type="text" name="Units[${i}].ElectricityMeter" class="form-control form-control-sm border-warning-subtle rounded-3" placeholder="Meter number" />
-                </div>
-                <div class="col-12 col-md-4">
-                    <label class="form-label small fw-semibold text-info"><i class="fas fa-tint me-1"></i> Water Meter</label>
-                    <input type="text" name="Units[${i}].WaterMeter" class="form-control form-control-sm border-info-subtle rounded-3" placeholder="Meter number" />
-                </div>
-                <div class="col-12 col-md-6">
-                    <label class="form-label small fw-semibold text-success"><i class="fas fa-images me-1"></i> Unit Images</label>
-                    <input type="file" name="Units[${i}].UnitImageFiles" class="form-control form-control-sm rounded-3" accept="image/jpeg,image/png,image/webp" multiple />
-                </div>
-                <div class="col-12 col-md-6">
-                    <label class="form-label small fw-semibold text-danger"><i class="fas fa-video me-1"></i> Unit Video</label>
-                    <input type="file" name="Units[${i}].VideoFile" class="form-control form-control-sm rounded-3" accept="video/mp4,video/webm,video/quicktime" />
+
+                <div class="unit-sub-label"><i class="fas fa-photo-film"></i> Media</div>
+                <div class="row g-3">
+                    <div class="col-12 col-md-7">
+                        <div class="file-drop">
+                            <input type="file" name="Units[${i}].UnitImageFiles" accept="image/jpeg,image/png,image/webp" multiple />
+                            <i class="fas fa-images" style="color:#8b5cf6;font-size:1.2rem;margin-bottom:5px;display:block;"></i>
+                            <div class="fd-text">Add unit photos</div>
+                            <div class="fd-hint">JPEG / PNG / WebP — multiple allowed</div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-5">
+                        <div class="file-drop">
+                            <input type="file" name="Units[${i}].VideoFile" accept="video/mp4,video/webm,video/quicktime" />
+                            <i class="fas fa-clapperboard" style="color:#ec4899;font-size:1.2rem;margin-bottom:5px;display:block;"></i>
+                            <div class="fd-text">Add unit video</div>
+                            <div class="fd-hint">MP4 / WebM · Max 100 MB</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>`;
 
-        container.insertAdjacentHTML('beforeend', html);
+        document.getElementById('unitTypesContainer').insertAdjacentHTML('beforeend', html);
         unitIndex++;
-        updateUnitBadge();
+        updateUnitCount();
     }
 
-    function removeUnit(btn) {
+    // ── Remove unit ──────────────────────────────────────────────
+    function removeUnit(event, btn) {
+        event.stopPropagation();
         btn.closest('.unit-card').remove();
-        updateUnitBadge();
+        updateUnitCount();
     }
 
-    function updateUnitBadge() {
-        document.getElementById('unitCountBadge').textContent =
-            document.querySelectorAll('.unit-card').length;
+    // ── Update unit count badges ─────────────────────────────────
+    function updateUnitCount() {
+        const count = document.querySelectorAll('.unit-card').length;
+        document.getElementById('unitCountBadge').textContent    = count;
+        document.getElementById('saveBarUnitCount').textContent  = count;
     }
 </script>
 }

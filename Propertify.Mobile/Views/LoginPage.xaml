@@ -11,7 +11,7 @@
             <!-- Logo / brand top -->
             <VerticalStackLayout Grid.Row="0" VerticalOptions="End"
                                  HorizontalOptions="Center" Spacing="8" Padding="0,0,0,36">
-                <Border BackgroundColor="rgba(255,255,255,0.12)"
+                <Border BackgroundColor="#1FFFFFFF"
                         StrokeThickness="0" WidthRequest="72" HeightRequest="72"
                         HorizontalOptions="Center">
                     <Border.StrokeShape>
@@ -70,15 +70,25 @@
                     <VerticalStackLayout Spacing="6">
                         <Label Text="Password" FontSize="12" FontAttributes="Bold"
                                TextColor="#475569" CharacterSpacing="0.5"/>
-                        <Border BackgroundColor="#f8fafc" Padding="14,0"
+                        <Border BackgroundColor="#f8fafc" Padding="4,0,4,0"
                                 StrokeThickness="1.5" StrokeShape="RoundRectangle 12">
                             <Border.Stroke>
                                 <SolidColorBrush Color="#e2e8f0"/>
                             </Border.Stroke>
-                            <Entry Text="{Binding Password}" Placeholder="••••••••"
-                                   PlaceholderColor="#94a3b8" TextColor="#0f172a"
-                                   IsPassword="True" FontSize="14"
-                                   HeightRequest="48" BackgroundColor="Transparent"/>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Entry Grid.Column="0"
+                                       Text="{Binding Password}" Placeholder="••••••••"
+                                       PlaceholderColor="#94a3b8" TextColor="#0f172a"
+                                       IsPassword="{Binding IsPasswordVisible, Converter={StaticResource InverseBoolConverter}}"
+                                       FontSize="14" HeightRequest="48"
+                                       BackgroundColor="Transparent" Margin="10,0,0,0"/>
+                                <Button Grid.Column="1"
+                                        Text="{Binding EyeIcon}"
+                                        Command="{Binding TogglePasswordVisibilityCommand}"
+                                        BackgroundColor="Transparent" TextColor="#64748b"
+                                        FontSize="18" WidthRequest="44" HeightRequest="44"
+                                        Padding="0" BorderWidth="0"/>
+                            </Grid>
                         </Border>
                     </VerticalStackLayout>
 

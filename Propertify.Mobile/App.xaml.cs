@@ -2,9 +2,14 @@ namespace Propertify.Mobile;
 
 public partial class App : Application
 {
+    private readonly IServiceProvider _services;
+
     public App(IServiceProvider services)
     {
-        InitializeComponent();          // App.xaml resources load here
-        MainPage = services.GetRequiredService<Views.LoginPage>();
+        InitializeComponent();
+        _services = services;
     }
+
+    protected override Window CreateWindow(IActivationState? activationState)
+        => new Window(_services.GetRequiredService<Views.LoginPage>());
 }

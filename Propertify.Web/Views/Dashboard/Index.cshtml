@@ -4,14 +4,18 @@
 }
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 @{
-    var recentMaintenance = ViewBag.RecentMaintenance as List<MaintenanceRequest> ?? new();
-    var totalIncome   = (decimal)(ViewBag.TotalIncome   ?? 0m);
-    var totalExpenses = (decimal)(ViewBag.TotalExpenses ?? 0m);
-    var occupiedPct   = (int)(ViewBag.OccupiedPct  ?? 0);
-    var occupiedCount = (int)(ViewBag.OccupiedCount ?? 0);
-    var vacantCount   = (int)(ViewBag.VacantCount   ?? 0);
-    var ai1Up         = (bool)(ViewBag.AiInsight1Up ?? true);
-    var ai2Up         = (bool)(ViewBag.AiInsight2Up ?? false);
+    var recentMaintenance  = ViewBag.RecentMaintenance as List<MaintenanceRequest> ?? new();
+    var totalIncome        = (decimal)(ViewBag.TotalIncome        ?? 0m);
+    var totalExpenses      = (decimal)(ViewBag.TotalExpenses      ?? 0m);
+    var currentIncome      = (decimal)(ViewBag.CurrentMonthIncome  ?? 0m);
+    var currentExpenses    = (decimal)(ViewBag.CurrentMonthExpenses ?? 0m);
+    var occupiedPct        = (int)(ViewBag.OccupiedPct  ?? 0);
+    var occupiedCount      = (int)(ViewBag.OccupiedCount ?? 0);
+    var vacantCount        = (int)(ViewBag.VacantCount   ?? 0);
+    var ai1Up              = (bool)(ViewBag.AiInsight1Up ?? true);
+    var ai2Up              = (bool)(ViewBag.AiInsight2Up ?? false);
+    decimal netProfit      = totalIncome - totalExpenses;
+    decimal profitMargin   = totalIncome > 0 ? Math.Round(netProfit / totalIncome * 100, 1) : 0;
 }
 
 <style>
@@ -73,32 +77,73 @@
         display: flex; align-items: center; gap: 4px;
     }
     .export-btn:hover { background: #f1f5f9; }
+
+    /* ── Analytics section ── */
+    .analytics-section { background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-radius: 20px; padding: 24px; margin-bottom: 16px; }
+    .chart-card { background: #fff; border-radius: 18px; padding: 22px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); border: 1px solid #f1f5f9; height: 100%; }
+    .chart-card-title { font-size: 0.72rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: #0f172a; margin-bottom: 2px; }
+    .chart-card-sub   { font-size: 0.62rem; color: #94a3b8; letter-spacing: 0.07em; text-transform: uppercase; }
+    .legend-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+    .fin-kpi-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+    .fin-kpi { background: #f8fafc; border-radius: 12px; padding: 12px 14px; }
+    .fin-kpi-label { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #94a3b8; margin-bottom: 4px; }
+    .fin-kpi-val   { font-size: 1.05rem; font-weight: 800; color: #0f172a; }
+
+    /* ── Export modal ── */
+    .export-modal-backdrop {
+        position: fixed; inset: 0; background: rgba(15,23,42,0.55);
+        z-index: 9999; display: none; align-items: center; justify-content: center;
+        backdrop-filter: blur(4px);
+    }
+    .export-modal-backdrop.show { display: flex; }
+    .export-modal {
+        background: #fff; border-radius: 24px; width: 100%; max-width: 520px;
+        box-shadow: 0 24px 80px rgba(0,0,0,0.18); padding: 32px; margin: 16px;
+        animation: slideUp .22s ease;
+    }
+    @@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .export-option {
+        display: flex; align-items: center; gap: 16px; padding: 16px;
+        border: 1.5px solid #f1f5f9; border-radius: 14px; cursor: pointer;
+        transition: all .15s; text-decoration: none; color: inherit;
+    }
+    .export-option:hover { border-color: #3b82f6; background: #f0f7ff; }
+    .export-option-icon {
+        width: 48px; height: 48px; border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.2rem; flex-shrink: 0;
+    }
+    .export-option-title { font-size: 0.9rem; font-weight: 700; color: #0f172a; margin-bottom: 2px; }
+    .export-option-desc  { font-size: 0.75rem; color: #64748b; }
+    .export-progress { display: none; text-align: center; padding: 20px 0; }
+    .spinner { width: 36px; height: 36px; border: 3px solid #e2e8f0; border-top-color: #3b82f6; border-radius: 50%; animation: spin .7s linear infinite; margin: 0 auto 12px; }
+    @@keyframes spin { to { transform: rotate(360deg); } }
+
     @@media print {
         .no-print { display: none !important; }
-        .dash-card, .ai-panel { box-shadow: none !important; }
+        .dash-card, .ai-panel, .chart-card { box-shadow: none !important; }
+        .analytics-section { background: #fff !important; }
     }
 </style>
 
 <div class="container-fluid py-4" style="background-color: #f8fafc; min-height: calc(100vh - 62px);">
 
-    <!-- ── Header ────────────────────────────────────────────────── -->
+    <!-- ── Header ── -->
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <div>
             <h3 class="fw-bold text-dark mb-0" style="font-size: 1.8rem;">Dashboard</h3>
             <p class="text-muted mb-0" style="font-size: 0.83rem;">@DateTime.Now.ToString("dddd, MMMM d, yyyy")</p>
         </div>
         <div class="d-flex gap-2 align-items-center flex-wrap no-print">
-            <a asp-controller="Property" asp-action="Create"
-               class="btn btn-light border header-btn">
+            <a asp-controller="Property" asp-action="Create" class="btn btn-light border header-btn">
                 <i class="fas fa-plus"></i> NEW PROPERTY
             </a>
-            <a asp-controller="Admin" asp-action="Index"
-               class="btn btn-light border header-btn">
+            <a asp-controller="Admin" asp-action="Index" class="btn btn-light border header-btn">
                 <i class="fas fa-user-plus"></i> NEW USER
             </a>
-            <button class="btn header-btn text-white" onclick="printDashboard()"
+            <button class="btn header-btn text-white" onclick="openExportModal()"
                     style="background:#3b82f6; border:none;">
-                <i class="fas fa-file-arrow-down"></i> GENERATE REPORT
+                <i class="fas fa-file-arrow-down"></i> EXPORT REPORT
             </button>
             <div class="d-flex align-items-center gap-2 rounded-pill px-3 py-2"
                  style="background: linear-gradient(135deg,#ede9fe,#ddd6fe); border:1px solid #c4b5fd;">
@@ -111,7 +156,7 @@
         </div>
     </div>
 
-    <!-- ── KPI Row 1 (4 cards) ───────────────────────────────────── -->
+    <!-- ── KPI Row 1 ── -->
     <div class="row g-3 mb-3">
         <div class="col-xl-3 col-md-6">
             <div class="card dash-card p-4 h-100">
@@ -151,16 +196,15 @@
                 </div>
                 <div class="stat-label mb-1">Monthly Income</div>
                 <div class="stat-value" style="font-size:1.4rem;">
-                    @totalIncome.ToString("N3")
-                    <small style="font-size:0.75rem; color:#94a3b8;">OMR</small>
+                    @currentIncome.ToString("N3") <small style="font-size:0.75rem; color:#94a3b8;">OMR</small>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ── KPI Row 2 (3 cards) ───────────────────────────────────── -->
+    <!-- ── KPI Row 2 ── -->
     <div class="row g-3 mb-4">
-        <div class="col-xl-4 col-md-6">
+        <div class="col-xl-3 col-md-6">
             <div class="card dash-card p-4 h-100">
                 <div class="card-blob" style="background:#ef4444;"></div>
                 <div class="dash-icon-wrap mb-3" style="background:rgba(239,68,68,0.12);">
@@ -168,12 +212,23 @@
                 </div>
                 <div class="stat-label mb-1">Monthly Expenses</div>
                 <div class="stat-value" style="font-size:1.4rem;">
-                    @totalExpenses.ToString("N3")
-                    <small style="font-size:0.75rem; color:#94a3b8;">OMR</small>
+                    @currentExpenses.ToString("N3") <small style="font-size:0.75rem; color:#94a3b8;">OMR</small>
                 </div>
             </div>
         </div>
-        <div class="col-xl-4 col-md-6">
+        <div class="col-xl-3 col-md-6">
+            <div class="card dash-card p-4 h-100">
+                <div class="card-blob" style="background:@(netProfit >= 0 ? "#10b981" : "#ef4444");"></div>
+                <div class="dash-icon-wrap mb-3" style="background:rgba(@(netProfit >= 0 ? "16,185,129" : "239,68,68"),0.12);">
+                    <i class="fas fa-scale-balanced" style="color:@(netProfit >= 0 ? "#10b981" : "#ef4444");"></i>
+                </div>
+                <div class="stat-label mb-1">Net Profit</div>
+                <div class="stat-value" style="font-size:1.4rem; color:@(netProfit >= 0 ? "#10b981" : "#ef4444");">
+                    @netProfit.ToString("N3") <small style="font-size:0.75rem; color:#94a3b8;">OMR</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
             <div class="card dash-card p-4 h-100">
                 <div class="card-blob" style="background:#f59e0b;"></div>
                 <div class="dash-icon-wrap mb-3" style="background:rgba(245,158,11,0.12);">
@@ -183,7 +238,7 @@
                 <div class="stat-value">@(ViewBag.TotalMaintenanceCount ?? 0)</div>
             </div>
         </div>
-        <div class="col-xl-4 col-md-6">
+        <div class="col-xl-3 col-md-6">
             <div class="card dash-card p-4 h-100">
                 <div class="card-blob" style="background:#8b5cf6;"></div>
                 <div class="dash-icon-wrap mb-3" style="background:rgba(139,92,246,0.12);">
@@ -195,7 +250,128 @@
         </div>
     </div>
 
-    <!-- ── Property Portfolio Map (full width) ───────────────────── -->
+    <!-- ══════════════════════════════════════════════════════════
+         FINANCIAL ANALYTICS SECTION
+    ══════════════════════════════════════════════════════════ -->
+    <div class="analytics-section mb-4">
+        <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+            <div>
+                <div class="section-title" style="font-size:0.85rem;">Financial Analytics</div>
+                <div class="text-muted" style="font-size:0.63rem; letter-spacing:0.07em; text-transform:uppercase;">
+                    Income · Expenses · Profit Breakdown
+                </div>
+            </div>
+            <div class="d-flex gap-2 no-print">
+                <button class="export-btn" onclick="exportExcel()">
+                    <i class="fas fa-file-excel" style="color:#16a34a;"></i> Excel
+                </button>
+                <button class="export-btn" onclick="exportPDF()">
+                    <i class="fas fa-file-pdf" style="color:#dc2626;"></i> PDF
+                </button>
+                <button class="export-btn" onclick="shareEmail()">
+                    <i class="fas fa-envelope" style="color:#3b82f6;"></i> Email
+                </button>
+            </div>
+        </div>
+
+        <div id="analyticsCharts" class="row g-3">
+            <!-- ① Income vs Expenses Pie Chart -->
+            <div class="col-xl-4 col-lg-6">
+                <div class="chart-card">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <div class="chart-card-title">Income vs Expenses</div>
+                            <div class="chart-card-sub">Total Portfolio</div>
+                        </div>
+                        <span class="badge rounded-pill px-2 py-1"
+                              style="background:@(profitMargin >= 0 ? "#d1fae5" : "#fee2e2"); color:@(profitMargin >= 0 ? "#059669" : "#dc2626"); font-size:0.68rem;">
+                            @(profitMargin >= 0 ? "+" : "")@profitMargin% margin
+                        </span>
+                    </div>
+                    <div style="height:200px; position:relative;">
+                        <canvas id="incomeExpensePie"></canvas>
+                    </div>
+                    <div class="fin-kpi-row">
+                        <div class="fin-kpi">
+                            <div class="fin-kpi-label"><span class="legend-dot me-1" style="background:#3b82f6;"></span>Total Income</div>
+                            <div class="fin-kpi-val" style="color:#3b82f6;">@totalIncome.ToString("N0") OMR</div>
+                        </div>
+                        <div class="fin-kpi">
+                            <div class="fin-kpi-label"><span class="legend-dot me-1" style="background:#ef4444;"></span>Total Expenses</div>
+                            <div class="fin-kpi-val" style="color:#ef4444;">@totalExpenses.ToString("N0") OMR</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ② Revenue by Property Donut -->
+            <div class="col-xl-4 col-lg-6">
+                <div class="chart-card">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <div class="chart-card-title">Revenue by Property</div>
+                            <div class="chart-card-sub">Portfolio Distribution</div>
+                        </div>
+                    </div>
+                    <div style="height:200px; position:relative;">
+                        <canvas id="propertyRevenueDonut"></canvas>
+                    </div>
+                    <div id="propertyLegend" class="mt-3" style="max-height:80px; overflow-y:auto;"></div>
+                </div>
+            </div>
+
+            <!-- ③ Monthly Income vs Expenses Bar Chart -->
+            <div class="col-xl-4 col-lg-12">
+                <div class="chart-card">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <div class="chart-card-title">Monthly Comparison</div>
+                            <div class="chart-card-sub">Last 6 Months</div>
+                        </div>
+                        <div class="d-flex gap-2 align-items-center">
+                            <span style="font-size:0.7rem; color:#64748b;"><span class="legend-dot me-1" style="background:#3b82f6;"></span>Income</span>
+                            <span style="font-size:0.7rem; color:#64748b;"><span class="legend-dot me-1" style="background:#ef4444;"></span>Expense</span>
+                        </div>
+                    </div>
+                    <div style="height:240px; position:relative;">
+                        <canvas id="monthlyBarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ④ Net Profit Trend Line -->
+        <div class="row g-3 mt-0">
+            <div class="col-12">
+                <div class="chart-card">
+                    <div class="d-flex justify-content-between align-items-start mb-2 flex-wrap gap-2">
+                        <div>
+                            <div class="chart-card-title">Net Profit Trend</div>
+                            <div class="chart-card-sub">Monthly Net = Income − Expenses over last 6 months</div>
+                        </div>
+                        <div class="d-flex gap-3 align-items-center">
+                            <span style="font-size:0.7rem; color:#64748b;"><span class="legend-dot me-1" style="background:#3b82f6;"></span>Income</span>
+                            <span style="font-size:0.7rem; color:#64748b;"><span class="legend-dot me-1" style="background:#ef4444;"></span>Expenses</span>
+                            <span style="font-size:0.7rem; color:#64748b;"><span class="legend-dot me-1" style="background:#10b981;"></span>Net Profit</span>
+                            <button class="export-btn no-print" onclick="exportFinanceCSV()">
+                                <i class="fas fa-download"></i> CSV
+                            </button>
+                        </div>
+                    </div>
+                    <div style="height:220px; position:relative;">
+                        <canvas id="financeChart"></canvas>
+                        <div id="financeNoData" style="display:none; position:absolute; inset:0;
+                             align-items:center; justify-content:center; flex-direction:column; gap:6px;">
+                            <i class="fas fa-chart-line" style="font-size:2rem;color:#e2e8f0;"></i>
+                            <span style="font-size:0.8rem;color:#94a3b8;">No financial data yet for the last 6 months</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Property Portfolio Map ── -->
     <div class="row g-3 mb-4">
         <div class="col-12">
             <div class="card dash-card p-4">
@@ -210,13 +386,10 @@
                     <div class="d-flex align-items-center gap-2">
                         <span class="badge rounded-pill d-flex align-items-center gap-1"
                               style="background:#dcfce7; color:#16a34a; font-size:0.7rem; padding:5px 12px;">
-                            <span class="rounded-circle d-inline-block" style="width:7px;height:7px;background:#16a34a;"></span>
-                            ACTIVE
+                            <span class="rounded-circle d-inline-block" style="width:7px;height:7px;background:#16a34a;"></span> ACTIVE
                         </span>
                         <a asp-controller="Property" asp-action="Index"
-                           class="fw-semibold text-decoration-none no-print" style="font-size:0.75rem; color:#3b82f6; letter-spacing:0.06em;">
-                            VIEW ALL
-                        </a>
+                           class="fw-semibold text-decoration-none no-print" style="font-size:0.75rem; color:#3b82f6; letter-spacing:0.06em;">VIEW ALL</a>
                     </div>
                 </div>
                 <div id="dashMap" class="rounded-3" style="height:340px; width:100%; z-index:1;"></div>
@@ -224,9 +397,8 @@
         </div>
     </div>
 
-    <!-- ── Financial Performance + AI Insights ───────────────────── -->
+    <!-- ── Financial Performance Line + AI Insights ── -->
     <div class="row g-3 mb-4">
-        <!-- Financial Chart -->
         <div class="col-xl-8">
             <div class="card dash-card p-4 h-100">
                 <div class="d-flex justify-content-between align-items-start mb-1">
@@ -243,72 +415,52 @@
                             <span class="rounded-circle d-inline-block" style="width:9px;height:9px;background:#ef4444;"></span>
                             <span style="font-size:0.72rem; color:#64748b;">Expenses</span>
                         </div>
-                        <button class="export-btn no-print" onclick="exportFinanceChart()">
+                        <button class="export-btn no-print" onclick="exportFinanceCSV()">
                             <i class="fas fa-download"></i> Export
                         </button>
                     </div>
                 </div>
                 <div style="height: 280px; margin-top: 1rem; position:relative;">
-                    <canvas id="financeChart" style="width:100%;height:100%;"></canvas>
-                    <div id="financeNoData" style="display:none;position:absolute;inset:0;
-                         display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;">
-                        <i class="fas fa-chart-line" style="font-size:2rem;color:#e2e8f0;"></i>
-                        <span style="font-size:0.8rem;color:#94a3b8;">No financial data yet for the last 6 months</span>
-                    </div>
+                    <canvas id="financeChartLarge"></canvas>
                 </div>
             </div>
         </div>
-
-        <!-- AI Insights -->
         <div class="col-xl-4">
             <div class="ai-panel p-4 h-100 d-flex flex-column">
                 <div class="d-flex align-items-center gap-2 mb-4">
                     <i class="fas fa-wand-magic-sparkles" style="color:#a5b4fc; font-size:1.1rem;"></i>
                     <span class="fw-bold text-white" style="font-size:1rem; letter-spacing:0.04em;">AI INSIGHTS</span>
                 </div>
-
                 <div class="ai-insight-card">
                     <div class="d-flex align-items-center gap-2 mb-2">
                         <div class="ai-icon-box">
-                            <i class="fas fa-arrow-@(ai1Up ? "up" : "down")-right"
-                               style="color:white; font-size:0.75rem;"></i>
+                            <i class="fas fa-arrow-@(ai1Up ? "up" : "down")-right" style="color:white; font-size:0.75rem;"></i>
                         </div>
-                        <span class="fw-bold text-white"
-                              style="font-size:0.78rem; letter-spacing:0.06em;">@ViewBag.AiInsight1Title</span>
+                        <span class="fw-bold text-white" style="font-size:0.78rem; letter-spacing:0.06em;">@ViewBag.AiInsight1Title</span>
                     </div>
-                    <p class="mb-0" style="font-size:0.82rem; color:rgba(255,255,255,0.8); line-height:1.5;">
-                        @ViewBag.AiInsight1Text
-                    </p>
+                    <p class="mb-0" style="font-size:0.82rem; color:rgba(255,255,255,0.8); line-height:1.5;">@ViewBag.AiInsight1Text</p>
                 </div>
-
                 <div class="ai-insight-card">
                     <div class="d-flex align-items-center gap-2 mb-2">
                         <div class="ai-icon-box">
-                            <i class="fas fa-arrow-@(ai2Up ? "up" : "down")-right"
-                               style="color:white; font-size:0.75rem;"></i>
+                            <i class="fas fa-arrow-@(ai2Up ? "up" : "down")-right" style="color:white; font-size:0.75rem;"></i>
                         </div>
-                        <span class="fw-bold text-white"
-                              style="font-size:0.78rem; letter-spacing:0.06em;">@ViewBag.AiInsight2Title</span>
+                        <span class="fw-bold text-white" style="font-size:0.78rem; letter-spacing:0.06em;">@ViewBag.AiInsight2Title</span>
                     </div>
-                    <p class="mb-0" style="font-size:0.82rem; color:rgba(255,255,255,0.8); line-height:1.5;">
-                        @ViewBag.AiInsight2Text
-                    </p>
+                    <p class="mb-0" style="font-size:0.82rem; color:rgba(255,255,255,0.8); line-height:1.5;">@ViewBag.AiInsight2Text</p>
                 </div>
-
                 <div class="mt-auto pt-3">
-                    <button class="btn w-100 rounded-pill fw-bold py-2"
-                            onclick="exportAiReport()"
+                    <button class="btn w-100 rounded-pill fw-bold py-2" onclick="openExportModal()"
                             style="background:white; color:#4f46e5; font-size:0.78rem; letter-spacing:0.08em; border:none;">
-                        GENERATE REPORT
+                        EXPORT REPORT
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ── Maintenance Orders + Occupancy ────────────────────────── -->
+    <!-- ── Maintenance + Occupancy ── -->
     <div class="row g-3">
-        <!-- Maintenance Orders -->
         <div class="col-xl-8">
             <div class="card dash-card p-4 h-100">
                 <div class="d-flex align-items-center justify-content-between mb-3">
@@ -317,16 +469,13 @@
                         <span class="section-title">Maintenance Orders</span>
                     </div>
                     <div class="d-flex align-items-center gap-2 no-print">
-                        <button class="export-btn" onclick="exportMaintenance()">
+                        <button class="export-btn" onclick="exportMaintenanceCSV()">
                             <i class="fas fa-download"></i> Export
                         </button>
                         <a asp-controller="Maintenance" asp-action="Index"
-                           class="fw-semibold text-decoration-none" style="font-size:0.75rem; color:#3b82f6; letter-spacing:0.06em;">
-                            VIEW ALL
-                        </a>
+                           class="fw-semibold text-decoration-none" style="font-size:0.75rem; color:#3b82f6; letter-spacing:0.06em;">VIEW ALL</a>
                     </div>
                 </div>
-
                 @if (!recentMaintenance.Any())
                 {
                     <div class="text-center py-4 text-muted">
@@ -350,7 +499,6 @@
                             priorityLabel = "HIGH"; priorityColor = "#ef4444"; statusColor = "#f59e0b";
                         }
                         statusDisplay = m.Status == "InProgress" ? "In Progress" : m.Status;
-
                         <div class="maint-row d-flex align-items-center gap-3"
                              data-id="M-@m.Id.ToString("D3")" data-title="@m.Title"
                              data-status="@statusDisplay" data-priority="@priorityLabel"
@@ -359,9 +507,7 @@
                                 <i class="fas @iconClass" style="color:@iconColor; font-size:1rem;"></i>
                             </div>
                             <div class="flex-grow-1" style="min-width:0;">
-                                <div class="fw-semibold text-dark text-truncate" style="font-size:0.9rem;">
-                                    @(m.Title ?? "Maintenance Request")
-                                </div>
+                                <div class="fw-semibold text-dark text-truncate" style="font-size:0.9rem;">@(m.Title ?? "Maintenance Request")</div>
                                 <div class="d-flex align-items-center gap-2 mt-1 flex-wrap">
                                     <span class="text-muted" style="font-size:0.72rem;">M-@m.Id.ToString("D3")</span>
                                     <span style="color:#cbd5e1; font-size:0.7rem;">•</span>
@@ -386,14 +532,12 @@
             <div class="card dash-card p-4 h-100">
                 <div class="d-flex justify-content-between align-items-start mb-4">
                     <div class="section-title">Occupancy</div>
-                    <button class="export-btn no-print" onclick="exportOccupancy()">
+                    <button class="export-btn no-print" onclick="exportOccupancyCSV()">
                         <i class="fas fa-download"></i> Export
                     </button>
                 </div>
-                <div class="d-flex align-items-center justify-content-center position-relative mb-4"
-                     style="height: 200px;">
-                    <canvas id="occupancyChart"
-                            style="position:absolute; top:0; left:0; width:100%; height:100%;"></canvas>
+                <div class="d-flex align-items-center justify-content-center position-relative mb-4" style="height: 200px;">
+                    <canvas id="occupancyChart" style="position:absolute; top:0; left:0; width:100%; height:100%;"></canvas>
                     <div class="text-center" style="position:relative; z-index:1; pointer-events:none;">
                         <div class="fw-bold" style="font-size: 2rem; color:#0f172a; line-height:1;">@occupiedPct%</div>
                         <div class="text-uppercase" style="font-size:0.62rem; letter-spacing:0.1em; color:#94a3b8; font-weight:700;">Occupied</div>
@@ -417,119 +561,338 @@
 
 </div>
 
+<!-- ══════════════════════════════════════════════════
+     EXPORT MODAL
+══════════════════════════════════════════════════ -->
+<div class="export-modal-backdrop no-print" id="exportModalBackdrop" onclick="if(event.target===this)closeExportModal()">
+    <div class="export-modal">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <div>
+                <h5 class="fw-bold mb-0" style="font-size:1.1rem; color:#0f172a;">Export Dashboard Report</h5>
+                <p class="text-muted mb-0" style="font-size:0.78rem;">Choose your preferred format</p>
+            </div>
+            <button onclick="closeExportModal()" class="btn p-1 border-0 bg-transparent" style="color:#94a3b8; font-size:1.2rem;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div id="exportOptions" class="d-flex flex-column gap-3">
+            <button class="export-option" onclick="exportExcel()">
+                <div class="export-option-icon" style="background:#d1fae5; color:#16a34a;">
+                    <i class="fas fa-file-excel"></i>
+                </div>
+                <div>
+                    <div class="export-option-title">Excel Workbook (.xlsx)</div>
+                    <div class="export-option-desc">Full report with Summary, Financial Trends, Properties & Occupancy sheets</div>
+                </div>
+                <i class="fas fa-chevron-right ms-auto" style="color:#cbd5e1;"></i>
+            </button>
+
+            <button class="export-option" onclick="exportPDF()">
+                <div class="export-option-icon" style="background:#fee2e2; color:#dc2626;">
+                    <i class="fas fa-file-pdf"></i>
+                </div>
+                <div>
+                    <div class="export-option-title">PDF Report (.pdf)</div>
+                    <div class="export-option-desc">Captures all charts and tables as a print-ready PDF document</div>
+                </div>
+                <i class="fas fa-chevron-right ms-auto" style="color:#cbd5e1;"></i>
+            </button>
+
+            <button class="export-option" onclick="shareEmail()">
+                <div class="export-option-icon" style="background:#dbeafe; color:#3b82f6;">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <div>
+                    <div class="export-option-title">Share via Email</div>
+                    <div class="export-option-desc">Opens your email client with a pre-filled dashboard summary</div>
+                </div>
+                <i class="fas fa-chevron-right ms-auto" style="color:#cbd5e1;"></i>
+            </button>
+
+            <button class="export-option" onclick="exportFinanceCSV()">
+                <div class="export-option-icon" style="background:#f3f4f6; color:#6b7280;">
+                    <i class="fas fa-file-csv"></i>
+                </div>
+                <div>
+                    <div class="export-option-title">CSV Data Export</div>
+                    <div class="export-option-desc">Raw financial trend data for use in any spreadsheet application</div>
+                </div>
+                <i class="fas fa-chevron-right ms-auto" style="color:#cbd5e1;"></i>
+            </button>
+        </div>
+
+        <div class="export-progress" id="exportProgress">
+            <div class="spinner"></div>
+            <div style="font-size:0.85rem; font-weight:600; color:#0f172a;" id="exportProgressText">Generating report…</div>
+            <div style="font-size:0.75rem; color:#94a3b8; margin-top:4px;">This may take a few seconds</div>
+        </div>
+
+        <div class="text-center mt-4">
+            <button onclick="closeExportModal()" class="btn btn-sm text-muted" style="font-size:0.8rem;">Cancel</button>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
+<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- SheetJS for Excel export -->
+<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+<!-- jsPDF + html2canvas for PDF export -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<!-- Leaflet -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 <script>
-    // ── Chart data from server (plain JSON – bypasses ReferenceHandler.Preserve) ──
-    const chartLabels  = @Html.Raw(ViewBag.ChartLabelsJson   ?? "[]");
-    const revenueData  = @Html.Raw(ViewBag.RevenueDataJson   ?? "[]");
-    const expenseData  = @Html.Raw(ViewBag.ExpenseDataJson   ?? "[]");
-    const occData      = @Html.Raw(ViewBag.OccupancyChartJson ?? "[0,0,0]");
-    const mapProps     = @Html.Raw(ViewBag.MapPropertiesJson  ?? "[]");
+// ── Server data ─────────────────────────────────────────────────────────
+const chartLabels    = @Html.Raw(ViewBag.ChartLabelsJson     ?? "[]");
+const revenueData    = @Html.Raw(ViewBag.RevenueDataJson     ?? "[]");
+const expenseData    = @Html.Raw(ViewBag.ExpenseDataJson     ?? "[]");
+const occData        = @Html.Raw(ViewBag.OccupancyChartJson  ?? "[0,0,0]");
+const mapProps       = @Html.Raw(ViewBag.MapPropertiesJson   ?? "[]");
+const propNames      = @Html.Raw(ViewBag.PropertyNamesJson   ?? "[]");
+const propRevenues   = @Html.Raw(ViewBag.PropertyRevenuesJson ?? "[]");
+const totalIncomeVal = @totalIncome.ToString("F3", System.Globalization.CultureInfo.InvariantCulture);
+const totalExpVal    = @totalExpenses.ToString("F3", System.Globalization.CultureInfo.InvariantCulture);
+const netProfitVal   = @netProfit.ToString("F3", System.Globalization.CultureInfo.InvariantCulture);
 
-    // ── Financial Performance Chart ─────────────────────────────────
-    const allZero = revenueData.every(v => v === 0) && expenseData.every(v => v === 0);
-    if (allZero) {
-        document.getElementById('financeChart').style.display = 'none';
-        document.getElementById('financeNoData').style.display = 'flex';
-    } else {
-        document.getElementById('financeNoData').style.display = 'none';
-        const finCtx = document.getElementById('financeChart').getContext('2d');
-        new Chart(finCtx, {
-            type: 'line',
-            data: {
-                labels: chartLabels,
-                datasets: [
-                    {
-                        label: 'Income',
-                        data: revenueData,
-                        borderColor: '#3b82f6',
-                        backgroundColor: 'rgba(59,130,246,0.10)',
-                        borderWidth: 2.5,
-                        pointRadius: 4,
-                        pointHoverRadius: 7,
-                        pointBackgroundColor: '#3b82f6',
-                        tension: 0.45,
-                        fill: true
-                    },
-                    {
-                        label: 'Expenses',
-                        data: expenseData,
-                        borderColor: '#ef4444',
-                        backgroundColor: 'rgba(239,68,68,0.06)',
-                        borderWidth: 2.5,
-                        pointRadius: 4,
-                        pointHoverRadius: 7,
-                        pointBackgroundColor: '#ef4444',
-                        tension: 0.45,
-                        fill: true
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: { mode: 'index', intersect: false },
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        backgroundColor: '#0f172a',
-                        titleColor: '#94a3b8',
-                        bodyColor: '#fff',
-                        padding: 12,
-                        callbacks: {
-                            label: ctx => `  ${ctx.dataset.label}: ${Number(ctx.raw).toLocaleString()} OMR`
-                        }
-                    }
-                },
-                scales: {
-                    x: {
-                        grid: { display: false },
-                        border: { display: false },
-                        ticks: { color: '#94a3b8', font: { size: 11 } }
-                    },
-                    y: {
-                        beginAtZero: true,
-                        border: { display: false, dash: [4, 4] },
-                        grid: { color: '#f1f5f9', drawBorder: false },
-                        ticks: { color: '#94a3b8', font: { size: 11 }, callback: v => Number(v).toLocaleString() }
-                    }
-                }
-            }
-        });
-    }
+// Compute monthly net profit
+const netData = chartLabels.map((_, i) => +((revenueData[i] || 0) - (expenseData[i] || 0)).toFixed(3));
 
-    // ── Occupancy Doughnut Chart ────────────────────────────────────
-    const occTotal = occData.reduce((a, b) => a + b, 0);
-    const occCtx   = document.getElementById('occupancyChart').getContext('2d');
-    new Chart(occCtx, {
-        type: 'doughnut',
+// Palette for multi-series
+const PIE_COLORS = ['#3b82f6','#ef4444','#10b981','#f59e0b','#8b5cf6','#ec4899','#06b6d4','#f97316'];
+
+// ── ① Income vs Expenses Pie ─────────────────────────────────────────
+(function () {
+    const ctx = document.getElementById('incomeExpensePie').getContext('2d');
+    const total = totalIncomeVal + totalExpVal;
+    new Chart(ctx, {
+        type: 'pie',
         data: {
-            labels: ['Occupied', 'Vacant', 'Maintenance'],
+            labels: ['Income', 'Expenses'],
             datasets: [{
-                data: occTotal > 0 ? occData : [1],
-                backgroundColor: occTotal > 0 ? ['#22c55e', '#f97316', '#ef4444'] : ['#e2e8f0'],
-                borderWidth: 0,
-                borderRadius: 5,
-                spacing: 3
+                data: total > 0 ? [totalIncomeVal, totalExpVal] : [1, 1],
+                backgroundColor: total > 0 ? ['#3b82f6', '#ef4444'] : ['#e2e8f0', '#f1f5f9'],
+                borderWidth: 3, borderColor: '#fff', hoverOffset: 8
             }]
         },
         options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            cutout: '76%',
+            responsive: true, maintainAspectRatio: false,
             plugins: {
                 legend: { display: false },
                 tooltip: {
-                    enabled: occTotal > 0,
-                    callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw}` }
+                    backgroundColor: '#0f172a',
+                    callbacks: {
+                        label: ctx => `  ${ctx.label}: ${Number(ctx.raw).toLocaleString()} OMR`
+                    }
+                }
+            }
+        }
+    });
+})();
+
+// ── ② Revenue by Property Donut ──────────────────────────────────────
+(function () {
+    const ctx = document.getElementById('propertyRevenueDonut').getContext('2d');
+    const hasData = propRevenues.some(v => v > 0);
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: hasData ? propNames : ['No Data'],
+            datasets: [{
+                data: hasData ? propRevenues : [1],
+                backgroundColor: hasData ? PIE_COLORS.slice(0, propNames.length) : ['#e2e8f0'],
+                borderWidth: 3, borderColor: '#fff', hoverOffset: 6
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false, cutout: '68%',
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#0f172a',
+                    callbacks: {
+                        label: ctx => `  ${ctx.label}: ${Number(ctx.raw).toLocaleString()} OMR`
+                    }
                 }
             }
         }
     });
 
-    // ── Properties Map ──────────────────────────────────────────────
+    // Build custom legend
+    const legend = document.getElementById('propertyLegend');
+    const names = hasData ? propNames : ['No Data'];
+    const colors = hasData ? PIE_COLORS : ['#e2e8f0'];
+    legend.innerHTML = names.map((n, i) =>
+        `<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;">
+            <span style="width:10px;height:10px;border-radius:50%;background:${colors[i]};flex-shrink:0;"></span>
+            <span style="font-size:0.72rem;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${n}</span>
+        </div>`
+    ).join('');
+})();
+
+// ── ③ Monthly Bar Chart ──────────────────────────────────────────────
+(function () {
+    const ctx = document.getElementById('monthlyBarChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: chartLabels,
+            datasets: [
+                {
+                    label: 'Income',
+                    data: revenueData,
+                    backgroundColor: 'rgba(59,130,246,0.85)',
+                    borderRadius: 6, borderSkipped: false
+                },
+                {
+                    label: 'Expenses',
+                    data: expenseData,
+                    backgroundColor: 'rgba(239,68,68,0.75)',
+                    borderRadius: 6, borderSkipped: false
+                }
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#0f172a',
+                    callbacks: { label: ctx => `  ${ctx.dataset.label}: ${Number(ctx.raw).toLocaleString()} OMR` }
+                }
+            },
+            scales: {
+                x: { grid: { display: false }, border: { display: false }, ticks: { color: '#94a3b8', font: { size: 10 } } },
+                y: { beginAtZero: true, border: { display: false, dash: [4, 4] }, grid: { color: '#f1f5f9' },
+                     ticks: { color: '#94a3b8', font: { size: 10 }, callback: v => Number(v).toLocaleString() } }
+            }
+        }
+    });
+})();
+
+// ── ④ Net Profit Trend (small, in analytics section) ─────────────────
+(function () {
+    const allZero = revenueData.every(v => v === 0) && expenseData.every(v => v === 0);
+    if (allZero) {
+        document.getElementById('financeChart').style.display = 'none';
+        document.getElementById('financeNoData').style.display = 'flex';
+        return;
+    }
+    document.getElementById('financeNoData').style.display = 'none';
+    const ctx = document.getElementById('financeChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: chartLabels,
+            datasets: [
+                {
+                    label: 'Income', data: revenueData,
+                    borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.08)',
+                    borderWidth: 2, pointRadius: 3, tension: 0.45, fill: true
+                },
+                {
+                    label: 'Expenses', data: expenseData,
+                    borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.05)',
+                    borderWidth: 2, pointRadius: 3, tension: 0.45, fill: true
+                },
+                {
+                    label: 'Net Profit', data: netData,
+                    borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.06)',
+                    borderWidth: 2.5, pointRadius: 3, tension: 0.45, fill: true,
+                    borderDash: []
+                }
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#0f172a',
+                    callbacks: { label: ctx => `  ${ctx.dataset.label}: ${Number(ctx.raw).toLocaleString()} OMR` }
+                }
+            },
+            scales: {
+                x: { grid: { display: false }, border: { display: false }, ticks: { color: '#94a3b8', font: { size: 10 } } },
+                y: { beginAtZero: true, border: { display: false, dash: [4, 4] }, grid: { color: '#f1f5f9' },
+                     ticks: { color: '#94a3b8', font: { size: 10 }, callback: v => Number(v).toLocaleString() } }
+            }
+        }
+    });
+})();
+
+// ── ⑤ Financial Performance Line (large card) ────────────────────────
+(function () {
+    const ctx = document.getElementById('financeChartLarge').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: chartLabels,
+            datasets: [
+                {
+                    label: 'Income', data: revenueData,
+                    borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.10)',
+                    borderWidth: 2.5, pointRadius: 4, pointHoverRadius: 7,
+                    pointBackgroundColor: '#3b82f6', tension: 0.45, fill: true
+                },
+                {
+                    label: 'Expenses', data: expenseData,
+                    borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.06)',
+                    borderWidth: 2.5, pointRadius: 4, pointHoverRadius: 7,
+                    pointBackgroundColor: '#ef4444', tension: 0.45, fill: true
+                }
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#0f172a', titleColor: '#94a3b8', bodyColor: '#fff', padding: 12,
+                    callbacks: { label: ctx => `  ${ctx.dataset.label}: ${Number(ctx.raw).toLocaleString()} OMR` }
+                }
+            },
+            scales: {
+                x: { grid: { display: false }, border: { display: false }, ticks: { color: '#94a3b8', font: { size: 11 } } },
+                y: { beginAtZero: true, border: { display: false, dash: [4, 4] }, grid: { color: '#f1f5f9' },
+                     ticks: { color: '#94a3b8', font: { size: 11 }, callback: v => Number(v).toLocaleString() } }
+            }
+        }
+    });
+})();
+
+// ── Occupancy Doughnut ───────────────────────────────────────────────
+(function () {
+    const total = occData.reduce((a, b) => a + b, 0);
+    const ctx = document.getElementById('occupancyChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Occupied', 'Vacant', 'Maintenance'],
+            datasets: [{
+                data: total > 0 ? occData : [1],
+                backgroundColor: total > 0 ? ['#22c55e', '#f97316', '#ef4444'] : ['#e2e8f0'],
+                borderWidth: 0, borderRadius: 5, spacing: 3
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false, cutout: '76%',
+            plugins: {
+                legend: { display: false },
+                tooltip: { enabled: total > 0, callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw}` } }
+            }
+        }
+    });
+})();
+
+// ── Properties Map ───────────────────────────────────────────────────
+(function () {
     const dashMap = L.map('dashMap', { zoomControl: true }).setView([23.58, 58.40], 9);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
@@ -558,77 +921,240 @@
         }
     });
 
-    if (bounds.length > 1)       dashMap.fitBounds(bounds, { padding: [50, 50] });
-    else if (bounds.length === 1) dashMap.setView(bounds[0], 14);
+    if (bounds.length > 1)        dashMap.fitBounds(bounds, { padding: [50, 50] });
+    else if (bounds.length === 1)  dashMap.setView(bounds[0], 14);
     else {
-        // No coordinates set yet — show a friendly overlay
         const noCoord = L.control({ position: 'bottomleft' });
         noCoord.onAdd = () => {
             const div = L.DomUtil.create('div');
             div.innerHTML = `<div style="background:rgba(255,255,255,0.92);border-radius:10px;padding:8px 14px;
                 font-size:0.75rem;color:#64748b;box-shadow:0 2px 8px rgba(0,0,0,0.12);">
                 <i class="fas fa-info-circle" style="color:#3b82f6;margin-right:6px;"></i>
-                Add Latitude &amp; Longitude to your properties to show them on this map.
-            </div>`;
+                Add Latitude &amp; Longitude to your properties to show them on this map.</div>`;
             return div;
         };
         noCoord.addTo(dashMap);
     }
-    // Force tile redraw after layout settle
     setTimeout(() => dashMap.invalidateSize(), 200);
+})();
 
-    // ── CSV Helper ──────────────────────────────────────────────────
-    function downloadCSV(content, filename) {
-        const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = filename;
-        a.click();
-    }
+// ══════════════════════════════════════════════════════════════════════
+// EXPORT FUNCTIONS
+// ══════════════════════════════════════════════════════════════════════
 
-    // ── Export: Financial Chart ─────────────────────────────────────
-    function exportFinanceChart() {
-        let csv = 'Month,Income (OMR),Expenses (OMR)\n';
-        chartLabels.forEach((label, i) => {
-            csv += `"${label}","${(revenueData[i] || 0).toFixed(3)}","${(expenseData[i] || 0).toFixed(3)}"\n`;
+function openExportModal()  { document.getElementById('exportModalBackdrop').classList.add('show'); }
+function closeExportModal() {
+    document.getElementById('exportModalBackdrop').classList.remove('show');
+    document.getElementById('exportProgress').style.display = 'none';
+    document.getElementById('exportOptions').style.display  = 'flex';
+}
+function showProgress(text) {
+    document.getElementById('exportOptions').style.display  = 'none';
+    document.getElementById('exportProgress').style.display = 'block';
+    document.getElementById('exportProgressText').textContent = text;
+}
+
+// ── CSV download helper ──────────────────────────────────────────────
+function downloadBlob(content, filename, type = 'text/csv;charset=utf-8;') {
+    const blob = new Blob([content], { type });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(a.href);
+}
+
+// ── CSV Export ───────────────────────────────────────────────────────
+function exportFinanceCSV() {
+    let csv = 'Month,Income (OMR),Expenses (OMR),Net Profit (OMR)\n';
+    chartLabels.forEach((lbl, i) => {
+        const inc = (revenueData[i] || 0).toFixed(3);
+        const exp = (expenseData[i] || 0).toFixed(3);
+        const net = ((revenueData[i] || 0) - (expenseData[i] || 0)).toFixed(3);
+        csv += `"${lbl}","${inc}","${exp}","${net}"\n`;
+    });
+    downloadBlob(csv, 'financial-trends.csv');
+    closeExportModal();
+}
+
+function exportMaintenanceCSV() {
+    const rows = document.querySelectorAll('.maint-row[data-id]');
+    let csv = 'Order ID,Title,Status,Priority,Date\n';
+    rows.forEach(r => {
+        csv += `"${r.dataset.id}","${r.dataset.title}","${r.dataset.status}","${r.dataset.priority}","${r.dataset.date}"\n`;
+    });
+    downloadBlob(csv, 'maintenance-orders.csv');
+}
+
+function exportOccupancyCSV() {
+    const [occ, vac, mnt] = [occData[0]||0, occData[1]||0, occData[2]||0];
+    downloadBlob(`Category,Count\nOccupied,${occ}\nVacant,${vac}\nMaintenance,${mnt}\n`, 'occupancy.csv');
+}
+
+// ── Excel Export (SheetJS) ───────────────────────────────────────────
+function exportExcel() {
+    showProgress('Building Excel workbook…');
+    setTimeout(() => {
+        try {
+            const wb = XLSX.utils.book_new();
+
+            // Sheet 1 – Summary
+            const summaryData = [
+                ['Propertify Dashboard Report'],
+                ['Generated', new Date().toLocaleString()],
+                [],
+                ['Metric', 'Value'],
+                ['Total Income (OMR)',    totalIncomeVal],
+                ['Total Expenses (OMR)',  totalExpVal],
+                ['Net Profit (OMR)',      netProfitVal],
+                ['Occupied Units',        occData[0] || 0],
+                ['Vacant Units',          occData[1] || 0],
+                ['Maintenance Units',     occData[2] || 0],
+                ['Total Properties',      propNames.length],
+            ];
+            const ws1 = XLSX.utils.aoa_to_sheet(summaryData);
+            ws1['!cols'] = [{ wch: 28 }, { wch: 20 }];
+            XLSX.utils.book_append_sheet(wb, ws1, 'Summary');
+
+            // Sheet 2 – Financial Trends
+            const finData = [['Month', 'Income (OMR)', 'Expenses (OMR)', 'Net Profit (OMR)']];
+            chartLabels.forEach((lbl, i) => {
+                const inc = +(revenueData[i] || 0).toFixed(3);
+                const exp = +(expenseData[i] || 0).toFixed(3);
+                finData.push([lbl, inc, exp, +(inc - exp).toFixed(3)]);
+            });
+            const ws2 = XLSX.utils.aoa_to_sheet(finData);
+            ws2['!cols'] = [{ wch: 14 }, { wch: 16 }, { wch: 16 }, { wch: 16 }];
+            XLSX.utils.book_append_sheet(wb, ws2, 'Financial Trends');
+
+            // Sheet 3 – Properties
+            if (propNames.length > 0) {
+                const propData = [['Property Name', 'Total Revenue (OMR)']];
+                propNames.forEach((n, i) => propData.push([n, +(propRevenues[i] || 0).toFixed(3)]));
+                const ws3 = XLSX.utils.aoa_to_sheet(propData);
+                ws3['!cols'] = [{ wch: 30 }, { wch: 20 }];
+                XLSX.utils.book_append_sheet(wb, ws3, 'Properties');
+            }
+
+            // Sheet 4 – Occupancy
+            const occSheet = XLSX.utils.aoa_to_sheet([
+                ['Status', 'Units'],
+                ['Occupied',    occData[0] || 0],
+                ['Vacant',      occData[1] || 0],
+                ['Maintenance', occData[2] || 0]
+            ]);
+            XLSX.utils.book_append_sheet(wb, occSheet, 'Occupancy');
+
+            XLSX.writeFile(wb, `Propertify-Report-${new Date().toISOString().slice(0,10)}.xlsx`);
+            closeExportModal();
+        } catch(e) {
+            alert('Excel export failed: ' + e.message);
+            closeExportModal();
+        }
+    }, 300);
+}
+
+// ── PDF Export (jsPDF + html2canvas) ────────────────────────────────
+function exportPDF() {
+    showProgress('Rendering charts to PDF…');
+    const section = document.getElementById('analyticsCharts');
+    html2canvas(section, { scale: 1.8, useCORS: true, backgroundColor: '#f8fafc' }).then(canvas => {
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+
+        const pageW = pdf.internal.pageSize.getWidth();
+        const pageH = pdf.internal.pageSize.getHeight();
+        const margin = 12;
+        const usableW = pageW - margin * 2;
+
+        // Header bar
+        pdf.setFillColor(30, 58, 95);
+        pdf.rect(0, 0, pageW, 18, 'F');
+        pdf.setTextColor(255, 255, 255);
+        pdf.setFontSize(13);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('PROPERTIFY — Financial Analytics Report', margin, 12);
+        pdf.setFontSize(8);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text(`Generated: ${new Date().toLocaleString()}`, pageW - margin, 12, { align: 'right' });
+
+        // KPI row
+        pdf.setTextColor(15, 23, 42);
+        pdf.setFontSize(8);
+        pdf.setFont('helvetica', 'bold');
+        const kpiY = 26;
+        pdf.setFillColor(248, 250, 252);
+        pdf.roundedRect(margin, kpiY, usableW, 18, 3, 3, 'F');
+        const kpis = [
+            ['Total Income', `${Number(totalIncomeVal).toLocaleString()} OMR`],
+            ['Total Expenses', `${Number(totalExpVal).toLocaleString()} OMR`],
+            ['Net Profit', `${Number(netProfitVal).toLocaleString()} OMR`],
+            ['Occupied Units', String(occData[0] || 0)],
+            ['Vacant Units', String(occData[1] || 0)],
+        ];
+        const kpiW = usableW / kpis.length;
+        kpis.forEach(([label, val], i) => {
+            const x = margin + i * kpiW + kpiW / 2;
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(6.5);
+            pdf.setTextColor(148, 163, 184);
+            pdf.text(label.toUpperCase(), x, kpiY + 6, { align: 'center' });
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(9);
+            pdf.setTextColor(15, 23, 42);
+            pdf.text(val, x, kpiY + 13, { align: 'center' });
         });
-        downloadCSV(csv, 'financial-performance.csv');
-    }
 
-    // ── Export: Maintenance ─────────────────────────────────────────
-    function exportMaintenance() {
-        const rows = document.querySelectorAll('.maint-row[data-id]');
-        let csv = 'Order ID,Title,Status,Priority,Date\n';
-        rows.forEach(r => {
-            csv += `"${r.dataset.id}","${r.dataset.title}","${r.dataset.status}","${r.dataset.priority}","${r.dataset.date}"\n`;
-        });
-        downloadCSV(csv, 'maintenance-orders.csv');
-    }
+        // Charts image
+        const imgData  = canvas.toDataURL('image/png');
+        const imgRatio = canvas.height / canvas.width;
+        const imgW     = usableW;
+        const imgH     = Math.min(imgW * imgRatio, pageH - kpiY - 26);
+        pdf.addImage(imgData, 'PNG', margin, kpiY + 22, imgW, imgH);
 
-    // ── Export: Occupancy ───────────────────────────────────────────
-    function exportOccupancy() {
-        const occ = occData[0] || 0, vac = occData[1] || 0, mnt = occData[2] || 0;
-        const csv = `Category,Count\nOccupied,${occ}\nVacant,${vac}\nMaintenance,${mnt}\n`;
-        downloadCSV(csv, 'occupancy-summary.csv');
-    }
+        // Footer
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(7);
+        pdf.setTextColor(148, 163, 184);
+        pdf.text('Propertify — Smart Property Management · Muscat, Sultanate of Oman', pageW / 2, pageH - 6, { align: 'center' });
 
-    // ── Export: AI Report ───────────────────────────────────────────
-    function exportAiReport() {
-        const now  = new Date().toLocaleString();
-        const ins1 = `@Html.Raw((ViewBag.AiInsight1Title ?? "").ToString().Replace("\"","'")) - @Html.Raw((ViewBag.AiInsight1Text ?? "").ToString().Replace("\"","'"))`;
-        const ins2 = `@Html.Raw((ViewBag.AiInsight2Title ?? "").ToString().Replace("\"","'")) - @Html.Raw((ViewBag.AiInsight2Text ?? "").ToString().Replace("\"","'"))`;
-        const occ  = @occupiedPct;
-        const occ2 = occData[0] || 0, vac2 = occData[1] || 0;
-        let csv = `Propertify AI Analysis Report\nGenerated: ${now}\n\n`;
-        csv += `Insight 1,"${ins1}"\nInsight 2,"${ins2}"\n\n`;
-        csv += `Occupancy Rate,${occ}%\nOccupied Units,${occ2}\nVacant Units,${vac2}\n\n`;
-        csv += `Monthly Income,@totalIncome.ToString("N3") OMR\nMonthly Expenses,@totalExpenses.ToString("N3") OMR\n`;
-        downloadCSV(csv, 'ai-insights-report.csv');
-    }
+        pdf.save(`Propertify-Analytics-${new Date().toISOString().slice(0,10)}.pdf`);
+        closeExportModal();
+    }).catch(e => {
+        alert('PDF export failed: ' + e.message);
+        closeExportModal();
+    });
+}
 
-    // ── Full Dashboard Print ────────────────────────────────────────
-    function printDashboard() {
-        window.print();
-    }
+// ── Email Share ──────────────────────────────────────────────────────
+function shareEmail() {
+    const date = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+    const occ  = occData[0] || 0, vac = occData[1] || 0;
+    const subject = encodeURIComponent(`Propertify Dashboard Report — ${date}`);
+    const body = encodeURIComponent(
+`Propertify Dashboard Summary — ${date}
+${'='.repeat(48)}
+
+FINANCIAL OVERVIEW
+  Total Income    : ${Number(totalIncomeVal).toLocaleString()} OMR
+  Total Expenses  : ${Number(totalExpVal).toLocaleString()} OMR
+  Net Profit      : ${Number(netProfitVal).toLocaleString()} OMR
+
+OCCUPANCY
+  Occupied Units  : ${occ}
+  Vacant Units    : ${vac}
+  Occupancy Rate  : @occupiedPct%
+
+MONTHLY TRENDS (Last 6 Months)
+${chartLabels.map((lbl, i) =>
+    `  ${lbl.padEnd(6)} | Income: ${String((revenueData[i]||0).toFixed(3)).padStart(10)} OMR | Expenses: ${String((expenseData[i]||0).toFixed(3)).padStart(10)} OMR`
+).join('\n')}
+
+${'─'.repeat(48)}
+Generated by Propertify · Muscat, Oman`
+    );
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+    closeExportModal();
+}
 </script>
 }

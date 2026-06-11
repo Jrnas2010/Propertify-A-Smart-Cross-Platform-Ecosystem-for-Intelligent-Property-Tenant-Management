@@ -6,17 +6,16 @@ using System.Collections.ObjectModel;
 
 namespace Propertify.Mobile.ViewModels
 {
-    /// <summary>Loads utility bills and supports in-memory filtering by payment status (All / Paid / Unpaid).</summary>
     public partial class InvoicesViewModel : ObservableObject
     {
         private readonly ApiService     _api;
         private readonly SessionService _session;
         private List<InvoiceDto> _allInvoices = new();
 
-        [ObservableProperty] private bool   isBusy       = false;
-        [ObservableProperty] private bool   isEmpty      = false;
-        [ObservableProperty] private bool   isRefreshing = false;
-        [ObservableProperty] private string activeFilter = "All";
+        [ObservableProperty] public partial bool   IsBusy       { get; set; } = false;
+        [ObservableProperty] public partial bool   IsEmpty      { get; set; } = false;
+        [ObservableProperty] public partial bool   IsRefreshing { get; set; } = false;
+        [ObservableProperty] public partial string ActiveFilter { get; set; } = "All";
 
         public ObservableCollection<InvoiceDto> Invoices { get; } = new();
 
@@ -26,16 +25,14 @@ namespace Propertify.Mobile.ViewModels
             _session = session;
         }
 
-        /// <summary>Fetches all invoices from the API and applies the current status filter.</summary>
         public async Task LoadAsync()
         {
-            IsBusy      = true;
+            IsBusy       = true;
             _allInvoices = await _api.GetInvoicesAsync(_session.TenantId);
-            IsBusy      = false;
+            IsBusy       = false;
             ApplyFilter(ActiveFilter);
         }
 
-        /// <summary>Filters the displayed invoices to those matching <paramref name="filter"/> ("All", "Paid", "Pending", etc.).</summary>
         public void ApplyFilter(string filter)
         {
             ActiveFilter = filter;
@@ -47,7 +44,6 @@ namespace Propertify.Mobile.ViewModels
             IsEmpty = Invoices.Count == 0;
         }
 
-        /// <summary>Pull-to-refresh command – sets IsRefreshing while reloading.</summary>
         [RelayCommand]
         private async Task RefreshAsync()
         {

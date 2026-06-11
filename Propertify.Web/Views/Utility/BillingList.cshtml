@@ -111,9 +111,18 @@
                 @totalCount Invoices
             </p>
         </div>
-        <button class="export-all-btn" onclick="exportBilling()">
-            <i class="fas fa-download"></i> EXPORT ALL
-        </button>
+        <div class="d-flex gap-2">
+            <a asp-action="CreateBill"
+               style="background:#6366f1;color:#fff;border:none;border-radius:10px;padding:10px 20px;
+                      font-size:0.8rem;font-weight:700;letter-spacing:0.06em;display:flex;align-items:center;
+                      gap:8px;text-decoration:none;transition:background .15s;"
+               onmouseover="this.style.background='#4f46e5'" onmouseout="this.style.background='#6366f1'">
+                <i class="fas fa-plus"></i> NEW BILL
+            </a>
+            <button class="export-all-btn" onclick="exportBilling()">
+                <i class="fas fa-download"></i> EXPORT ALL
+            </button>
+        </div>
     </div>
 
     <!-- ── Summary Cards ──────────────────────────────────────── -->
@@ -193,7 +202,7 @@
                     }
                     @foreach (var bill in Model)
                     {
-                        var tName = (bill.Tenant?.FirstNameAr + " " + bill.Tenant?.LastNameAr).Trim();
+                        var tName = (bill.Tenant?.FirstNameEn + " " + bill.Tenant?.LastNameEn).Trim();
                         var cfgRaw = typeConfig.ContainsKey(bill.ServiceType) ? typeConfig[bill.ServiceType] : ("fas fa-file-invoice", "#94a3b8");
                         var cfgIcon  = cfgRaw.Item1;
                         var cfgColor = cfgRaw.Item2;

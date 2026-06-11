@@ -52,6 +52,9 @@ namespace Propertify.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Contract contract)
         {
+            if (contract.EndDate <= contract.StartDate)
+                ModelState.AddModelError(nameof(contract.EndDate), "End date must be after start date.");
+
             if (ModelState.IsValid)
             {
                 _context.Add(contract);
@@ -103,6 +106,9 @@ namespace Propertify.Web.Controllers
         public async Task<IActionResult> Edit(int id, Contract contract)
         {
             if (id != contract.Id) return NotFound();
+
+            if (contract.EndDate <= contract.StartDate)
+                ModelState.AddModelError(nameof(contract.EndDate), "End date must be after start date.");
 
             if (ModelState.IsValid)
             {

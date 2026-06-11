@@ -17,9 +17,11 @@ namespace Propertify.Web.Models
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
 
+        /// <summary>Total contract value (used for income calculations and revenue charts).</summary>
         [Column(TypeName = "decimal(18,2)")]
         public decimal RentAmount { get; set; }
 
+        /// <summary>Monthly rent amount shown to the tenant in the mobile app.</summary>
         [Column(TypeName = "decimal(18,2)")]
         public decimal MonthlyRent { get; set; }
 

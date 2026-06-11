@@ -65,10 +65,15 @@ namespace Propertify.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-                // رفع صورة الهوية باستخدام الدالة المساعدة
                 if (IdCardImage != null)
                 {
-                    tenant.IdDocumentPath = await UploadFile(IdCardImage, "tenants/docs");
+                    try { tenant.IdDocumentPath = await UploadFile(IdCardImage, "tenants/docs"); }
+                    catch (InvalidOperationException ex)
+                    {
+                        ModelState.AddModelError(string.Empty, ex.Message);
+                        ViewBag.UnitId = new SelectList(await _context.Units.Where(u => !u.IsOccupied).ToListAsync(), "Id", "UnitNumber", tenant.UnitId);
+                        return View(tenant);
+                    }
                 }
 
                 tenant.IsArchived = false;
@@ -160,7 +165,13 @@ namespace Propertify.Web.Controllers
 
                     if (IdCardImage != null)
                     {
-                        tenant.IdDocumentPath = await UploadFile(IdCardImage, "tenants/docs");
+                        try { tenant.IdDocumentPath = await UploadFile(IdCardImage, "tenants/docs"); }
+                        catch (InvalidOperationException ex)
+                        {
+                            ModelState.AddModelError(string.Empty, ex.Message);
+                            ViewBag.UnitId = new SelectList(await _context.Units.Where(u => !u.IsOccupied || u.Id == tenant.UnitId).ToListAsync(), "Id", "UnitNumber", tenant.UnitId);
+                            return View(tenant);
+                        }
                     }
                     else
                     {
@@ -280,19 +291,26 @@ namespace Propertify.Web.Controllers
                 || (t.Unit != null && t.Unit.UnitNumber.Contains(searchTerm)));
         }
 
+        private static readonly string[] AllowedDocMime = ["image/jpeg", "image/png", "image/webp", "application/pdf"];
+        private const long MaxDocBytes = 10 * 1024 * 1024; // 10 MB
+
         /// <summary>Saves an uploaded file to <c>wwwroot/uploads/{subFolder}</c> with a GUID filename and returns the public path.</summary>
         private async Task<string> UploadFile(IFormFile file, string subFolder)
         {
+            if (!AllowedDocMime.Contains(file.ContentType.ToLower()))
+                throw new InvalidOperationException($"File type '{file.ContentType}' is not allowed. Accepted: JPEG, PNG, WebP, PDF.");
+
+            if (file.Length > MaxDocBytes)
+                throw new InvalidOperationException($"File exceeds the maximum allowed size of {MaxDocBytes / 1024 / 1024} MB.");
+
             string uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", subFolder);
             if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
 
-            string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+            string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName).ToLower();
             string filePath = Path.Combine(uploadsFolder, fileName);
 
-            using (var stream = new FileStream(filePath, FileMode.Create))
-            {
-                await file.CopyToAsync(stream);
-            }
+            await using var stream = new FileStream(filePath, FileMode.Create);
+            await file.CopyToAsync(stream);
             return $"/uploads/{subFolder}/{fileName}";
         }
     }

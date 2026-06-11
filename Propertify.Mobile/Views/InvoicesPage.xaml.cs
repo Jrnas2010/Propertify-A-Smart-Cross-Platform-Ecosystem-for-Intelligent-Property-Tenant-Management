@@ -34,8 +34,8 @@ public partial class InvoicesPage : ContentPage
         if (active.Content is Label lbl) lbl.TextColor = Colors.White;
     }
 
-    private void OnFilterAll(object sender, TappedEventArgs e)    { SetActiveChip(ChipAll);    _vm.ApplyFilter("All"); }
-    private void OnFilterUnpaid(object sender, TappedEventArgs e) { SetActiveChip(ChipUnpaid); _vm.ApplyFilter("Unpaid"); }
-    private void OnFilterPaid(object sender, TappedEventArgs e)   { SetActiveChip(ChipPaid);   _vm.ApplyFilter("Paid"); }
-    private void OnFilterOverdue(object sender, TappedEventArgs e){ SetActiveChip(ChipOverdue);_vm.ApplyFilter("Overdue"); }
+    private void OnFilterAll(object? sender, TappedEventArgs e)    { SetActiveChip(ChipAll);    _vm.ApplyFilter("All"); }
+    private void OnFilterUnpaid(object? sender, TappedEventArgs e) { SetActiveChip(ChipUnpaid); _vm.ApplyFilter("Unpaid"); }
+    private void OnFilterPaid(object? sender, TappedEventArgs e)   { SetActiveChip(ChipPaid);   _vm.ApplyFilter("Paid"); }
+    private void OnFilterOverdue(object? sender, TappedEventArgs e){ SetActiveChip(ChipOverdue);_vm.ApplyFilter("Overdue"); }
 }

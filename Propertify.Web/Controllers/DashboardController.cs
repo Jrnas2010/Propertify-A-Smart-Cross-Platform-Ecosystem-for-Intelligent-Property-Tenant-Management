@@ -100,6 +100,8 @@ namespace Propertify.Web.Controllers
 
             ViewBag.PropertyNames = propertyStats.Select(p => p.Name).ToList();
             ViewBag.PropertyRevenues = propertyStats.Select(p => p.TotalRevenue).ToList();
+            ViewBag.PropertyNamesJson    = JsonSerializer.Serialize(propertyStats.Select(p => p.Name).ToList(), _cleanJson);
+            ViewBag.PropertyRevenuesJson = JsonSerializer.Serialize(propertyStats.Select(p => (double)p.TotalRevenue).ToList(), _cleanJson);
 
             // 5. العقود المنتهية قريباً
             var threeMonthsFromNow = DateTime.Now.AddMonths(3);
