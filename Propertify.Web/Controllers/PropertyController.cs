@@ -112,7 +112,7 @@ namespace Propertify.Web.Controllers
                     ModelState.AddModelError(string.Empty, ex.Message);
                 }
             }
-            return View("Index", await _context.Properties.ToListAsync());
+            return View(property);
         }
 
         [HttpPost]

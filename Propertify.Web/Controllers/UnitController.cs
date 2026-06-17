@@ -22,7 +22,7 @@ namespace Propertify.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateMultiple(Unit baseUnit, List<Unit> Units, int UnitCount)
         {
-            if (UnitCount > 0)
+            if (UnitCount > 0 && Units != null && Units.Count >= UnitCount)
             {
                 for (int i = 0; i < UnitCount; i++)
                 {

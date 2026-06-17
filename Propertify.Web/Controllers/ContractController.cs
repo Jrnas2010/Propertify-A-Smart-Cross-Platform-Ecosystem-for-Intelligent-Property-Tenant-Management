@@ -40,9 +40,9 @@ namespace Propertify.Web.Controllers
 
         public async Task<IActionResult> Create()
         {
-            var tenants = await _context.Tenants.ToListAsync();
+            var tenants = await _context.Tenants.Where(t => !t.IsArchived).ToListAsync();
             var units = await _context.Units.Where(u => !u.IsOccupied).ToListAsync();
-            
+
             ViewBag.TenantId = new SelectList(tenants, "Id", "FullNameAr");
             ViewBag.UnitId = new SelectList(units, "Id", "UnitNumber");
             return View();
@@ -70,7 +70,7 @@ namespace Propertify.Web.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewBag.TenantId = new SelectList(await _context.Tenants.ToListAsync(), "Id", "FullNameAr", contract.TenantId);
+            ViewBag.TenantId = new SelectList(await _context.Tenants.Where(t => !t.IsArchived).ToListAsync(), "Id", "FullNameAr", contract.TenantId);
             ViewBag.UnitId = new SelectList(await _context.Units.Where(u => !u.IsOccupied).ToListAsync(), "Id", "UnitNumber", contract.UnitId);
             return View(contract);
         }
@@ -93,7 +93,7 @@ namespace Propertify.Web.Controllers
             var contract = await _context.Contracts.FindAsync(id);
             if (contract == null) return NotFound();
 
-            var tenants = await _context.Tenants.ToListAsync();
+            var tenants = await _context.Tenants.Where(t => !t.IsArchived).ToListAsync();
             var units = await _context.Units.Where(u => !u.IsOccupied || u.Id == contract.UnitId).ToListAsync();
 
             ViewBag.TenantId = new SelectList(tenants, "Id", "FullNameAr", contract.TenantId);
@@ -146,7 +146,7 @@ namespace Propertify.Web.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewBag.TenantId = new SelectList(await _context.Tenants.ToListAsync(), "Id", "FullNameAr", contract.TenantId);
+            ViewBag.TenantId = new SelectList(await _context.Tenants.Where(t => !t.IsArchived).ToListAsync(), "Id", "FullNameAr", contract.TenantId);
             ViewBag.UnitId = new SelectList(await _context.Units.Where(u => !u.IsOccupied || u.Id == contract.UnitId).ToListAsync(), "Id", "UnitNumber", contract.UnitId);
             return View(contract);
         }

@@ -280,14 +280,17 @@ namespace Propertify.Web.Controllers
                 .Include(u => u.Property)
                 .FirstOrDefaultAsync(u => u.Id == req.UnitId);
 
+            if (unit == null)
+                return BadRequest(Json(new { success = false, message = "Unit not found." }));
+
             var allowedPriorities = new HashSet<string> { "Normal", "High", "Urgent" };
             var maintenance = new Propertify.Web.Models.MaintenanceRequest
             {
                 Title        = req.Title,
                 Description  = req.Description ?? "",
                 UnitId       = req.UnitId,
-                PropertyId   = unit?.PropertyId ?? 0,
-                PropertyName = unit?.Property?.Name,
+                PropertyId   = unit.PropertyId,
+                PropertyName = unit.Property?.Name,
                 Status       = "Pending",
                 Priority     = allowedPriorities.Contains(req.Priority) ? req.Priority : "Normal",
                 ImagePath    = imagePath

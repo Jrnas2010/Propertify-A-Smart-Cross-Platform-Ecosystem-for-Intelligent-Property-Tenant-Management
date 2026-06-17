@@ -51,9 +51,8 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
+    app.UseHttpsRedirection();
 }
-
-app.UseHttpsRedirection();
 
 var supportedCultures = new[]
 {
@@ -73,6 +72,7 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapControllers();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
@@ -95,6 +95,43 @@ async Task SeedData(IServiceProvider serviceProvider)
             IsSystemAdmin = true
         });
         await context.SaveChangesAsync();
+    }
+
+    // ── Guaranteed demo tenant account (runs even on an already-seeded DB) ────────
+    if (!context.Users.Any(u => u.Email == "khamis@propertify.com"))
+    {
+        var demoUnit = await context.Units.FirstOrDefaultAsync();
+        if (demoUnit != null)
+        {
+            var demoTenant = new Tenant
+            {
+                FirstNameAr  = "خميس",
+                LastNameAr   = "الحمادي",
+                FirstNameEn  = "Khamis",
+                LastNameEn   = "Al-Hamadi",
+                IdNumber     = "1009876543",
+                Phone        = "+96850123456",
+                Email        = "khamis@propertify.com",
+                Nationality  = "Omani",
+                LeaseStartDate = DateTime.Now.AddMonths(-2),
+                LeaseEndDate   = DateTime.Now.AddMonths(10),
+                UnitId       = demoUnit.Id
+            };
+            context.Tenants.Add(demoTenant);
+            await context.SaveChangesAsync();
+
+            context.Users.Add(new User
+            {
+                FullName    = "Khamis Al-Hamadi",
+                Email       = "khamis@propertify.com",
+                Password    = PasswordHelper.Hash("Khamis@1234"),
+                Role        = "Tenant",
+                Status      = "Active",
+                Permissions = "Contracts,Invoices,Maintenance",
+                TenantId    = demoTenant.Id
+            });
+            await context.SaveChangesAsync();
+        }
     }
 
     // ── Demo data (only when no properties exist) ───────────────────────────────

@@ -84,7 +84,7 @@ namespace Propertify.Web.Controllers
                     FullName = $"{model.FirstName} {model.LastName}",
                     Email = model.Email,
                     Password = PasswordHelper.Hash(model.Password),
-                    Role = model.UserRole
+                    Role = "Owner"
                 };
 
                 _context.Users.Add(user);
@@ -95,7 +95,9 @@ namespace Propertify.Web.Controllers
                 {
                     new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                     new Claim(ClaimTypes.Name, user.Email),
-                    new Claim(ClaimTypes.Role, user.Role)
+                    new Claim(ClaimTypes.Role, user.Role),
+                    new Claim("IsSystemAdmin", user.IsSystemAdmin ? "true" : "false"),
+                    new Claim("FullName", user.FullName)
                 };
 
                 var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);

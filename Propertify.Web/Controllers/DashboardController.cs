@@ -73,7 +73,7 @@ namespace Propertify.Web.Controllers
                 var lastDay  = firstDay.AddMonths(1).AddDays(-1);
                 var monthlyIncome = await _context.Contracts
                     .Where(c => c.StartDate <= lastDay && c.EndDate >= firstDay)
-                    .SumAsync(c => (decimal?)c.RentAmount) ?? 0m;
+                    .SumAsync(c => (decimal?)c.MonthlyRent) ?? 0m;
 
                 var monthlyExpense = await _context.MaintenanceRequests
                     .Where(r => r.CreatedAt.Month == targetDate.Month && r.CreatedAt.Year == targetDate.Year)
@@ -127,8 +127,8 @@ namespace Propertify.Web.Controllers
             // 7. Dashboard redesign data
             var now = DateTime.Now;
             ViewBag.CurrentMonthIncome = await _context.Contracts
-                .Where(c => c.StartDate.Month == now.Month && c.StartDate.Year == now.Year)
-                .SumAsync(c => (decimal?)c.RentAmount) ?? 0m;
+                .Where(c => c.StartDate <= now && c.EndDate >= new DateTime(now.Year, now.Month, 1))
+                .SumAsync(c => (decimal?)c.MonthlyRent) ?? 0m;
             ViewBag.CurrentMonthExpenses = await _context.MaintenanceRequests
                 .Where(r => r.CreatedAt.Month == now.Month && r.CreatedAt.Year == now.Year)
                 .SumAsync(r => (decimal?)r.Cost) ?? 0m;

@@ -89,6 +89,9 @@ namespace Propertify.Web.Controllers
             ModelState.Remove(nameof(bill.Unit));
             ModelState.Remove(nameof(bill.Tenant));
 
+            if (bill.TenantId == 0)
+                ModelState.AddModelError(nameof(bill.TenantId), "A tenant must be linked to this unit before creating a bill.");
+
             if (ModelState.IsValid)
             {
                 _context.UtilityBills.Add(bill);

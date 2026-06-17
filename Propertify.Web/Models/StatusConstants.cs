@@ -32,8 +32,9 @@ namespace Propertify.Web.Models
         public const string Low = "Low";
         public const string Normal = "Normal";
         public const string High = "High";
+        public const string Urgent = "Urgent";
 
-        public static readonly string[] All = [Low, Normal, High];
+        public static readonly string[] All = [Low, Normal, High, Urgent];
     }
 
     public static class UserRole

@@ -21,6 +21,7 @@ namespace Propertify.Web.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateAppAccount(int tenantId, string email, string password)
         {
             // Check if a user account already exists for this tenant
@@ -45,10 +46,12 @@ namespace Propertify.Web.Controllers
 
             var user = new User
             {
-                FullName = tenant.FullNameAr,
+                FullName = tenant.FullNameEn,
                 Email = email,
                 Password = PasswordHelper.Hash(password),
                 Role = "Tenant",
+                Status = "Active",
+                Permissions = "Contracts,Invoices,Maintenance",
                 TenantId = tenantId
             };
 
